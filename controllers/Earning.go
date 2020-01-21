@@ -42,12 +42,14 @@ func Earning(ctx *gin.Context) {
 	context := opentracing.ContextWithSpan(c, span)
 
 	header := models.RequestHeader{
-		DeviceID:      ctx.Request.Header.Get("Device_Id"),
-		InstitutionID: ctx.Request.Header.Get("Institution_Id"),
+		DeviceID:      ctx.Request.Header.Get("DeviceId"),
+		InstitutionID: ctx.Request.Header.Get("InstitutionId"),
 		Geolocation:   ctx.Request.Header.Get("Geolocation"),
-		ChannelID:     ctx.Request.Header.Get("Channel_Id"),
+		ChannelID:     ctx.Request.Header.Get("ChannelId"),
+		AppsID:        ctx.Request.Header.Get("AppsId"),
 		Timestamp:     ctx.Request.Header.Get("Timestamp"),
 		Authorization: ctx.Request.Header.Get("Authorization"),
+		Signature:     ctx.Request.Header.Get("Signature"),
 	}
 
 	dataToken, errToken := token.CheckToken(header)
