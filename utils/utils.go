@@ -19,6 +19,8 @@ var (
 	DefaultStatusMsg  string
 	RedisKeyAuth      string
 	LimitTRXPoint     string
+
+	ListErrorCode []models.MappingErrorCodes
 )
 
 func init() {
@@ -63,6 +65,13 @@ func GetTimeFormatResponse() string {
 	return ts
 }
 
+func ResponseMetaOK() models.MetaData {
+	return models.MetaData{
+		Status:  true,
+		Code:    200,
+		Message: "SUCCESS",
+	}
+}
 func GetRrn() string {
 	//res, err := redis.GetRedisKey(rrnkey)
 	counter, err := redis.SaveRedisCounter(rrnkey)
@@ -137,4 +146,57 @@ func TypeProduct(code string) string {
 	}
 
 	return productCode
+}
+
+// GetMetaResponse ..
+func GetMetaResponse(key string) models.MetaData {
+	fmt.Println("Get response by key:", key)
+
+	var meta models.MetaData
+
+	if key == constants.KeyResponseSucceed {
+		meta.Code = 200
+		meta.Message = "Successful"
+		meta.Status = true
+		return meta
+	}
+
+	for _, element := range ListErrorCode {
+		if element.Key == key {
+			meta.Status = false
+			meta.Code = element.Content.Code
+			meta.Message = element.Content.Message
+			return meta
+		}
+	}
+
+	meta.Code = 400
+	meta.Message = "Terjadi kesalahan pada server"
+	meta.Status = false
+
+	return meta
+}
+
+// GetFormattedToken ...
+func GetFormattedToken(token string) string {
+
+	tokenLen := len(token)
+
+	if tokenLen == 0 {
+		return token
+	}
+
+	formattedToken := ""
+
+	for index := 0; index < tokenLen; index++ {
+		if (index%4) == 0 && index != 0 && index != tokenLen-1 {
+			formattedToken = fmt.Sprintf("%s %s", formattedToken, token[index:index+1])
+
+			continue
+		}
+
+		formattedToken = fmt.Sprintf("%s%s", formattedToken, token[index:index+1])
+	}
+
+	return formattedToken
 }

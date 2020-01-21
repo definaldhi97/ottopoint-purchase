@@ -1,15 +1,16 @@
 package constants
 
 const (
-	CategoryPulsa        = "pulsa"
-	CategoryFreeFire     = "free_fire"
-	CategoryMobileLegend = "mobile_legend"
-	CategoryToken        = "token"
+	NotifTypeCashPayment = "0"
+	NotifTypeQRPayment   = "1"
 )
 
 const (
-	NotifTypeCashPayment = "0"
-	NotifTypeQRPayment   = "1"
+	OTTOPAY   = "OTTOPAY"
+	INDOMARCO = "INDOMARCO"
+	BOGASARI  = "BOGASARI"
+	PEDE      = "PEDE"
+	OTTOSG    = "OTTOSG"
 )
 
 const (
@@ -24,4 +25,19 @@ const (
 const (
 	SplitBill = "split_bill"
 	Point     = "point"
+)
+
+const (
+	KeyResponsePending = "pending"
+	KeyResponseDefault = "default"
+	KeyResponseFailed  = "failed"
+	KeyResponseSucceed = "succeed"
+)
+
+const (
+	CategoryPulsa        = "pulsa"
+	CategoryPaketData    = "paket_data"
+	CategoryFreeFire     = "free_fire"
+	CategoryMobileLegend = "mobile_legend"
+	CategoryToken        = "token"
 )

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	hcmodels "ottodigital.id/library/healthcheck/models"
+	hcutils "ottodigital.id/library/healthcheck/utils"
 	ODU "ottodigital.id/library/utils"
 
 	"gopkg.in/redis.v5"
@@ -154,4 +156,13 @@ func GetRedisCounterIncr(key string) (int64, error) {
 	decr := ClientRed.Incr(key)
 	return decr.Val(), decr.Err()
 
+}
+
+// GetRedisClusterHealthCheck ..
+func GetRedisClusterHealthCheck() hcmodels.RedisHealthCheck {
+	return hcutils.GetRedisClusterHealthCheck(hcmodels.RedisClusterEnv{
+		AddressCluster1: addresscluster1,
+		AddressCluster2: addresscluster2,
+		AddressCluster3: addresscluster3,
+	})
 }

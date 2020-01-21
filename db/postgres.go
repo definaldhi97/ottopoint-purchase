@@ -9,6 +9,8 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	hcmodels "ottodigital.id/library/healthcheck/models"
+	hcutils "ottodigital.id/library/healthcheck/utils"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -78,4 +80,14 @@ func GetDbcon() *gorm.DB {
 	}
 	Dbcon.LogMode(DbDebug)
 	return Dbcon
+}
+
+// GetDatabaseHealthCheck ..
+func GetDatabaseHealthCheck() hcmodels.DatabaseHealthCheck {
+	dbCon := GetDbcon()
+	return hcutils.GetDatabaseHealthCheck(&dbCon, &hcmodels.DatabaseEnv{
+		Name: DbName,
+		Host: DbAddr,
+		Port: DbPort,
+	})
 }

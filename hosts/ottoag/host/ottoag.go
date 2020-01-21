@@ -1,0 +1,105 @@
+package host
+
+import (
+	"fmt"
+	"strconv"
+	"time"
+
+	//"fmt"
+	"net/http"
+	"ottopoint-purchase/redis"
+	"ottopoint-purchase/utils"
+
+	"github.com/astaxie/beego/logs"
+	jsoniter "github.com/json-iterator/go"
+
+	hcmodels "ottodigital.id/library/healthcheck/models"
+	hcutils "ottodigital.id/library/healthcheck/utils"
+	ODU "ottodigital.id/library/utils"
+)
+
+var (
+	host            string
+	endpointInquiry string
+	endpointPayment string
+
+	HealthCheckKey string
+	Name           string
+
+	serverkey string
+	memberID  string
+)
+
+// HeaderHTTP ..
+type HeaderHTTP struct {
+	Signature string
+	Timestamp string
+}
+
+func init() {
+	host = ODU.GetEnv("ottoag.host", "http://13.228.25.85:8089/")
+	endpointInquiry = ODU.GetEnv("ottoag.endpoint.inquiry", "v1/inquiry")
+	endpointPayment = ODU.GetEnv("ottoag.endpoint.payment", "v1/payment")
+
+	serverkey = ODU.GetEnv("ottoag.sessionkey", "052CFD8A04F99AC48E4656BBDF19FE60")
+
+	HealthCheckKey = ODU.GetEnv("health_check_key.ottoag", "OTTOPOINT_HEALTH_CHECK:OTTOAG")
+	Name = ODU.GetEnv("name.ottoag", "OTTOAG")
+}
+
+// PackMessageHeader ..
+func PackMessageHeader(req interface{}) HeaderHTTP {
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	signature := utils.OttoAGCreateSignature(timestamp, req, serverkey)
+
+	headhttp := HeaderHTTP{
+		Timestamp: timestamp,
+		Signature: signature,
+		//Auth: auth ,
+	}
+
+	return headhttp
+}
+
+// Send ..
+func Send(msgreq interface{}, head HeaderHTTP, typetrans string) ([]byte, error) {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	// authorization := "Basic " + base64.StdEncoding.EncodeToString([]byte(instuition))
+
+	header := make(http.Header)
+	header.Add("Accept", "*/*")
+	header.Add("Content-Type", "application/json")
+	header.Add("Authorization", "Basic T1RQT0lOVA==")
+	// header.Add("Authorization", "Basic Q0xBUEFQRQ==")
+	header.Add("Signature", head.Signature)
+	header.Add("Timestamp", head.Timestamp)
+	urlSvr := ""
+	fmt.Println("header 1", header)
+	switch typetrans {
+	case "INQUIRY":
+		fmt.Println("Inquiry")
+		urlSvr = host + endpointInquiry
+		break
+	case "PAYMENT":
+		fmt.Println("Inquiry")
+		urlSvr = host + endpointPayment
+		break
+	}
+
+	datareq, _ := json.Marshal(msgreq)
+	logs.Info(fmt.Sprintf("[Request %s]", typetrans), fmt.Sprintf("[%s]", string(datareq)))
+	data, err := HTTPPostWithHeader(urlSvr, msgreq, header, HealthCheckKey)
+
+	logs.Info(fmt.Sprintf("[Response %s]", typetrans), fmt.Sprintf("[%s]", string(data)))
+	return data, err
+}
+
+// GetServiceHealthCheck ..
+func GetServiceHealthCheck() hcmodels.ServiceHealthCheck {
+	redisClient := redis.GetRedisConnection()
+	return hcutils.GetServiceHealthCheck(&redisClient, &hcmodels.ServiceEnv{
+		Name:           Name,
+		Address:        host,
+		HealthCheckKey: HealthCheckKey,
+	})
+}

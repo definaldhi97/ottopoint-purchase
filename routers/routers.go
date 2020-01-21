@@ -18,8 +18,9 @@ import (
 )
 
 var (
-	redeem    string
-	paymentQR string
+	redeem      string
+	use_voucher string
+	paymentQR   string
 
 	nameservice     string
 	agentracinghost string
@@ -32,7 +33,8 @@ var (
 func init() {
 	//TODO pls change UPERCASE & _ Not using dot
 
-	redeem = utils.GetEnv("redeem", "/v1/ottopoint/redeem")
+	redeem = utils.GetEnv("redeem", "/v2/ottopoint/redeem")
+	use_voucher = utils.GetEnv("use_voucher", "/v2/ottopoint/use_voucher")
 
 	debugmode = utils.GetEnv("apps.debug", "debug")
 
@@ -93,7 +95,8 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.Use(gin.Recovery())
 
 	// router.GET(cashbackbyproduct, controllers.InquiryController)
-	router.POST(redeem, controllers.Redeem)
+	router.POST(redeem, controllers.VoucherRedeem)
+	router.POST(use_voucher, controllers.UseVouhcer)
 
 	ottoRouter.Router = router
 

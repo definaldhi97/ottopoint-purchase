@@ -2,7 +2,13 @@ package models
 
 type RequestHeader struct {
 	DeviceID      string
+	InstitutionID string
+	Geolocation   string
+	ChannelID     string
+	AppsID        string
+	Timestamp     string
 	Authorization string
+	Signature     string
 }
 
 // Response

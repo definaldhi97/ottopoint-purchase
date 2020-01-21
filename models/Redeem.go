@@ -1,22 +1,25 @@
 package models
 
 // Request
-type RedeemVoucherRequest struct {
-	VoucherName string `json:"voucher_name"`
-	Category    string `json:"category"`
-	CampaignID  string `json:"campaign_id"`
-	CustID      string `json:"cust_id"`
-	CustID2     string `json:"cust_id2"`
-	ProductCode string `json:"product_code"`
+type RedeemReq struct {
+	CampaignID string `json:"campaign"`
+	// Phone      string `json:"phone"` // sementara
+	Jumlah int `json:"jumlah"`
 }
 
 // Response
-type RedeemVoucherResp struct {
-	Rc            string `json:"rc"`
-	AccountNumber string `json:"accountNumber"`
-	CustID        string `json:"cust_id"`
-	CampaignID    string `json:"campaign_id"`
-	Name          string `json:"name"`
-	ProductCode   string `json:"product_code"`
-	Amount        int64  `json:"amount"`
+type RedeemResp struct {
+	CodeVoucher []CouponsRedeem `json:"CodeVoucher"`
+}
+
+type CouponsRedeem struct {
+	Voucher string `json:"voucher"`
+	Code    string `json:"code"`
+}
+
+type Redeem struct {
+	Voucher []RedeemVoucher
+}
+type RedeemVoucher struct {
+	Voucher string `json:"voucher"`
 }
