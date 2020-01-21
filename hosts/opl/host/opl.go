@@ -13,14 +13,18 @@ import (
 )
 
 var (
-	host                           string
-	name                           string
+	host string
+	name string
+
 	endpointVoucherDetail          string
 	endpointRedeemVoucher          string
 	endpointCouponVoucherCustomer  string
 	endpointHistoryVoucherCustomer string
 	endpointRulePoint              string
-	HealthCheckKey                 string
+	endpointAddedPoint             string
+	endpointSpendPoint             string
+
+	HealthCheckKey string
 )
 
 func init() {
@@ -30,8 +34,10 @@ func init() {
 	endpointRedeemVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM", "/api/customer/campaign/")
 	endpointVoucherDetail = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_DETAIL", "/api/campaign/")
 	endpointHistoryVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_HISTORY_VOUCHER", "/api/customer/campaign/bought")
-	endpointCouponVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST.COUPONVOUCHER", "/api/admin/campaign/coupons/mark_as_used")
+	endpointCouponVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_COUPONVOUCHER", "/api/admin/campaign/coupons/mark_as_used")
 	endpointRulePoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_RULEPOINT", "/api/customer/earnRule/")
+	endpointAddedPoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_ADD_POINT", "/api/points/transfer/add")
+	endpointSpendPoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_SPEND_POINT", "/api/points/transfer/spend")
 
 	HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_OPL", "OTTOPOINT-PURCHASE:OTTOPOINT")
 }
@@ -195,4 +201,58 @@ func GetServiceHealthCheck() hcmodels.ServiceHealthCheck {
 		Address:        host,
 		HealthCheckKey: HealthCheckKey,
 	})
+}
+
+// Transfer Point ..
+func TransferPoint(customer string, point string, text string) (*models.PointResponse, error) {
+
+	var resp models.PointResponse
+	urlSvr := host + endpointAddedPoint
+
+	jsonData := map[string]interface{}{
+		"transfer[customer]": customer,
+		"transfer[points]":   point,
+		"transfer[comment]":  text,
+	}
+
+	logs.Info("Request to OPL : ", jsonData)
+	data, err := HTTPxFormPostAdmin2(urlSvr, jsonData, HealthCheckKey)
+	if err != nil {
+		logs.Error("Check error ", err.Error())
+		return &resp, err
+	}
+
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+		logs.Error("Failed to unmarshaling response from open-loyalty ", err.Error())
+		return &resp, err
+	}
+	return &resp, nil
+}
+
+// Spend Point ..
+func SpendPoint(customer, point, text string) (*models.PointResponse, error) {
+
+	var resp models.PointResponse
+	urlSvr := host + endpointSpendPoint
+
+	jsonData := map[string]interface{}{
+		"transfer[customer]": customer,
+		"transfer[points]":   point,
+		"transfer[comment]":  text,
+	}
+
+	logs.Info("Request to OPL : ", jsonData)
+	data, err := HTTPxFormPostAdmin2(urlSvr, jsonData, HealthCheckKey)
+	if err != nil {
+		logs.Error("Check error ", err.Error())
+		return &resp, err
+	}
+
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+		logs.Error("Failed to unmarshaling response from open-loyalty ", err.Error())
+		return &resp, err
+	}
+	return &resp, nil
 }

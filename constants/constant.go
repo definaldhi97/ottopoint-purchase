@@ -28,6 +28,11 @@ const (
 )
 
 const (
+	Transfer = "transfer"
+	Spend    = "spend"
+)
+
+const (
 	KeyResponsePending = "pending"
 	KeyResponseDefault = "default"
 	KeyResponseFailed  = "failed"
