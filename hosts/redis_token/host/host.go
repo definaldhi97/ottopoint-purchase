@@ -21,11 +21,10 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("host.openloyalty", "http://13.228.25.85:8703")
-	name = ODU.GetEnv("name.redis.token", "REDIS-TOKEN-OTTOPOINT")
-	endpointToken = ODU.GetEnv("host.voucher_redeem", "/ottopoint/v0.1.0/redis/service")
-
-	HealthCheckKey = ODU.GetEnv("key.healthcheck.redis.token", "REDIS-TOKEN-OTTOPOINT:REDIS_TOKEN_OTTOPOINT")
+	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_REIDS_TOKEN", "http://13.228.25.85:8703")
+	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_REDIS_TOKEN", "REDIS-TOKEN-OTTOPOINT")
+	endpointToken = ODU.GetEnv("OTTOPOINT_PURCHASE_ENDPOINT_REDIS_TOKEN", "/ottopoint/v0.1.0/redis/service")
+	HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_REDIS_TOKEN", "OTTOPOINT-PURCHASE:REDIS_TOKEN_OTTOPOINT")
 }
 
 func CheckToken(header models.RequestHeader) (redismodels.TokenResp, error) {

@@ -38,9 +38,9 @@ func init() {
 
 	debugmode = utils.GetEnv("apps.debug", "debug")
 
-	nameservice = utils.GetEnv("OTTOPOINT_NAMESERVICE", "ottopoint-purchase")
+	nameservice = utils.GetEnv("OTTOPOINT_PURCHASE_NAMESERVICE", "ottopoint-purchase")
 
-	agentracinghost = utils.GetEnv("AGENT_TRACING_HOST", "13.250.21.165:5775")
+	agentracinghost = utils.GetEnv("AGENT_TRACING_HOST_OTTOPOINT_PURCHASE", "13.250.21.165:5775")
 	// readto = utils.GetEnv("server.readtimeout", 30)
 	// writeto = utils.GetEnv("server.writetimeout", 30)
 

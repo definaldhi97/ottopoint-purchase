@@ -24,16 +24,16 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("host.openloyalty", "http://54.179.186.194")
-	name = ODU.GetEnv("name.opl", "OPENLOYALTY")
+	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_OPL", "http://54.179.186.194")
+	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_OPL", "OPENLOYALTY")
 
-	endpointRedeemVoucher = ODU.GetEnv("host.voucher_redeem", "/api/customer/campaign/")
-	endpointVoucherDetail = ODU.GetEnv("host.voucher_detail", "/api/campaign/")
-	endpointHistoryVoucherCustomer = ODU.GetEnv("host.history_voucher", "/api/customer/campaign/bought")
-	endpointCouponVoucherCustomer = ODU.GetEnv("host.CouponVoucherCustomer", "/api/admin/campaign/coupons/mark_as_used")
-	endpointRulePoint = ODU.GetEnv("host.rulePoint", "/api/customer/earnRule/")
+	endpointRedeemVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM", "/api/customer/campaign/")
+	endpointVoucherDetail = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_DETAIL", "/api/campaign/")
+	endpointHistoryVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_HISTORY_VOUCHER", "/api/customer/campaign/bought")
+	endpointCouponVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST.COUPONVOUCHER", "/api/admin/campaign/coupons/mark_as_used")
+	endpointRulePoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_RULEPOINT", "/api/customer/earnRule/")
 
-	HealthCheckKey = ODU.GetEnv("key.healthcheck.opl", "OTTOPOINT-PURCHASE:OTTOPOINT")
+	HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_OPL", "OTTOPOINT-PURCHASE:OTTOPOINT")
 }
 
 // Redeem Voucher

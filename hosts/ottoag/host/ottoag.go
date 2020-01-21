@@ -37,14 +37,12 @@ type HeaderHTTP struct {
 }
 
 func init() {
-	host = ODU.GetEnv("ottoag.host", "http://13.228.25.85:8089/")
-	endpointInquiry = ODU.GetEnv("ottoag.endpoint.inquiry", "v1/inquiry")
-	endpointPayment = ODU.GetEnv("ottoag.endpoint.payment", "v1/payment")
-
-	serverkey = ODU.GetEnv("ottoag.sessionkey", "052CFD8A04F99AC48E4656BBDF19FE60")
-
-	HealthCheckKey = ODU.GetEnv("health_check_key.ottoag", "OTTOPOINT_HEALTH_CHECK:OTTOAG")
-	Name = ODU.GetEnv("name.ottoag", "OTTOAG")
+	host = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_HOST", "http://13.228.25.85:8089/")
+	endpointInquiry = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_ENDPOINT_INQUIRY", "v1/inquiry")
+	endpointPayment = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_ENDPOINT_PAYMENT", "v1/payment")
+	serverkey = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_SESSIONKEY", "052CFD8A04F99AC48E4656BBDF19FE60")
+	HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_HEALTHCHECK_OTTOAG", "OTTOPOINT_HEALTH_CHECK:OTTOAG")
+	Name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_OTTOAG", "OTTOAG")
 }
 
 // PackMessageHeader ..

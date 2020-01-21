@@ -21,12 +21,12 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("host.openloyalty", "http://13.228.25.85:8666")
-	name = ODU.GetEnv("name.opl", "OPENLOYALTY")
+	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_SIGNATURE", "http://13.228.25.85:8666")
+	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_SIGNATURE", "SIGNATURE")
 
-	endpointSignature = ODU.GetEnv("host.voucher_redeem", "/auth/v2/signature")
+	endpointSignature = ODU.GetEnv("OTTOPOINT_PURCHASE_ENDPOINT_VALIDATE_SIGNATURE", "/auth/v2/signature")
 
-	HealthCheckKey = ODU.GetEnv("key.healthcheck.opl", "OTTOPOINT-PURCHASE:OTTOPOINT")
+	HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_SIGNATURE", "OTTOPOINT-PURCHASE:SIGNATURE")
 }
 
 // Signature
