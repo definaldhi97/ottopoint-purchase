@@ -27,7 +27,7 @@ func Earning(ctx *gin.Context) {
 	res := models.Response{}
 
 	sugarLogger := ottologer.GetLogger()
-	namectrl := "[Voucher-Voucher]"
+	namectrl := "[EarningPoint]"
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
@@ -54,10 +54,10 @@ func Earning(ctx *gin.Context) {
 
 	dataToken, errToken := token.CheckToken(header)
 	if errToken != nil || dataToken.ResponseCode != "00" {
-		sugarLogger.Info("[ValidateToken]-[controllers-VoucherController]")
+		sugarLogger.Info("[ValidateToken]-[EarningController]")
 		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
 
-		logs.Info("[ValidateToken]-[controllers-VoucherController]")
+		logs.Info("[ValidateToken]-[EarningController]")
 		logs.Info(fmt.Sprintf("Error when validation request header"))
 
 		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -54,9 +53,9 @@ func UseVouhcer(ctx *gin.Context) {
 		Signature:     ctx.Request.Header.Get("Signature"),
 	}
 
-	jsonSignature, _ := json.Marshal(req)
+	// jsonSignature, _ := json.Marshal(req)
 
-	ValidateSignature, errSignature := signature.Signature(jsonSignature, header)
+	ValidateSignature, errSignature := signature.Signature(req, header)
 	if errSignature != nil || ValidateSignature.ResponseCode == "" {
 		sugarLogger.Info("[ValidateSignature]-[controllers-UseVouhcer]")
 		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
@@ -64,7 +63,7 @@ func UseVouhcer(ctx *gin.Context) {
 		logs.Info("[ValidateSignature]-[controllers-UseVouhcer]")
 		logs.Info(fmt.Sprintf("Error when validation request header"))
 
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
+		res = utils.GetMessageResponse(res, 400, false, errors.New("Signature salah"))
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}

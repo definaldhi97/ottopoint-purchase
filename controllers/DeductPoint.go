@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -55,9 +54,9 @@ func DeductPoint(ctx *gin.Context) {
 		Signature:     ctx.Request.Header.Get("Signature"),
 	}
 
-	jsonSignature, _ := json.Marshal(req)
+	// jsonSignature, _ := json.Marshal(req)
 
-	ValidateSignature, errSignature := signature.Signature(jsonSignature, header)
+	ValidateSignature, errSignature := signature.Signature(req, header)
 	if errSignature != nil || ValidateSignature.ResponseCode == "" {
 		sugarLogger.Info("[ValidateSignature]-[controllers-DeductPoint]")
 		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))

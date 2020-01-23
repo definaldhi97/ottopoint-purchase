@@ -11,9 +11,10 @@ import (
 
 	headermodels "ottopoint-purchase/models"
 
+	hcredismodels "ottodigital.id/library/healthcheck/models/redismodels"
+
 	"github.com/astaxie/beego/logs"
 	"github.com/parnurzeal/gorequest"
-	hcredismodels "ottodigital.id/library/healthcheck/models/redismodels"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -50,10 +51,11 @@ func HTTPxFormPostWithHeader(url, key string, data interface{}, header headermod
 	reqagent := request.Post(url)
 
 	reqagent.Header.Set("Content-Type", "application/json")
-	reqagent.Header.Set("Device_Id", header.DeviceID)
-	reqagent.Header.Set("Institution_Id", header.InstitutionID)
+	reqagent.Header.Set("DeviceId", header.DeviceID)
+	reqagent.Header.Set("InstitutionId", header.InstitutionID)
 	reqagent.Header.Set("Geolocation", header.Geolocation)
-	reqagent.Header.Set("Channel_Id", header.ChannelID)
+	reqagent.Header.Set("ChannelId", header.ChannelID)
+	reqagent.Header.Set("AppsId", header.AppsID)
 	reqagent.Header.Set("Timestamp", header.Timestamp)
 	reqagent.Header.Set("Signature", header.Signature)
 

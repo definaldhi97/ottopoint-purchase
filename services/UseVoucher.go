@@ -36,13 +36,13 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, dataToken redis
 	defer span.Finish()
 
 	// get CustID
-	dataUser, errUser := db.CheckUser(dataToken.Data.AccountNumber)
+	dataUser, errUser := db.CheckUser(dataToken.Data)
 	if errUser != nil {
 		res = utils.GetMessageResponse(res, 422, false, errors.New("User belum Eligible"))
 		return res
 	}
 
-	data, err := opl.HistoryVoucherCustomer(dataToken.Data.AccountNumber, "")
+	data, err := opl.HistoryVoucherCustomer(dataToken.Data, "")
 	if err != nil {
 		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Get History Voucher Customer"))
 		return res
@@ -83,10 +83,10 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, dataToken redis
 
 	// save to redis usedAt
 	req.Date = (time.Now().Local().Add(time.Hour * time.Duration(7))).Format("2006-01-02T15:04:05-0700")
-	keyTimeVoucher := fmt.Sprintf("usedVoucherAt-%s-%s", couponId, dataToken.Data.AccountNumber)
+	keyTimeVoucher := fmt.Sprintf("usedVoucherAt-%s-%s", couponId, dataToken.Data)
 	go redis.SaveRedis(keyTimeVoucher, req.Date)
 
-	cekData, errDB := db.CheckUser(dataToken.Data.AccountNumber)
+	cekData, errDB := db.CheckUser(dataToken.Data)
 	if errDB != nil || cekData.Phone == "" {
 		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
 		return res
@@ -111,7 +111,7 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, dataToken redis
 	resRedeem := models.UseRedeemResponse{}
 
 	reqRedeem := models.UseRedeemRequest{
-		AccountNumber: dataToken.Data.AccountNumber,
+		AccountNumber: dataToken.Data,
 		CustID:        req.CustID,
 		CustID2:       req.CustID2,
 		ProductCode:   req.ProductCode,

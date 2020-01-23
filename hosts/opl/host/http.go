@@ -40,10 +40,11 @@ func init() {
 
 // Post (Tanpa Request), Token Customer
 func HTTPxFormPostCustomer1(url, phone, key string) ([]byte, error) {
+	logs.Info("PhoneNumber :", phone)
 	token, _ := redis.GetRedisKey(fmt.Sprintf("Ottopoint-Token-Customer-%s :", phone))
 	data := strings.Replace(token, `"`, "", 2)
 	dataToken := "Bearer" + " " + data
-	// logs.Info("Token :", dataToken)
+	logs.Info("Token :", dataToken)
 	request := gorequest.New()
 	request.SetDebug(debugClientHTTP)
 	timeout, _ := time.ParseDuration(timeout)

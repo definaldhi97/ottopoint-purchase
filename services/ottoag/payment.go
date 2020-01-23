@@ -56,19 +56,19 @@ func PaymentBiller(reqdata interface{}, req models.UseRedeemRequest, dataToken r
 		logs.Info("[SAVE-DB-PAYMENT-Transaksi_Redeem]")
 
 		labelPyment1 := dbmodels.TransaksiRedeem{
-			AccountNumber: dataToken.Data.AccountNumber,
+			AccountNumber: dataToken.Data,
 			Voucher:       namaVoucher,
 			CustID:        req.CustID,
-			MerchantID:    dataToken.Data.MerchantID,
-			RRN:           rrn,
-			ProductCode:   req.ProductCode,
-			Amount:        amount,
-			TransType:     "Payment",
-			Status:        "01 (Gagal)",
-			ExpDate:       expDate,
-			Institution:   "Ottopay",
-			ProductType:   "Pulsa",
-			DateTime:      utils.GetTimeFormatYYMMDDHHMMSS(),
+			// MerchantID:    dataToken.Data.MerchantID,
+			RRN:         rrn,
+			ProductCode: req.ProductCode,
+			Amount:      amount,
+			TransType:   "Payment",
+			Status:      "01 (Gagal)",
+			ExpDate:     expDate,
+			Institution: "Ottopay",
+			ProductType: "Pulsa",
+			DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 		}
 		err1 := db.Dbcon.Create(&labelPyment1).Error
 		if err1 != nil {

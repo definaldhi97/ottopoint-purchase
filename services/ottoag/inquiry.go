@@ -50,19 +50,19 @@ func InquiryBiller(reqdata interface{}, req models.UseRedeemRequest, dataToken r
 		logs.Info("[SAVE-DB-INQUIRY-Transaksi_Redeem]")
 
 		saveInq := dbmodels.TransaksiRedeem{
-			AccountNumber: dataToken.Data.AccountNumber,
+			AccountNumber: dataToken.Data,
 			Voucher:       namaVoucher,
 			CustID:        req.CustID,
-			MerchantID:    dataToken.Data.MerchantID,
-			RRN:           response.Rrn,
-			ProductCode:   req.ProductCode,
-			Amount:        response.Amount,
-			TransType:     "Payment",
-			Status:        "01 (Gagal)",
-			ExpDate:       expDate,
-			Institution:   "Ottopay",
-			ProductType:   "Pulsa",
-			DateTime:      utils.GetTimeFormatYYMMDDHHMMSS(),
+			// MerchantID:    dataToken.Data.MerchantID,
+			RRN:         response.Rrn,
+			ProductCode: req.ProductCode,
+			Amount:      response.Amount,
+			TransType:   "Payment",
+			Status:      "01 (Gagal)",
+			ExpDate:     expDate,
+			Institution: "Ottopay",
+			ProductType: "Pulsa",
+			DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 		}
 		err1 := db.Dbcon.Create(&saveInq).Error
 		if err1 != nil {

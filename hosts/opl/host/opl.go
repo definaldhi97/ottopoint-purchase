@@ -46,6 +46,8 @@ func init() {
 func RedeemVoucher(campaignID, phone string) (*models.BuyVocuherResp, error) {
 	var resp models.BuyVocuherResp
 
+	logs.Info("[RedeemVoucher]")
+
 	api := campaignID + "/buy"
 	urlSvr := host + endpointRedeemVoucher + api
 

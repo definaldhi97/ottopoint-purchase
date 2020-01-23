@@ -24,7 +24,7 @@ func init() {
 	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_SIGNATURE", "http://13.228.25.85:8666")
 	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_SIGNATURE", "SIGNATURE")
 
-	endpointSignature = ODU.GetEnv("OTTOPOINT_PURCHASE_ENDPOINT_VALIDATE_SIGNATURE", "/auth/v2/signature")
+	endpointSignature = ODU.GetEnv("OTTOPOINT_PURCHASE_ENDPOINT_VALIDATE_SIGNATURE", "/auth/signature")
 
 	HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_SIGNATURE", "OTTOPOINT-PURCHASE:SIGNATURE")
 }
@@ -32,6 +32,8 @@ func init() {
 // Signature
 func Signature(signature interface{}, header headermodels.RequestHeader) (*models.SignatureResp, error) {
 	var resp models.SignatureResp
+
+	logs.Info("[Hit to API Signature]")
 
 	urlSvr := host + endpointSignature
 

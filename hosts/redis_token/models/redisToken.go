@@ -1,9 +1,9 @@
 package models
 
 type TokenResp struct {
-	ResponseCode string    `json:"responseCode"`
-	ResponseDesc string    `json:"responseDesc"`
-	Data         DataValue `json:"data"`
+	ResponseCode string `json:"responseCode"`
+	ResponseDesc string `json:"responseDesc"`
+	Data         string `json:"value"`
 }
 
 type DataValue struct {

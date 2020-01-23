@@ -53,19 +53,19 @@ func RedeemGame(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Me
 
 		// save DB
 		labelInq := dbmodels.TransaksiRedeem{
-			AccountNumber: dataToken.Data.AccountNumber,
+			AccountNumber: dataToken.Data,
 			Voucher:       namaVoucher,
 			CustID:        req.CustID,
-			MerchantID:    dataToken.Data.MerchantID,
-			RRN:           inqRespOttoag.Rrn,
-			ProductCode:   req.ProductCode,
-			Amount:        inqRespOttoag.Amount,
-			TransType:     "Inquiry",
-			Status:        "01 (Gagal)",
-			ExpDate:       expDate,
-			Institution:   "Ottopay",
-			ProductType:   "Pulsa",
-			DateTime:      utils.GetTimeFormatYYMMDDHHMMSS(),
+			// MerchantID:    dataToken.Data.MerchantID,
+			RRN:         inqRespOttoag.Rrn,
+			ProductCode: req.ProductCode,
+			Amount:      inqRespOttoag.Amount,
+			TransType:   "Inquiry",
+			Status:      "01 (Gagal)",
+			ExpDate:     expDate,
+			Institution: "Ottopay",
+			ProductType: "Pulsa",
+			DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 		}
 		err1 := db.Dbcon.Create(&labelInq).Error
 		if err1 != nil {
@@ -78,19 +78,19 @@ func RedeemGame(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Me
 
 	logs.Info("[SAVE-DB-Transaksi_Redeem]")
 	labelInq1 := dbmodels.TransaksiRedeem{
-		AccountNumber: dataToken.Data.AccountNumber,
+		AccountNumber: dataToken.Data,
 		Voucher:       namaVoucher,
 		CustID:        req.CustID,
-		MerchantID:    dataToken.Data.MerchantID,
-		RRN:           inqRespOttoag.Rrn,
-		ProductCode:   req.ProductCode,
-		Amount:        inqRespOttoag.Amount,
-		TransType:     "Inquiry",
-		ProductType:   "Pulsa",
-		Status:        "00 (Success)",
-		ExpDate:       expDate,
-		Institution:   "Ottopay", // sementara
-		DateTime:      utils.GetTimeFormatYYMMDDHHMMSS(),
+		// MerchantID:    dataToken.Data.MerchantID,
+		RRN:         inqRespOttoag.Rrn,
+		ProductCode: req.ProductCode,
+		Amount:      inqRespOttoag.Amount,
+		TransType:   "Inquiry",
+		ProductType: "Pulsa",
+		Status:      "00 (Success)",
+		ExpDate:     expDate,
+		Institution: "Ottopay", // sementara
+		DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 	}
 
 	err2 := db.Dbcon.Create(&labelInq1).Error
@@ -122,19 +122,19 @@ func RedeemGame(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Me
 	if billerRes.Rc == "09" {
 		// save to DB transaski_redeem
 		labelPyment1 := dbmodels.TransaksiRedeem{
-			AccountNumber: dataToken.Data.AccountNumber,
+			AccountNumber: dataToken.Data,
 			Voucher:       namaVoucher,
 			CustID:        req.CustID,
-			MerchantID:    dataToken.Data.MerchantID,
-			RRN:           inqRespOttoag.Rrn,
-			ProductCode:   req.ProductCode,
-			Amount:        inqRespOttoag.Amount,
-			TransType:     "Payment",
-			Status:        "09 (Pending)",
-			ExpDate:       expDate,
-			Institution:   "Ottopay",
-			ProductType:   "Pulsa",
-			DateTime:      utils.GetTimeFormatYYMMDDHHMMSS(),
+			// MerchantID:    dataToken.Data.MerchantID,
+			RRN:         inqRespOttoag.Rrn,
+			ProductCode: req.ProductCode,
+			Amount:      inqRespOttoag.Amount,
+			TransType:   "Payment",
+			Status:      "09 (Pending)",
+			ExpDate:     expDate,
+			Institution: "Ottopay",
+			ProductType: "Pulsa",
+			DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 		}
 		err1 := db.Dbcon.Create(&labelPyment1).Error
 		if err1 != nil {
@@ -153,19 +153,19 @@ func RedeemGame(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Me
 
 		// save to DB transaski_redeem
 		labelPyment1 := dbmodels.TransaksiRedeem{
-			AccountNumber: dataToken.Data.AccountNumber,
+			AccountNumber: dataToken.Data,
 			Voucher:       namaVoucher,
 			CustID:        req.CustID,
-			MerchantID:    dataToken.Data.MerchantID,
-			RRN:           inqRespOttoag.Rrn,
-			ProductCode:   req.ProductCode,
-			Amount:        inqRespOttoag.Amount,
-			TransType:     "Payment",
-			Status:        "01 (Gagal)",
-			ExpDate:       expDate,
-			Institution:   "Ottopay",
-			ProductType:   "Pulsa",
-			DateTime:      utils.GetTimeFormatYYMMDDHHMMSS(),
+			// MerchantID:    dataToken.Data.MerchantID,
+			RRN:         inqRespOttoag.Rrn,
+			ProductCode: req.ProductCode,
+			Amount:      inqRespOttoag.Amount,
+			TransType:   "Payment",
+			Status:      "01 (Gagal)",
+			ExpDate:     expDate,
+			Institution: "Ottopay",
+			ProductType: "Pulsa",
+			DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 		}
 		err1 := db.Dbcon.Create(&labelPyment1).Error
 		if err1 != nil {
@@ -187,10 +187,10 @@ func RedeemGame(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Me
 
 	// save to DB transaski_redeem
 	labelPyment1 := dbmodels.TransaksiRedeem{
-		// AccountNumber: dataToken.Data.AccountNumber,
+		// AccountNumber: dataToken.Data,
 		Voucher: namaVoucher,
 		CustID:  req.CustID,
-		// MerchantID:    dataToken.Data.MerchantID,
+		// // MerchantID:    dataToken.Data.MerchantID,
 		RRN:         inqRespOttoag.Rrn,
 		ProductCode: req.ProductCode,
 		Amount:      inqRespOttoag.Amount,

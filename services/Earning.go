@@ -38,7 +38,7 @@ func (t EarningServices) EarningPoint(req models.RulePointReq, dataToken redismo
 func OttopayEarning(req models.RulePointReq, dataToken redismodels.TokenResp) models.Response {
 	res := models.Response{}
 
-	dataPoint, errPoint := opl.RulePoint(req.EventName, dataToken.Data.AccountNumber)
+	dataPoint, errPoint := opl.RulePoint(req.EventName, dataToken.Data)
 	if errPoint != nil {
 		// sugarLogger.Info("[Error-dataPoint :", errPoint)
 		logs.Info("[Error-dataPoint :", errPoint)

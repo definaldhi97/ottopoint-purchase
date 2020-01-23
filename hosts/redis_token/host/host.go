@@ -5,6 +5,7 @@ import (
 	redismodels "ottopoint-purchase/hosts/redis_token/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/redis"
+	"strings"
 
 	hcmodels "ottodigital.id/library/healthcheck/models"
 	hcutils "ottodigital.id/library/healthcheck/utils"
@@ -32,7 +33,9 @@ func CheckToken(header models.RequestHeader) (redismodels.TokenResp, error) {
 
 	urlSvr := host + endpointToken
 
-	token := header.InstitutionID + "-" + header.Authorization
+	t := strings.ReplaceAll(header.Authorization, "Bearer ", "")
+	token := header.InstitutionID + "-" + t
+	logs.Info("Token : ", token)
 
 	data, err := HTTPxFormWithHeader(urlSvr, token, HealthCheckKey)
 	if err != nil {

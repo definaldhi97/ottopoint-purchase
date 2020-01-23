@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -55,17 +54,17 @@ func VoucherRedeem(ctx *gin.Context) {
 		Signature:     ctx.Request.Header.Get("Signature"),
 	}
 
-	jsonSignature, _ := json.Marshal(req)
+	// jsonSignature, _ := json.Marshal(req)
 
-	ValidateSignature, errSignature := signature.Signature(jsonSignature, header)
-	if errSignature != nil || ValidateSignature.ResponseCode == "" {
+	ValidateSignature, errSignature := signature.Signature(req, header)
+	if errSignature != nil || ValidateSignature.ResponseCode != "00" {
 		sugarLogger.Info("[ValidateSignature]-[controllers-UseVouhcer]")
 		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
 
 		logs.Info("[ValidateSignature]-[controllers-UseVouhcer]")
 		logs.Info(fmt.Sprintf("Error when validation request header"))
 
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
+		res = utils.GetMessageResponse(res, 400, false, errors.New("Signature salah"))
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
@@ -83,6 +82,8 @@ func VoucherRedeem(ctx *gin.Context) {
 		return
 	}
 
+	logs.Info("Response Token :", dataToken)
+
 	spanid := utilsgo.GetSpanId(span)
 	sugarLogger.Info("REQUEST:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", req),
@@ -97,7 +98,7 @@ func VoucherRedeem(ctx *gin.Context) {
 		},
 	}
 
-	res = voucherRedeem.VoucherRedeem(req, dataToken.Data.AccountNumber)
+	res = voucherRedeem.VoucherRedeem(req, dataToken.Data)
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", res))

@@ -19,7 +19,7 @@ func main() {
 	runtime.GOMAXPROCS(maxpc)
 	var errChan = make(chan error, 1)
 	go func() {
-		errChan <- routers.Server(utils.GetEnv("OTTOPOINT_PURCHASE", "0.0.0.0:8002"))
+		errChan <- routers.Server(utils.GetEnv("OTTOPOINT_PURCHASE", "0.0.0.0:8006"))
 	}()
 	var signalChan = make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
