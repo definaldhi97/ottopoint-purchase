@@ -11,7 +11,7 @@ func GetOperatorCodebyPrefix(prefix string) (dbmodels.OperatorPrefixes, error) {
 
 	data := prefix[0:4]
 
-	err := Dbcon.Where("prefix = ?", data).First(&res).Error
+	err := DbCon.Where("prefix = ?", data).First(&res).Error
 	if err != nil {
 		fmt.Println("Failed to connect database OperatorPPOBPrefixes %v", err)
 		return res, err

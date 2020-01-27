@@ -2,92 +2,102 @@ package db
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
-
-	"github.com/astaxie/beego/logs"
+	"ottopoint-product/models"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/kelseyhightower/envconfig"
 	hcmodels "ottodigital.id/library/healthcheck/models"
-	hcutils "ottodigital.id/library/healthcheck/utils"
-	ODU "ottodigital.id/library/utils"
 )
 
+type EnvPostgresDb struct {
+	User    string `envconfig:"POSTGRES_USER" default:"ottoagcfg"`
+	Pass    string `envconfig:"POSTGRES_PASS" default:"dTj*&56$es"`
+	Name    string `envconfig:"POSTGRES_NAME" default:"ottopoint"`
+	Host    string `envconfig:"POSTGRES_HOST" default:"13.228.23.160"`
+	Port    string `envconfig:"POSTGRES_PORT" default:"8432"`
+	Debug   bool   `envconfig:"POSTGRES_DEBUG" default:"true"`
+	Type    string `envconfig:"TYPE" default:"postgres"`
+	SslMode string `envconfig:"POSTGRES_SSL_MODE" default:"disable"`
+}
+
 var (
-	Dbcon   *gorm.DB
-	DbErr   error
-	DbUser  string
-	DbPass  string
-	DbName  string
-	DbAddr  string
-	DbPort  string
-	DbDebug bool
-	DbType  string
-	SslMode string
+	DbCon         *gorm.DB
+	DbErr         error
+	envPostgresDb EnvPostgresDb
 )
 
 func init() {
 
-	DbType = ODU.GetEnv("DB_TYPE", "POSTGRES")
-	fmt.Println(" DB POSTGRES")
-	//orm.RegisterDataBase("default", "postgres", "postgres://postgres:cobain77@127.0.0.1:5432/ottoagsu?SslMode=disable")
-	DbUser = ODU.GetEnv("DB_POSTGRES_USER", "ottoagcfg")
-	DbPass = ODU.GetEnv("DB_POSTGRES_PASS", "dTj*&56$es")
-	DbName = ODU.GetEnv("DB_POSTGRES_NAME", "ottopoint")
-	DbAddr = ODU.GetEnv("DB_POSTGRES_HOST", "13.228.23.160")
-	DbPort = ODU.GetEnv("DB_POSTGRES_PORT", "8432")
-	SslMode = ODU.GetEnv("DB_POSTGRES_SSL_MODE", "disable")
-	DbDebug = true //defaultValue
-	if ndb := ODU.GetEnv("DB_POSTGRES_DEBUG", "true"); strings.EqualFold(ndb, "true") || strings.EqualFold(ndb, "false") {
-		DbDebug, _ = strconv.ParseBool(ndb)
+	fmt.Println("DB POSTGRES")
+
+	err := envconfig.Process("OTTOPOINT", &envPostgresDb)
+	if err != nil {
+		fmt.Println("Failed to get OTTOPOINT env:", err)
 	}
 
 	if DbOpen() != nil {
 		//panic("DB Can't Open")
-		fmt.Println("Can't open", DbName, "DB")
+		fmt.Println("Can't open", envPostgresDb.Name, "DB")
 	}
-	Dbcon = GetDbcon()
-	Dbcon = Dbcon.LogMode(true)
+	DbCon = GetDbCon()
+	DbCon = DbCon.LogMode(true)
+
 }
 
 // DbOpen ..
 func DbOpen() error {
-	args := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", DbAddr, DbPort, DbUser, DbPass, DbName, SslMode)
-	Dbcon, DbErr = gorm.Open("postgres", args)
+	args := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", envPostgresDb.Host, envPostgresDb.Port, envPostgresDb.User, envPostgresDb.Pass, envPostgresDb.Name, envPostgresDb.SslMode)
+	DbCon, DbErr = gorm.Open("postgres", args)
 
 	if DbErr != nil {
-		fmt.Println("Open", DbName, "DB error :", DbErr)
+		fmt.Println("Open", envPostgresDb.Name, "DB error :", DbErr)
 		return DbErr
 	}
 
-	if errping := Dbcon.DB().Ping(); errping != nil {
+	if errping := DbCon.DB().Ping(); errping != nil {
 		return errping
 	}
 	return nil
 }
 
-// GetDbcon ..
-func GetDbcon() *gorm.DB {
+// GetDbCon ..
+// GetDbCon ..
+func GetDbCon() *gorm.DB {
 	//TODO looping try connection until timeout
 	// using channel timeout
-	if errping := Dbcon.DB().Ping(); errping != nil {
-		logs.Error("DB not connected test ping :", errping)
+	if errping := DbCon.DB().Ping(); errping != nil {
+		fmt.Println("DB not connected test ping :", errping)
 		errping = nil
 		if errping = DbOpen(); errping != nil {
-			logs.Error("Try to connect again but error :", errping)
+			fmt.Println("Try to connect again but error :", errping)
 		}
 	}
-	Dbcon.LogMode(DbDebug)
-	return Dbcon
+	DbCon.LogMode(envPostgresDb.Debug)
+	return DbCon
 }
 
-// GetDatabaseHealthCheck ..
-func GetDatabaseHealthCheck() hcmodels.DatabaseHealthCheck {
-	dbCon := GetDbcon()
-	return hcutils.GetDatabaseHealthCheck(&dbCon, &hcmodels.DatabaseEnv{
-		Name: DbName,
-		Host: DbAddr,
-		Port: DbPort,
-	})
+func GetHealthCheck() hcmodels.DatabaseHealthCheck {
+	res := hcmodels.DatabaseHealthCheck{}
+
+	res.Name = envPostgresDb.Name
+	res.Host = envPostgresDb.Host
+	res.Port = envPostgresDb.Port
+	res.Status = "OK"
+	res.Description = ""
+
+	if err := DbCon.DB().Ping(); err != nil {
+		err = nil
+		if err = DbOpen(); err != nil {
+			res.Status = "NOT OK"
+			res.Description = err.Error()
+		}
+	}
+
+	return res
+
+}
+
+type DbPostgres struct {
+	General models.GeneralModel
 }

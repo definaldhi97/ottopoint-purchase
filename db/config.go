@@ -8,7 +8,7 @@ import (
 func GetConfig() (dbmodels.Configs, error) {
 	res := dbmodels.Configs{}
 
-	err := Dbcon.Raw(`SELECT * FROM public.configs`).Scan(&res).Error
+	err := DbCon.Raw(`SELECT * FROM public.configs`).Scan(&res).Error
 	if err != nil {
 
 		fmt.Println("[EEROR-DATABASE]")

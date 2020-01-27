@@ -68,7 +68,7 @@ func RedeemPLN(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Mem
 			ProductType: "Pulsa",
 			DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 		}
-		err1 := db.Dbcon.Create(&labelInq).Error
+		err1 := db.DbCon.Create(&labelInq).Error
 		if err1 != nil {
 			logs.Info("Failed Save to database", err1)
 			// return err1
@@ -94,7 +94,7 @@ func RedeemPLN(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Mem
 		DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 	}
 
-	err2 := db.Dbcon.Create(&labelInq1).Error
+	err2 := db.DbCon.Create(&labelInq1).Error
 	if err2 != nil {
 		logs.Info("Failed Save to database", err2)
 		// return err1
@@ -138,7 +138,7 @@ func RedeemPLN(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Mem
 			ProductType: "Pulsa",
 			DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 		}
-		err1 := db.Dbcon.Create(&labelPyment1).Error
+		err1 := db.DbCon.Create(&labelPyment1).Error
 		if err1 != nil {
 			logs.Info("Failed Save to database", err1)
 			// return err1
@@ -186,19 +186,21 @@ func RedeemPLN(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Mem
 		ProductType: "Pulsa",
 		DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 	}
-	errDB := db.Dbcon.Create(&labelPyment1).Error
+	errDB := db.DbCon.Create(&labelPyment1).Error
 	if errDB != nil {
 		logs.Info("Failed Save to database", errDB)
 	}
 
 	res = models.UseRedeemResponse{
-		Rc:       billerRes.Rc,
-		Rrn:      billerRes.Rrn,
-		Amount:   int64(billerRes.Amount),
-		Msg:      billerRes.Msg,
-		Uimsg:    billerRes.Uimsg,
-		Data:     billerRes.Data,
-		Datetime: utils.GetTimeFormatYYMMDDHHMMSS(),
+		Rc:          billerRes.Rc,
+		Rrn:         billerRes.Rrn,
+		CustID:      billerRes.Custid,
+		Amount:      int64(billerRes.Amount),
+		ProductCode: billerRes.Productcode,
+		Msg:         billerRes.Msg,
+		Uimsg:       billerRes.Uimsg,
+		Data:        billerRes.Data,
+		Datetime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 	}
 
 	return res

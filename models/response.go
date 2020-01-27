@@ -2,8 +2,8 @@ package models
 
 // Response ..
 type Response struct {
-	Data interface{} `json:"data,omitempty"`
 	Meta MetaData    `json:"meta"`
+	Data interface{} `json:"data,omitempty"`
 }
 
 // MetaData ..

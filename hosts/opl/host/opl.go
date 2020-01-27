@@ -100,32 +100,8 @@ func RulePoint(eventName, phone string) (models.RulePointResponse, error) {
 }
 
 // Voucher Detail
-func VoucherDetail(campaign string) (*models.VoucherDetailResp, error) {
+func VoucherDetail(campaign string) (models.VoucherDetailResp, error) {
 	var resp models.VoucherDetailResp
-
-	urlSvr := host + endpointVoucherDetail + campaign
-
-	data, err := HTTPxFormGETAdmin(urlSvr, HealthCheckKey)
-	if err != nil {
-		logs.Error("Check error Voucher Detail ", err.Error())
-		//fmt.Printf("Check error %v", err.Error())
-		return &resp, err
-	}
-
-	err = json.Unmarshal(data, &resp)
-	if err != nil {
-		logs.Error("Failed to unmarshaling response from open-loyalty ", err.Error())
-
-		return &resp, err
-	}
-
-	return &resp, nil
-
-}
-
-// Voucher Detail
-func VoucherDetail2(campaign string) ([]models.VoucherDetailResp, error) {
-	var resp []models.VoucherDetailResp
 
 	urlSvr := host + endpointVoucherDetail + campaign
 

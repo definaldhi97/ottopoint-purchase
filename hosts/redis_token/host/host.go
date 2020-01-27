@@ -54,6 +54,28 @@ func CheckToken(header models.RequestHeader) (redismodels.TokenResp, error) {
 	return resp, nil
 }
 
+// get token from redis
+func GetToken(Key string) (*redismodels.TokenResp, error) {
+	var resp redismodels.TokenResp
+
+	url := host + endpointToken
+	data, err := HTTPPostWithHeader_GetRedis(url, Key)
+
+	if err != nil {
+		logs.Error("generate mpan ", err.Error())
+		return &resp, err
+	}
+
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+		logs.Error("Failed to unmarshaling response  from Redis service Ottopoint ", err.Error())
+		return &resp, err
+	}
+
+	return &resp, err
+
+}
+
 // GetServiceHealthCheck ..
 func GetServiceHealthCheck() hcmodels.ServiceHealthCheck {
 	redisClient := redis.GetRedisConnection()
