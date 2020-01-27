@@ -28,9 +28,11 @@ func InquiryBiller(reqdata interface{}, req models.UseRedeemRequest, dataToken r
 	// span, _ := opentracing.StartSpanFromContext(t.General.Context, "[ottoag-Services]")
 	// defer span.Finish()
 
+	logs.Info("[INQUIRY-SERVICES][REQUEST :]", reqdata)
 	headOttoAg := ottoag.PackMessageHeader(reqdata)
 	billerDataHost, err := ottoag.Send(reqdata, headOttoAg, "INQUIRY")
 	if err = json.Unmarshal(billerDataHost, &response); err != nil {
+		logs.Info("[INQUIRY-SERVICES-01]")
 		logs.Error("Failed to unmarshaling json response from ottoag", err)
 		response = ottoagmodels.OttoAGInquiryResponse{
 			Rc:  "01",
@@ -41,6 +43,7 @@ func InquiryBiller(reqdata interface{}, req models.UseRedeemRequest, dataToken r
 	}
 
 	if err != nil {
+		logs.Info("[INQUIRY-SERVICES-02]")
 		logs.Error("Failed to connect ottoag host", err)
 		response = ottoagmodels.OttoAGInquiryResponse{
 			Rc:  "01",
@@ -64,7 +67,7 @@ func InquiryBiller(reqdata interface{}, req models.UseRedeemRequest, dataToken r
 			ProductType: "Pulsa",
 			DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 		}
-		err1 := db.Dbcon.Create(&saveInq).Error
+		err1 := db.DbCon.Create(&saveInq).Error
 		if err1 != nil {
 			logs.Info("Failed Save to database", err1)
 			// return err1

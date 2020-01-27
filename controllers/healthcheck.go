@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 	"ottopoint-purchase/constants"
-	"ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
 	ottoag "ottopoint-purchase/hosts/ottoag/host"
 	redisToken "ottopoint-purchase/hosts/redis_token/host"
@@ -57,7 +56,7 @@ func getHealthCheckStatus() hcmodels.HealthCheckResponse {
 
 	// database
 	databaseHc := make([]hcmodels.DatabaseHealthCheck, 0)
-	databaseHc = append(databaseHc, db.GetDatabaseHealthCheck())
+	// databaseHc = append(databaseHc, db.GetDatabaseHealthCheck())
 	// TODO more database health check
 
 	// service

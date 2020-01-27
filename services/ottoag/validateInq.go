@@ -8,6 +8,7 @@ import (
 
 // Validasi Data Inquiry
 func ValidateDataInq(req models.OttoAGInquiryRequest) bool {
+	logs.Info("[ValidateDataInq]")
 	if req.IssuerID == "" {
 		logs.Error("IssuerID is empty")
 		return false

@@ -79,7 +79,7 @@ func Send(msgreq interface{}, head HeaderHTTP, typetrans string) ([]byte, error)
 		urlSvr = host + endpointInquiry
 		break
 	case "PAYMENT":
-		fmt.Println("Inquiry")
+		fmt.Println("Payment")
 		urlSvr = host + endpointPayment
 		break
 	}

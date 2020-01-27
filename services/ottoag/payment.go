@@ -70,7 +70,7 @@ func PaymentBiller(reqdata interface{}, req models.UseRedeemRequest, dataToken r
 			ProductType: "Pulsa",
 			DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 		}
-		err1 := db.Dbcon.Create(&labelPyment1).Error
+		err1 := db.DbCon.Create(&labelPyment1).Error
 		if err1 != nil {
 			logs.Info("Failed Save to database", err1)
 			// return err1

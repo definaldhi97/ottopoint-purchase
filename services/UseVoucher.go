@@ -171,9 +171,20 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, dataToken redis
 		return res
 	}
 
-	res = models.Response{
-		Data: resRedeem,
-		Meta: utils.ResponseMetaOK(),
+	if resRedeem.Msg == "SUCCESS" {
+		res = models.Response{
+			Data: models.ResponseUseVoucher{
+				Voucher:     nama,
+				CustID:      resRedeem.CustID,
+				CustID2:     resRedeem.CustID2,
+				ProductCode: resRedeem.ProductCode,
+				Amount:      resRedeem.Amount,
+				Token:       resRedeem.Data.Tokenno,
+			},
+			Meta: utils.ResponseMetaOK(),
+		}
+		return res
 	}
+
 	return res
 }

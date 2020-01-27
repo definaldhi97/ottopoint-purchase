@@ -3,7 +3,6 @@ package services
 import (
 	"errors"
 	"ottopoint-purchase/hosts/opl/host"
-	hostopl "ottopoint-purchase/hosts/opl/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
 
@@ -38,13 +37,23 @@ func (t VoucherRedeemServices) VoucherRedeem(req models.RedeemReq, AccountNumber
 		req.Jumlah = 1
 	}
 
-	// dataVoucher, errVoucher := host.VoucherDetail2(req.CampaignID)
-	// if errVoucher != nil {
-	// 	res = utils.GetMessageResponse(res, 500, false, errors.New("Internal Server Error"))
-	// 	return res
-	// }
+	// get data rewardValue(harga voucher)
+	dataCoupon, errCoupon := host.VoucherDetail(req.CampaignID)
+	if errCoupon != nil || dataCoupon.Name == "" {
 
-	// var voucher string
+		logs.Info("Internal Server Error : ", errCoupon)
+		logs.Info("[VoucherRedeem-Services]")
+		logs.Info("[Get VoucherDetail]")
+
+		sugarLogger.Info("Internal Server Error : ", errCoupon)
+		sugarLogger.Info("[VoucherRedeem-Services]")
+		sugarLogger.Info("[Get VoucherDetail]")
+
+		res = utils.GetMessageResponse(res, 422, false, errors.New("Voucher tidak ditemukan"))
+		return res
+	}
+
+	var voucher string
 	coupon := []models.CouponsRedeem{}
 	for i := req.Jumlah; i >= 1; i-- {
 		data, err := host.RedeemVoucher(req.CampaignID, AccountNumber)
@@ -65,32 +74,20 @@ func (t VoucherRedeemServices) VoucherRedeem(req models.RedeemReq, AccountNumber
 			a := models.CouponsRedeem{
 				Code: val.Code,
 			}
+
+			if dataCoupon.CampaignID == req.CampaignID {
+				voucher = dataCoupon.Name
+			}
+
+			// for _, value := range dataCoupon {
+			// 	if value.CampaignID == req.CampaignID {
+			// 		voucher = value.Name
+			// 	}
+			// }
+			a.Voucher = voucher
 			coupon = append(coupon, a)
 		}
 	}
-
-	// for i := total; i >= 1; i-- {
-	// 	data, err := host.RedeemVoucher(req.CampaignID, AccountNumber)
-	// 	if err != nil {
-	// 		res = utils.GetMessageResponse(res, 500, false, errors.New("Internal Server Error"))
-	// 		return res
-	// 	}
-
-	// 	for _, val := range data.Coupons {
-	// 		a := models.CouponsRedeem{
-	// 			Code:    val.Code,
-	// 			Voucher: voucher,
-	// 		}
-	// 		for _, value := range dataVoucher {
-	// 			if value.Coupons[0].Coupon == val.Code {
-	// 				voucher = value.Name
-	// 			}
-	// 		}
-
-	// 		a.Voucher = voucher
-	// 		coupon = append(coupon, a)
-	// 	}
-	// }
 
 	logs.Info("Voucher :", coupon)
 	// check if no data founded
@@ -104,24 +101,6 @@ func (t VoucherRedeemServices) VoucherRedeem(req models.RedeemReq, AccountNumber
 		res = utils.GetMessageResponse(res, 422, false, errors.New("Anda mencapai batas maksimal pembelian voucher"))
 		return res
 	}
-
-	// get data rewardValue(harga voucher)
-	dataCoupon, errCoupon := hostopl.VoucherDetail(req.CampaignID)
-	if errCoupon != nil || dataCoupon.Name == "" {
-
-		logs.Info("Internal Server Error : ", errCoupon)
-		logs.Info("[VoucherRedeem-Services]")
-		logs.Info("[Get VoucherDetail]")
-
-		sugarLogger.Info("Internal Server Error : ", errCoupon)
-		sugarLogger.Info("[VoucherRedeem-Services]")
-		sugarLogger.Info("[Get VoucherDetail]")
-
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Voucher tidak ditemukan"))
-		return res
-	}
-
-	// go redis.SaveRedis(fmt.Sprintf("Harga-Voucher-%s-%s :", req.CampaignID, AccountNumber), dataCoupon.CostInPoints)
 
 	res = models.Response{
 		Meta: resMeta,

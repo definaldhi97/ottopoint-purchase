@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"ottoaggo/redis"
+	"ottopoint-purchase/redis"
 	"ottopoint-purchase/utils"
 	"strconv"
 	"strings"
 	"time"
+
+	redishost "ottopoint-purchase/hosts/redis_token/host"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/parnurzeal/gorequest"
@@ -41,8 +43,8 @@ func init() {
 // Post (Tanpa Request), Token Customer
 func HTTPxFormPostCustomer1(url, phone, key string) ([]byte, error) {
 	logs.Info("PhoneNumber :", phone)
-	token, _ := redis.GetRedisKey(fmt.Sprintf("Ottopoint-Token-Customer-%s :", phone))
-	data := strings.Replace(token, `"`, "", 2)
+	token, _ := redishost.GetToken(fmt.Sprintf("Ottopoint-Token-Customer-%s :", phone))
+	data := strings.Replace(token.Data, `"`, "", 2)
 	dataToken := "Bearer" + " " + data
 	logs.Info("Token :", dataToken)
 	request := gorequest.New()
@@ -76,8 +78,8 @@ func HTTPxFormPostCustomer1(url, phone, key string) ([]byte, error) {
 
 // GET, Token Admin
 func HTTPxFormGETAdmin(url, key string) ([]byte, error) {
-	token, _ := redis.GetRedisKey(utils.RedisKeyAuth)
-	data := strings.Replace(token, `"`, "", 2)
+	token, _ := redishost.GetToken(utils.RedisKeyAuth)
+	data := strings.Replace(token.Data, `"`, "", 2)
 	dataToken := "Bearer" + " " + data
 	request := gorequest.New()
 	request.SetDebug(debugClientHTTP)
@@ -111,8 +113,8 @@ func HTTPxFormGETAdmin(url, key string) ([]byte, error) {
 // GET, Token Customer
 func HTTPxFormGETCustomer(url, phone string, key string) ([]byte, error) {
 
-	token, _ := redis.GetRedisKey(fmt.Sprintf("Ottopoint-Token-Customer-%s :", phone))
-	data := strings.Replace(token, `"`, "", 2)
+	token, _ := redishost.GetToken(fmt.Sprintf("Ottopoint-Token-Customer-%s :", phone))
+	data := strings.Replace(token.Data, `"`, "", 2)
 	dataToken := "Bearer" + " " + data
 	request := gorequest.New()
 	request.SetDebug(debugClientHTTP)
@@ -146,8 +148,8 @@ func HTTPxFormGETCustomer(url, phone string, key string) ([]byte, error) {
 
 // Post (Request), Token Admin
 func HTTPxFormPostAdmin2(url string, jsondata interface{}, key string) ([]byte, error) {
-	token, _ := redis.GetRedisKey(utils.RedisKeyAuth)
-	data := strings.Replace(token, `"`, "", 2)
+	token, _ := redishost.GetToken(utils.RedisKeyAuth)
+	data := strings.Replace(token.Data, `"`, "", 2)
 	dataToken := "Bearer" + " " + data
 	// logs.Info("Token :", dataToken)
 	request := gorequest.New()

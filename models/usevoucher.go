@@ -1,5 +1,9 @@
 package models
 
+import (
+	ottoagmodels "ottopoint-purchase/models/ottoag"
+)
+
 type UseVoucherReq struct {
 	Category    string `json:"category"`
 	CampaignID  string `json:"campaignId"`
@@ -27,15 +31,25 @@ type UseRedeemRequest struct {
 }
 
 type UseRedeemResponse struct {
-	Rc          string      `json:"rc"`
-	Rrn         string      `json:"rrn"`
-	CustID      string      `json:"cust_id"`
-	ProductCode string      `json:"product_code"`
-	Amount      int64       `json:"amount"`
-	Msg         string      `json:"msg"`
-	Uimsg       string      `json:"uimsg"`
-	Datetime    string      `json:"datetime"`
-	Data        interface{} `json:"data"`
+	Rc          string                    `json:"rc"`
+	Rrn         string                    `json:"rrn"`
+	CustID      string                    `json:"cust_id"`
+	CustID2     string                    `json:"cust_id2"`
+	ProductCode string                    `json:"product_code"`
+	Amount      int64                     `json:"amount"`
+	Msg         string                    `json:"msg"`
+	Uimsg       string                    `json:"uimsg"`
+	Datetime    string                    `json:"datetime"`
+	Data        ottoagmodels.DataGabungan `json:"data"`
+}
+
+type ResponseUseVoucher struct {
+	Voucher     string `json:"voucher"`
+	CustID      string `json:"cust_id"`
+	CustID2     string `json:"cust_id2"`
+	ProductCode string `json:"product_code"`
+	Amount      int64  `json:"amount"`
+	Token       string `json:"token"`
 }
 
 type CampaignsDetail struct {

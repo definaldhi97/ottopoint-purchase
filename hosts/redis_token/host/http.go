@@ -67,3 +67,28 @@ func HTTPxFormWithHeader(url, token, key string) ([]byte, error) {
 	}
 	return []byte(body), nil
 }
+
+// HTTPPostWithHeader func
+func HTTPPostWithHeader_GetRedis(url string, Key string) ([]byte, error) {
+	request := gorequest.New()
+	request.SetDebug(debugClientHTTP)
+	timeout, _ := time.ParseDuration(timeout)
+	//_ := errors.New("Connection Problem")
+	// if url[:5] == "https" {
+	// 	request.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	// }
+	reqagent := request.Post(url)
+	reqagent.Header.Set("Content-Type", "application/json")
+	reqagent.Header.Set("Action", "GET")
+	// reqagent.Header.Set("Expire", Expire)
+	reqagent.Header.Set("Key", Key)
+	_, body, errs := reqagent.
+		// Send(jsondata).
+		Timeout(timeout).
+		Retry(retrybad, time.Second, http.StatusInternalServerError).
+		End()
+	if errs != nil {
+		return []byte(body), errs[0]
+	}
+	return []byte(body), nil
+}
