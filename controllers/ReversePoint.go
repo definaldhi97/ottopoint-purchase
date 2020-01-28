@@ -55,10 +55,8 @@ func ReversePoint(ctx *gin.Context) {
 		Signature:     ctx.Request.Header.Get("Signature"),
 	}
 
-	// jsonSignature, _ := json.Marshal(req)
-
 	ValidateSignature, errSignature := signature.Signature(req, header)
-	if errSignature != nil || ValidateSignature.ResponseCode == "" {
+	if errSignature != nil || ValidateSignature.ResponseCode != "00" {
 		sugarLogger.Info("[ValidateSignature]-[controllers-DeductPoint]")
 		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
 
@@ -103,8 +101,8 @@ func ReversePoint(ctx *gin.Context) {
 		logs.Info("[CheckDeduction]-[controllers-ReversePoint]")
 		logs.Info(fmt.Sprintf("Error when get data deduction"))
 
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Internal Server Error !"))
-		ctx.JSON(http.StatusBadRequest, res)
+		res = utils.GetMessageResponse(res, 400, false, err)
+		ctx.JSON(http.StatusInternalServerError, res)
 		return
 	}
 	reqDeduct.AccountNumber = dataDeduct.CustomerID
@@ -120,7 +118,7 @@ func ReversePoint(ctx *gin.Context) {
 
 		logs.Info("[UpdateStatusDeduction]-[controllers-ReversePoint]")
 		logs.Info(fmt.Sprintf("Error when update status deduction"))
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Internal Server Error !"))
+		res = utils.GetMessageResponse(res, 400, false, err)
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
