@@ -45,7 +45,7 @@ func RedeemPulsa(req models.UseRedeemRequest, dataToken redismodels.TokenResp, M
 	// prefix := utils.Operator(dataPrefix.OperatorCode)
 
 	prefixErr := ValidatePrefix(dataPrefix.OperatorCode, req.CustID, req.ProductCode)
-	if prefixErr != nil {
+	if prefixErr == false {
 		res.Msg = "Prefix Failed"
 		return res
 	}
@@ -263,7 +263,7 @@ func RedeemPulsa(req models.UseRedeemRequest, dataToken redismodels.TokenResp, M
 	return res
 }
 
-func ValidatePrefix(OperatorCode int, custID, productCode string) error {
+func ValidatePrefix(OperatorCode int, custID, productCode string) bool {
 
 	logs.Info("===== Req.Product =====", productCode)
 	// no, _ := strconv.Atoi(custID)
@@ -279,6 +279,7 @@ func ValidatePrefix(OperatorCode int, custID, productCode string) error {
 		logs.Info("[FAILED]-[Prefix-ottopoint]-[services-RedeemPulsa]")
 		logs.Info(fmt.Sprintf("invalid Prefix %s", custID))
 
+		return false
 	}
 
 	// Jika nomor kurang dari 11
@@ -286,6 +287,8 @@ func ValidatePrefix(OperatorCode int, custID, productCode string) error {
 
 		logs.Info("[FAILED]-[Prefix-ottopoint]-[services-RedeemPulsa]")
 		logs.Info(fmt.Sprintf("invalid Prefix %s", custID))
+
+		return false
 
 	}
 
@@ -295,7 +298,9 @@ func ValidatePrefix(OperatorCode int, custID, productCode string) error {
 		logs.Info("[FAILED]-[Prefix-ottopoint]-[services-RedeemPulsa]")
 		logs.Info(fmt.Sprintf("invalid Prefix %s", prefix))
 
+		return false
+
 	}
 
-	return nil
+	return true
 }

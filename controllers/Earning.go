@@ -52,13 +52,25 @@ func Earning(ctx *gin.Context) {
 		Signature:     ctx.Request.Header.Get("Signature"),
 	}
 
+	if header.InstitutionID == "" {
+		sugarLogger.Info("[InstitutionId]-[EarningController]")
+		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
+
+		logs.Info("[InstitutionId]-[EarningController]")
+		logs.Info(fmt.Sprintf("Error when validation request header"))
+
+		res = utils.GetMessageResponse(res, 400, false, errors.New("InstitutionId tidaj tersedia"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
 	dataToken, errToken := token.CheckToken(header)
 	if errToken != nil || dataToken.ResponseCode != "00" {
 		sugarLogger.Info("[ValidateToken]-[EarningController]")
-		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
+		sugarLogger.Info(fmt.Sprintf("Error when validation request token"))
 
 		logs.Info("[ValidateToken]-[EarningController]")
-		logs.Info(fmt.Sprintf("Error when validation request header"))
+		logs.Info(fmt.Sprintf("Error when validation request token"))
 
 		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
 		ctx.JSON(http.StatusBadRequest, res)
