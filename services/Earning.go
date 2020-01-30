@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"ottopoint-purchase/constants"
 	opl "ottopoint-purchase/hosts/opl/host"
 	redismodels "ottopoint-purchase/hosts/redis_token/models"
 	"ottopoint-purchase/models"
@@ -27,9 +26,21 @@ func (t EarningServices) EarningPoint(req models.RulePointReq, dataToken redismo
 	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[RedeemVoucher]")
 	defer span.Finish()
 
-	switch header.InstitutionID {
-	case constants.OTTOPAY:
-		res = OttopayEarning(req, dataToken)
+	// switch header.InstitutionID {
+	// case constants.OTTOPAY:
+	// 	res = OttopayEarning(req, dataToken)
+	// }
+
+	dataPoint, errPoint := opl.RulePoint(req.EventName, dataToken.Data)
+	if errPoint != nil || dataPoint.Point == 0 {
+		sugarLogger.Info("[Error-dataPoint :", errPoint)
+		logs.Info("[Error-dataPoint :", errPoint)
+		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Dapat Point"))
+	}
+
+	res = models.Response{
+		Data: dataPoint.Point,
+		Meta: utils.ResponseMetaOK(),
 	}
 
 	return res
