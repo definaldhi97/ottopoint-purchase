@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"net/http"
-	"ottoaggo/redis"
+	"ottopoint-purchase/redis"
 	"strconv"
 	"strings"
 	"time"
