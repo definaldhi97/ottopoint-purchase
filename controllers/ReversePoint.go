@@ -107,7 +107,7 @@ func ReversePoint(ctx *gin.Context) {
 	}
 	reqDeduct.AccountNumber = dataDeduct.CustomerID
 	reqDeduct.Point = dataDeduct.Point
-	reqDeduct.Text = dataDeduct.ProductName
+	reqDeduct.Text = "Reversal " + dataDeduct.ProductName
 	reqDeduct.Type = "adding"
 
 	res = transferPoint.NewTransferPointServices(reqDeduct, dataToken, header)
