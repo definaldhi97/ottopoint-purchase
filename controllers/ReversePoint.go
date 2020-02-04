@@ -105,7 +105,7 @@ func ReversePoint(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, res)
 		return
 	}
-	reqDeduct.AccountNumber = dataDeduct.CustomerID
+	// reqDeduct.AccountNumber = dataDeduct.CustomerID
 	reqDeduct.Point = dataDeduct.Point
 	reqDeduct.Text = "Reversal " + dataDeduct.ProductName
 	reqDeduct.Type = "adding"

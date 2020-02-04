@@ -16,7 +16,7 @@ type CampaignsDetail struct {
 	Coupon         CouponDetail    `json:"coupon"`
 	Status         string          `json:"status"`
 	ActiveTo       string          `json:"activeTo"`
-	DeliveryStatus string          `json:"deliveryStatus"`
+	DeliveryStatus interface{}     `json:"deliveryStatus"`
 }
 
 type CampaignDetails struct {

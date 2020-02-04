@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"ottopoint-purchase/constants"
 	token "ottopoint-purchase/hosts/redis_token/host"
 	"ottopoint-purchase/services"
 	"ottopoint-purchase/utils"
@@ -91,7 +92,12 @@ func Earning(ctx *gin.Context) {
 		},
 	}
 
-	res = earningPoint.EarningPoint(req, dataToken, header)
+	switch header.InstitutionID {
+	case constants.INDOMARCO, constants.BOGASARI:
+		res = earningPoint.EarningPointSupplyChen(req, dataToken, header)
+	case constants.OTTOPAY, constants.PEDE:
+		res = earningPoint.EarningPoint(req, dataToken, header)
+	}
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", res))

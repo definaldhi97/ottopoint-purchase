@@ -44,7 +44,7 @@ func RedeemPLN(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Mem
 	}
 
 	inqRespOttoag := ottoagmodels.OttoAGInquiryResponse{}
-	inqRespOttoag = biller.InquiryBiller(inqReq, req, dataToken, MemberID, namaVoucher, expDate)
+	inqRespOttoag = biller.InquiryBiller(inqReq.Data, req, dataToken, MemberID, namaVoucher, expDate)
 
 	if inqRespOttoag.Rc != "00" {
 		res = models.UseRedeemResponse{
@@ -194,11 +194,12 @@ func RedeemPLN(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Mem
 	res = models.UseRedeemResponse{
 		Rc:          billerRes.Rc,
 		Rrn:         billerRes.Rrn,
+		Category:    "PLN",
 		CustID:      billerRes.Custid,
 		Amount:      int64(billerRes.Amount),
 		ProductCode: billerRes.Productcode,
-		Msg:         billerRes.Msg,
-		Uimsg:       billerRes.Uimsg,
+		Msg:         "SUCCESS",
+		Uimsg:       "SUCCESS",
 		Data:        billerRes.Data,
 		Datetime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 	}
