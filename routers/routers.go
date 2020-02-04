@@ -37,12 +37,12 @@ var (
 func init() {
 	//TODO pls change UPERCASE & _ Not using dot
 
-	healthcheck = utils.GetEnv("healthcheck", "/v2/ottopoint/healthcheck")
-	redeem = utils.GetEnv("redeem", "/v2/ottopoint/redeem")
-	use_voucher = utils.GetEnv("use_voucher", "/v2/ottopoint/use_voucher")
-	deductPoint = utils.GetEnv("deduct_point", "/v2/ottopoint/deduct")
-	reversePoint = utils.GetEnv("reverse_point", "/v2/ottopoint/reversal")
-	earningPoint = utils.GetEnv("earning_point", "/v2/ottopoint/earningpoint")
+	healthcheck = utils.GetEnv("healthcheck", "/v2/purchase/healthcheck")
+	redeem = utils.GetEnv("redeem", "/v2/purchase/redeem")
+	use_voucher = utils.GetEnv("use_voucher", "/v2/purchase/use_voucher")
+	deductPoint = utils.GetEnv("deduct_point", "/v2/purchase/deduct")
+	reversePoint = utils.GetEnv("reverse_point", "/v2/purchase/reversal")
+	earningPoint = utils.GetEnv("earning_point", "/v2/purchase/earningpoint")
 
 	debugmode = utils.GetEnv("apps.debug", "debug")
 
