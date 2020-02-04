@@ -29,14 +29,14 @@ func (t SpendPointServices) NewSpendPointServices(req models.DeductPointReq, dat
 
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[SpendPoint-Services]",
-		zap.String("AccountNumber : ", req.AccountNumber), zap.Int("Point : ", req.Point),
+		zap.String("AccountNumber : ", dataToken.Data), zap.Int("Point : ", req.Point),
 		zap.String("Text : ", req.Text), zap.String("Type : ", req.Type))
 
 	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[SpendPoint-Service]")
 	defer span.Finish()
 
 	// Get CustID OPL from DB
-	dataDB, errDB := db.CheckUser(req.AccountNumber)
+	dataDB, errDB := db.CheckUser(dataToken.Data)
 	if errDB != nil || dataDB.CustID == "" {
 		logs.Info("Internal Server Error : ", errDB)
 		logs.Info("[SpendPoint-Services]")

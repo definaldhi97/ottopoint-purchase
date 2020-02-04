@@ -24,6 +24,7 @@ var (
 	paymentQR    string
 	reversePoint string
 	healthcheck  string
+	earningPoint string
 
 	nameservice     string
 	agentracinghost string
@@ -36,11 +37,12 @@ var (
 func init() {
 	//TODO pls change UPERCASE & _ Not using dot
 
-	healthcheck = utils.GetEnv("healthcheck", "/v2/ottopoint/healthcheck")
-	redeem = utils.GetEnv("redeem", "/v2/ottopoint/redeem")
-	use_voucher = utils.GetEnv("use_voucher", "/v2/ottopoint/use_voucher")
-	deductPoint = utils.GetEnv("deduct_point", "/v2/ottopoint/deduct")
-	reversePoint = utils.GetEnv("reverse_point", "/v2/ottopoint/reversal")
+	healthcheck = utils.GetEnv("healthcheck", "/v2/purchase/healthcheck")
+	redeem = utils.GetEnv("redeem", "/v2/purchase/redeem")
+	use_voucher = utils.GetEnv("use_voucher", "/v2/purchase/use_voucher")
+	deductPoint = utils.GetEnv("deduct_point", "/v2/purchase/deduct")
+	reversePoint = utils.GetEnv("reverse_point", "/v2/purchase/reversal")
+	earningPoint = utils.GetEnv("earning_point", "/v2/purchase/earningpoint")
 
 	debugmode = utils.GetEnv("apps.debug", "debug")
 
@@ -106,6 +108,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(use_voucher, controllers.UseVouhcer)
 	router.POST(deductPoint, controllers.DeductPoint)
 	router.POST(reversePoint, controllers.ReversePoint)
+	router.POST(earningPoint, controllers.Earning)
 
 	ottoRouter.Router = router
 

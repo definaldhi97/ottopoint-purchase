@@ -43,7 +43,7 @@ func RedeemGame(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Me
 	}
 
 	inqRespOttoag := ottoagmodels.OttoAGInquiryResponse{}
-	inqRespOttoag = biller.InquiryBiller(inqReq, req, dataToken, MemberID, namaVoucher, expDate)
+	inqRespOttoag = biller.InquiryBiller(inqReq.Data, req, dataToken, MemberID, namaVoucher, expDate)
 
 	if inqRespOttoag.Rc != "00" {
 		res = models.UseRedeemResponse{
@@ -180,9 +180,34 @@ func RedeemGame(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Me
 		return res
 	}
 
-	res = models.UseRedeemResponse{
-		Rc:  "00",
-		Msg: "Payment Success",
+	if billerRes.Rc != "00" && billerRes.Rc != "09" {
+		// save to DB transaski_redeem
+		labelPyment1 := dbmodels.TransaksiRedeem{
+			AccountNumber: dataToken.Data,
+			Voucher:       namaVoucher,
+			CustID:        req.CustID,
+			// MerchantID:    dataToken.Data.MerchantID,
+			RRN:         inqRespOttoag.Rrn,
+			ProductCode: req.ProductCode,
+			Amount:      inqRespOttoag.Amount,
+			TransType:   "Payment",
+			Status:      "01 (Gagal)",
+			ExpDate:     expDate,
+			Institution: "Ottopay",
+			ProductType: "Pulsa",
+			DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
+		}
+		err1 := db.DbCon.Create(&labelPyment1).Error
+		if err1 != nil {
+			logs.Info("Failed Save to database", err1)
+			// return err1
+		}
+
+		res = models.UseRedeemResponse{
+			Rc:  "01",
+			Msg: "Payment Failed",
+		}
+		return res
 	}
 
 	// save to DB transaski_redeem
@@ -201,30 +226,23 @@ func RedeemGame(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Me
 		ProductType: "Pulsa",
 		DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 	}
+
 	err1 := db.DbCon.Create(&labelPyment1).Error
 	if err1 != nil {
 		logs.Info("Failed Save to database", err1)
 		// return err1
 	}
 
-	if billerRes.Rc != "00" && billerRes.Rc != "09" {
-		res = models.UseRedeemResponse{
-			Rc:  "01",
-			Msg: "Payment Failed",
-		}
-
-		return res
-	}
-
 	res = models.UseRedeemResponse{
 		Rc:          billerRes.Rc,
 		Rrn:         billerRes.Rrn,
+		Category:    "GAME",
 		CustID:      billerRes.Custid,
 		CustID2:     billerRes.Period,
 		ProductCode: billerRes.Productcode,
 		Amount:      int64(billerRes.Amount),
-		Msg:         billerRes.Msg,
-		Uimsg:       billerRes.Uimsg,
+		Msg:         "SUCCESS",
+		Uimsg:       "SUCCESS",
 		Data:        billerRes.Data,
 		Datetime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 	}

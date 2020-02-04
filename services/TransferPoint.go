@@ -29,14 +29,14 @@ func (t TransferPointServices) NewTransferPointServices(req models.DeductPointRe
 
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[TransferPoint-Services]",
-		zap.String("AccountNumber : ", req.AccountNumber), zap.Int("Point : ", req.Point),
+		zap.String("AccountNumber : ", dataToken.Data), zap.Int("Point : ", req.Point),
 		zap.String("Text : ", req.Text), zap.String("Type : ", req.Type))
 
 	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[TransferPoint-Service]")
 	defer span.Finish()
 
 	// Get CustID OPL from DB
-	dataDB, errDB := db.CheckUser(req.AccountNumber)
+	dataDB, errDB := db.CheckUser(dataToken.Data)
 	if errDB != nil || dataDB.CustID == "" {
 		logs.Info("Internal Server Error : ", errDB)
 		logs.Info("[TransferPoint-Services]")

@@ -45,7 +45,7 @@ func RedeemPulsa(req models.UseRedeemRequest, dataToken redismodels.TokenResp, M
 	// prefix := utils.Operator(dataPrefix.OperatorCode)
 
 	prefixErr := ValidatePrefix(dataPrefix.OperatorCode, req.CustID, req.ProductCode)
-	if prefixErr != nil {
+	if prefixErr == false {
 		res.Msg = "Prefix Failed"
 		return res
 	}
@@ -212,9 +212,36 @@ func RedeemPulsa(req models.UseRedeemRequest, dataToken redismodels.TokenResp, M
 		return res
 	}
 
-	res = models.UseRedeemResponse{
-		Rc:  "00",
-		Msg: "Payment Success",
+	if billerRes.Rc != "00" && billerRes.Rc != "09" {
+
+		// save to DB transaski_redeem
+		labelPyment1 := dbmodels.TransaksiRedeem{
+			AccountNumber: dataToken.Data,
+			Voucher:       namaVoucher,
+			CustID:        req.CustID,
+			// MerchantID:    dataToken.Data.MerchantID,
+			RRN:         inqRespOttoag.Rrn,
+			ProductCode: req.ProductCode,
+			Amount:      inqRespOttoag.Amount,
+			TransType:   "Payment",
+			Status:      "01 (Gagal)",
+			ExpDate:     expDate,
+			Institution: "Ottopay",
+			ProductType: "Pulsa",
+			DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
+		}
+		err1 := db.DbCon.Create(&labelPyment1).Error
+		if err1 != nil {
+			logs.Info("Failed Save to database", err1)
+			// return err1
+		}
+
+		res = models.UseRedeemResponse{
+			Rc:  "01",
+			Msg: "Payment Failed",
+		}
+
+		return res
 	}
 
 	// save to DB transaski_redeem
@@ -239,18 +266,10 @@ func RedeemPulsa(req models.UseRedeemRequest, dataToken redismodels.TokenResp, M
 		// return err1
 	}
 
-	if billerRes.Rc != "00" && billerRes.Rc != "09" {
-		res = models.UseRedeemResponse{
-			Rc:  "01",
-			Msg: "Payment Failed",
-		}
-
-		return res
-	}
-
 	res = models.UseRedeemResponse{
 		Rc:          billerRes.Rc,
 		Rrn:         billerRes.Rrn,
+		Category:    "PULSA",
 		CustID:      billerReq.CustID,
 		ProductCode: billerReq.Productcode,
 		Amount:      int64(billerRes.Amount),
@@ -263,7 +282,7 @@ func RedeemPulsa(req models.UseRedeemRequest, dataToken redismodels.TokenResp, M
 	return res
 }
 
-func ValidatePrefix(OperatorCode int, custID, productCode string) error {
+func ValidatePrefix(OperatorCode int, custID, productCode string) bool {
 
 	logs.Info("===== Req.Product =====", productCode)
 	// no, _ := strconv.Atoi(custID)
@@ -279,6 +298,7 @@ func ValidatePrefix(OperatorCode int, custID, productCode string) error {
 		logs.Info("[FAILED]-[Prefix-ottopoint]-[services-RedeemPulsa]")
 		logs.Info(fmt.Sprintf("invalid Prefix %s", custID))
 
+		return false
 	}
 
 	// Jika nomor kurang dari 11
@@ -286,6 +306,8 @@ func ValidatePrefix(OperatorCode int, custID, productCode string) error {
 
 		logs.Info("[FAILED]-[Prefix-ottopoint]-[services-RedeemPulsa]")
 		logs.Info(fmt.Sprintf("invalid Prefix %s", custID))
+
+		return false
 
 	}
 
@@ -295,7 +317,9 @@ func ValidatePrefix(OperatorCode int, custID, productCode string) error {
 		logs.Info("[FAILED]-[Prefix-ottopoint]-[services-RedeemPulsa]")
 		logs.Info(fmt.Sprintf("invalid Prefix %s", prefix))
 
+		return false
+
 	}
 
-	return nil
+	return true
 }

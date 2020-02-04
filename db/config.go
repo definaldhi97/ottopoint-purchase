@@ -19,5 +19,9 @@ func GetConfig() (dbmodels.Configs, error) {
 		return res, err
 	}
 
+	res.TransaksiPPOB = res.TransaksiPPOB / 100
+	res.TransaksiPayQR = res.TransaksiPayQR / 100
+	res.TransaksiMerchant = res.TransaksiMerchant / 100
+
 	return res, nil
 }

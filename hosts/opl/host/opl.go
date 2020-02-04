@@ -21,8 +21,10 @@ var (
 	endpointCouponVoucherCustomer  string
 	endpointHistoryVoucherCustomer string
 	endpointRulePoint              string
-	endpointAddedPoint             string
-	endpointSpendPoint             string
+	endpointListRulePoint          string
+
+	endpointAddedPoint string
+	endpointSpendPoint string
 
 	HealthCheckKey string
 )
@@ -36,6 +38,7 @@ func init() {
 	endpointHistoryVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_HISTORY_VOUCHER", "/api/customer/campaign/bought")
 	endpointCouponVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_COUPONVOUCHER", "/api/admin/campaign/coupons/mark_as_used")
 	endpointRulePoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_RULEPOINT", "/api/customer/earnRule/")
+	endpointListRulePoint = ODU.GetEnv("OTTOPOINT_PURCHASE_LIST_RULEPOINT", "/api/customer/earningRule")
 	endpointAddedPoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_ADD_POINT", "/api/points/transfer/add")
 	endpointSpendPoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_SPEND_POINT", "/api/points/transfer/spend")
 
@@ -99,6 +102,32 @@ func RulePoint(eventName, phone string) (models.RulePointResponse, error) {
 
 }
 
+// ListRulePoint
+func ListRulePoint(phone string) (models.LisrRulePointResponse, error) {
+	var resp models.LisrRulePointResponse
+
+	todo := endpointListRulePoint
+
+	urlSvr := host + todo
+
+	data, err := HTTPxFormGETCustomer(urlSvr, phone, HealthCheckKey)
+	if err != nil {
+		logs.Error("Check error Rule Point", err.Error())
+		//fmt.Printf("Check error %v", err.Error())
+		return resp, err
+	}
+
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+		logs.Error("Failed to unmarshaling response from open-loyalty ", err.Error())
+
+		return resp, err
+	}
+
+	return resp, nil
+
+}
+
 // Voucher Detail
 func VoucherDetail(campaign string) (models.VoucherDetailResp, error) {
 	var resp models.VoucherDetailResp
@@ -134,6 +163,8 @@ func HistoryVoucherCustomer(phone, page string) (*models.HistoryVoucherCustomerR
 		logs.Error("Check error ", err.Error())
 		return &resp, err
 	}
+
+	logs.Info("Response OPL")
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {

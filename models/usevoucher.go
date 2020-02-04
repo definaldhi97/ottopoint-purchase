@@ -33,6 +33,7 @@ type UseRedeemRequest struct {
 type UseRedeemResponse struct {
 	Rc          string                    `json:"rc"`
 	Rrn         string                    `json:"rrn"`
+	Category    string                    `json:"category"`
 	CustID      string                    `json:"cust_id"`
 	CustID2     string                    `json:"cust_id2"`
 	ProductCode string                    `json:"product_code"`
@@ -44,6 +45,14 @@ type UseRedeemResponse struct {
 }
 
 type ResponseUseVoucher struct {
+	Voucher     string `json:"voucher"`
+	CustID      string `json:"cust_id"`
+	CustID2     string `json:"cust_id2"`
+	ProductCode string `json:"product_code"`
+	Amount      int64  `json:"amount"`
+}
+
+type ResponseUseVoucherPLN struct {
 	Voucher     string `json:"voucher"`
 	CustID      string `json:"cust_id"`
 	CustID2     string `json:"cust_id2"`

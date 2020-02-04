@@ -61,6 +61,7 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, dataToken redis
 					ID:   val.Coupon.ID,
 				},
 			}
+
 			resp = append(resp, a)
 		}
 	}
@@ -102,7 +103,7 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, dataToken redis
 
 	category := strings.ToLower(req.Category)
 
-	logs.Info("===== nama : %v =====", nama)
+	logs.Info("===== nama : %v =====", resp[0].Name)
 	logs.Info("===== Category : %v =====", category)
 	logs.Info("===== couponId : %v =====", couponId)
 	logs.Info("===== couponCode : %v =====", couponCode)
@@ -172,6 +173,21 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, dataToken redis
 	}
 
 	if resRedeem.Msg == "SUCCESS" {
+		if resRedeem.Category == "PLN" {
+			res = models.Response{
+				Data: models.ResponseUseVoucherPLN{
+					Voucher:     nama,
+					CustID:      resRedeem.CustID,
+					CustID2:     resRedeem.CustID2,
+					ProductCode: resRedeem.ProductCode,
+					Amount:      resRedeem.Amount,
+					Token:       resRedeem.Data.Tokenno,
+				},
+				Meta: utils.ResponseMetaOK(),
+			}
+			return res
+		}
+
 		res = models.Response{
 			Data: models.ResponseUseVoucher{
 				Voucher:     nama,
@@ -179,7 +195,6 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, dataToken redis
 				CustID2:     resRedeem.CustID2,
 				ProductCode: resRedeem.ProductCode,
 				Amount:      resRedeem.Amount,
-				Token:       resRedeem.Data.Tokenno,
 			},
 			Meta: utils.ResponseMetaOK(),
 		}
