@@ -24,8 +24,8 @@ import (
 	"ottopoint-purchase/models"
 )
 
-func DeductPoint(ctx *gin.Context) {
-	req := models.DeductPointReq{}
+func PointController(ctx *gin.Context) {
+	req := models.PointReq{}
 	res := models.Response{}
 
 	sugarLogger := ottologer.GetLogger()
@@ -58,10 +58,10 @@ func DeductPoint(ctx *gin.Context) {
 
 	ValidateSignature, errSignature := signature.Signature(req, header)
 	if errSignature != nil || ValidateSignature.ResponseCode == "" {
-		sugarLogger.Info("[ValidateSignature]-[controllers-DeductPoint]")
+		sugarLogger.Info("[ValidateSignature]-[controllers-PointCPointController]")
 		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
 
-		logs.Info("[ValidateSignature]-[controllers-DeductPoint]")
+		logs.Info("[ValidateSignature]-[controllers-PointCPointController]")
 		logs.Info(fmt.Sprintf("Error when validation request header"))
 
 		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
@@ -71,10 +71,10 @@ func DeductPoint(ctx *gin.Context) {
 
 	dataToken, errToken := token.CheckToken(header)
 	if errToken != nil || dataToken.ResponseCode != "00" {
-		sugarLogger.Info("[ValidateToken]-[controllers-DeductPoint]")
+		sugarLogger.Info("[ValidateToken]-[controllers-PointCPointController]")
 		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
 
-		logs.Info("[ValidateToken]-[controllers-DeductPoint]")
+		logs.Info("[ValidateToken]-[controllers-PointCPointController]")
 		logs.Info(fmt.Sprintf("Error when validation request header"))
 
 		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
