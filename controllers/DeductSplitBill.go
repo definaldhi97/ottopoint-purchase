@@ -86,7 +86,7 @@ func DeductSplitBillController(ctx *gin.Context) {
 		zap.Any("BODY", req),
 		zap.Any("HEADER", ctx.Request.Header))
 
-	deductSplitBill := services.TransferPointServices{
+	deductSplitBill := services.DeductSplitBillServices{
 		General: models.GeneralModel{
 			ParentSpan: span,
 			OttoZaplog: sugarLogger,
@@ -95,7 +95,7 @@ func DeductSplitBillController(ctx *gin.Context) {
 		},
 	}
 
-	res = deductSplitBill.DeductSplitBill(req, accountNumber, header.InstitutionID)
+	res = deductSplitBill.DeductSplitBill(req, dataToken.Data, header.InstitutionID)
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", res))
