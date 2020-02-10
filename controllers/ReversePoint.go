@@ -24,7 +24,7 @@ import (
 	"ottopoint-purchase/models"
 )
 
-func ReversePoint(ctx *gin.Context) {
+func ReversePointController(ctx *gin.Context) {
 	req := models.ReversePointReq{}
 	res := models.Response{}
 	reqDeduct := models.PointReq{}
@@ -57,10 +57,10 @@ func ReversePoint(ctx *gin.Context) {
 
 	ValidateSignature, errSignature := signature.Signature(req, header)
 	if errSignature != nil || ValidateSignature.ResponseCode != "00" {
-		sugarLogger.Info("[ValidateSignature]-[controllers-DeductPoint]")
+		sugarLogger.Info("[ValidateSignature]-[ReversePointController]")
 		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
 
-		logs.Info("[ValidateSignature]-[controllers-DeductPoint]")
+		logs.Info("[ValidateSignature]-[ReversePointController]")
 		logs.Info(fmt.Sprintf("Error when validation request header"))
 
 		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
@@ -70,10 +70,10 @@ func ReversePoint(ctx *gin.Context) {
 
 	dataToken, errToken := token.CheckToken(header)
 	if errToken != nil || dataToken.ResponseCode != "00" {
-		sugarLogger.Info("[ValidateToken]-[controllers-DeductPoint]")
+		sugarLogger.Info("[ValidateToken]-[ReversePointController]")
 		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
 
-		logs.Info("[ValidateToken]-[controllers-DeductPoint]")
+		logs.Info("[ValidateToken]-[ReversePointController]")
 		logs.Info(fmt.Sprintf("Error when validation request header"))
 
 		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))

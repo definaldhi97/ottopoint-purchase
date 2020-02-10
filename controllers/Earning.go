@@ -23,12 +23,12 @@ import (
 	"ottopoint-purchase/models"
 )
 
-func Earning(ctx *gin.Context) {
+func EarningController(ctx *gin.Context) {
 	req := models.RulePointReq{}
 	res := models.Response{}
 
 	sugarLogger := ottologer.GetLogger()
-	namectrl := "[EarningPoint]"
+	namectrl := "[EarningController]"
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03

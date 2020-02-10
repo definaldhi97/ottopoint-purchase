@@ -24,12 +24,12 @@ import (
 	"ottopoint-purchase/services"
 )
 
-func VoucherRedeem(ctx *gin.Context) {
+func VoucherRedeemController(ctx *gin.Context) {
 	req := models.RedeemReq{}
 	res := models.Response{}
 
 	sugarLogger := ottologer.GetLogger()
-	namectrl := "[Voucher-Voucher]"
+	namectrl := "[VoucherRedeemController]"
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
@@ -58,10 +58,10 @@ func VoucherRedeem(ctx *gin.Context) {
 
 	ValidateSignature, errSignature := signature.Signature(req, header)
 	if errSignature != nil || ValidateSignature.ResponseCode != "00" {
-		sugarLogger.Info("[ValidateSignature]-[controllers-UseVouhcer]")
+		sugarLogger.Info("[ValidateSignature]-[VoucherRedeemController]")
 		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
 
-		logs.Info("[ValidateSignature]-[controllers-UseVouhcer]")
+		logs.Info("[ValidateSignature]-[VoucherRedeemController]")
 		logs.Info(fmt.Sprintf("Error when validation request header"))
 
 		res = utils.GetMessageResponse(res, 400, false, errors.New("Signature salah"))
