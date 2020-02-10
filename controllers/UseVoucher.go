@@ -23,12 +23,12 @@ import (
 	"net/http"
 )
 
-func UseVouhcer(ctx *gin.Context) {
+func UseVouhcerController(ctx *gin.Context) {
 	req := models.UseVoucherReq{}
 	res := models.Response{}
 
 	sugarLogger := ottologer.GetLogger()
-	namectrl := "[Voucher-Voucher]"
+	namectrl := "[UseVouhcerController]"
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
@@ -57,10 +57,10 @@ func UseVouhcer(ctx *gin.Context) {
 
 	ValidateSignature, errSignature := signature.Signature(req, header)
 	if errSignature != nil || ValidateSignature.ResponseCode == "" {
-		sugarLogger.Info("[ValidateSignature]-[controllers-UseVouhcer]")
+		sugarLogger.Info("[ValidateSignature]-[UseVouhcerController]")
 		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
 
-		logs.Info("[ValidateSignature]-[controllers-UseVouhcer]")
+		logs.Info("[ValidateSignature]-[UseVouhcerController]")
 		logs.Info(fmt.Sprintf("Error when validation request header"))
 
 		res = utils.GetMessageResponse(res, 400, false, errors.New("Signature salah"))
@@ -70,10 +70,10 @@ func UseVouhcer(ctx *gin.Context) {
 
 	dataToken, errToken := token.CheckToken(header)
 	if errToken != nil || dataToken.ResponseCode != "00" {
-		sugarLogger.Info("[ValidateToken]-[controllers-UseVouhcer]")
+		sugarLogger.Info("[ValidateToken]-[UseVouhcerController]")
 		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
 
-		logs.Info("[ValidateToken]-[controllers-UseVouhcer]")
+		logs.Info("[ValidateToken]-[UseVouhcerController]")
 		logs.Info(fmt.Sprintf("Error when validation request header"))
 
 		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))

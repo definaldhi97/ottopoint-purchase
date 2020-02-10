@@ -24,3 +24,8 @@ type ContentErrorCode struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 }
+
+type ResponseData struct {
+	ResponseCode string `json:"responseCode"`
+	ResponseDesc string `json:"responseDesc"`
+}

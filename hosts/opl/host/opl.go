@@ -3,6 +3,7 @@ package host
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"ottopoint-purchase/hosts/opl/models"
 	"ottopoint-purchase/redis"
 
@@ -22,6 +23,7 @@ var (
 	endpointHistoryVoucherCustomer string
 	endpointRulePoint              string
 	endpointListRulePoint          string
+	endpointGetBalance             string
 
 	endpointAddedPoint string
 	endpointSpendPoint string
@@ -37,10 +39,14 @@ func init() {
 	endpointVoucherDetail = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_DETAIL", "/api/campaign/")
 	endpointHistoryVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_HISTORY_VOUCHER", "/api/customer/campaign/bought")
 	endpointCouponVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_COUPONVOUCHER", "/api/admin/campaign/coupons/mark_as_used")
+
 	endpointRulePoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_RULEPOINT", "/api/customer/earnRule/")
 	endpointListRulePoint = ODU.GetEnv("OTTOPOINT_PURCHASE_LIST_RULEPOINT", "/api/customer/earningRule")
+
 	endpointAddedPoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_ADD_POINT", "/api/points/transfer/add")
 	endpointSpendPoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_SPEND_POINT", "/api/points/transfer/spend")
+
+	endpointGetBalance = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_GET_BALANCE", "/api/points/transfer/add")
 
 	HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_OPL", "OTTOPOINT-PURCHASE:OTTOPOINT")
 }
@@ -49,7 +55,7 @@ func init() {
 func RedeemVoucher(campaignID, phone string) (*models.BuyVocuherResp, error) {
 	var resp models.BuyVocuherResp
 
-	logs.Info("[RedeemVoucher]")
+	logs.Info("[Package Host OPL]-[RedeemVoucher]")
 
 	api := campaignID + "/buy"
 	urlSvr := host + endpointRedeemVoucher + api
@@ -63,7 +69,7 @@ func RedeemVoucher(campaignID, phone string) (*models.BuyVocuherResp, error) {
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		logs.Error("Failed to unmarshaling response from open-loyalty ", err.Error())
+		logs.Error("Failed to unmarshaling response RedeemVoucher from open-loyalty ", err.Error())
 
 		return &resp, err
 	}
@@ -75,12 +81,10 @@ func RedeemVoucher(campaignID, phone string) (*models.BuyVocuherResp, error) {
 func RulePoint(eventName, phone string) (models.RulePointResponse, error) {
 	var resp models.RulePointResponse
 
+	logs.Info("[Package Host OPL]-[RulePoint]")
+
 	todo := endpointRulePoint + eventName
 	logs.Info("Request EranRule :", todo)
-
-	logs.Info("==========")
-	logs.Info("Phone :", phone)
-	logs.Info("==========")
 
 	urlSvr := host + todo
 
@@ -93,7 +97,7 @@ func RulePoint(eventName, phone string) (models.RulePointResponse, error) {
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		logs.Error("Failed to unmarshaling response from open-loyalty ", err.Error())
+		logs.Error("Failed to unmarshaling response RulePoint from open-loyalty ", err.Error())
 
 		return resp, err
 	}
@@ -105,6 +109,8 @@ func RulePoint(eventName, phone string) (models.RulePointResponse, error) {
 // ListRulePoint
 func ListRulePoint(phone string) (models.LisrRulePointResponse, error) {
 	var resp models.LisrRulePointResponse
+
+	logs.Info("[Package Host OPL]-[ListRulePoint]")
 
 	todo := endpointListRulePoint
 
@@ -119,7 +125,7 @@ func ListRulePoint(phone string) (models.LisrRulePointResponse, error) {
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		logs.Error("Failed to unmarshaling response from open-loyalty ", err.Error())
+		logs.Error("Failed to unmarshaling response ListRulePoint from open-loyalty ", err.Error())
 
 		return resp, err
 	}
@@ -132,6 +138,8 @@ func ListRulePoint(phone string) (models.LisrRulePointResponse, error) {
 func VoucherDetail(campaign string) (models.VoucherDetailResp, error) {
 	var resp models.VoucherDetailResp
 
+	logs.Info("[Package Host OPL]-[VoucherDetail]")
+
 	urlSvr := host + endpointVoucherDetail + campaign
 
 	data, err := HTTPxFormGETAdmin(urlSvr, HealthCheckKey)
@@ -143,7 +151,7 @@ func VoucherDetail(campaign string) (models.VoucherDetailResp, error) {
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		logs.Error("Failed to unmarshaling response from open-loyalty ", err.Error())
+		logs.Error("Failed to unmarshaling response VoucherDetail from open-loyalty ", err.Error())
 
 		return resp, err
 	}
@@ -155,6 +163,8 @@ func VoucherDetail(campaign string) (models.VoucherDetailResp, error) {
 // History Voucher Customer
 func HistoryVoucherCustomer(phone, page string) (*models.HistoryVoucherCustomerResponse, error) {
 	var resp models.HistoryVoucherCustomerResponse
+
+	logs.Info("[Package Host OPL]-[HistoryVoucherCustomer]")
 
 	param := fmt.Sprintf("?includeDetails=1&page=%s&perPage=100&sort&direction", page)
 	urlSvr := host + endpointHistoryVoucherCustomer + param
@@ -168,7 +178,7 @@ func HistoryVoucherCustomer(phone, page string) (*models.HistoryVoucherCustomerR
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		logs.Error("Failed to unmarshaling response from open-loyalty ", err.Error())
+		logs.Error("Failed to unmarshaling response HistoryVoucherCustomer from open-loyalty ", err.Error())
 		return &resp, err
 	}
 	return &resp, nil
@@ -176,8 +186,10 @@ func HistoryVoucherCustomer(phone, page string) (*models.HistoryVoucherCustomerR
 
 // CouponVoucherCustomer ..
 func CouponVoucherCustomer(campaign, couponId, couponCode, custID string, useVoucher int) (*models.CouponVoucherCustomerResp, error) {
-
 	var resp models.CouponVoucherCustomerResp
+
+	logs.Info("[Package Host OPL]-[CouponVoucherCustomer]")
+
 	urlSvr := host + endpointCouponVoucherCustomer
 
 	jsonData := map[string]interface{}{
@@ -196,26 +208,17 @@ func CouponVoucherCustomer(campaign, couponId, couponCode, custID string, useVou
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		logs.Error("Failed to unmarshaling response from open-loyalty ", err.Error())
+		logs.Error("Failed to unmarshaling response CouponVoucherCustomer from open-loyalty ", err.Error())
 		return &resp, err
 	}
 	return &resp, nil
 }
 
-// GetServiceHealthCheck ..
-func GetServiceHealthCheck() hcmodels.ServiceHealthCheck {
-	redisClient := redis.GetRedisConnection()
-	return hcutils.GetServiceHealthCheck(&redisClient, &hcmodels.ServiceEnv{
-		Name:           name,
-		Address:        host,
-		HealthCheckKey: HealthCheckKey,
-	})
-}
-
 // Transfer Point ..
 func TransferPoint(customer string, point string, text string) (*models.PointResponse, error) {
-
 	var resp models.PointResponse
+
+	logs.Info("[Package Host OPL]-[TransferPoint]")
 	urlSvr := host + endpointAddedPoint
 
 	jsonData := map[string]interface{}{
@@ -233,7 +236,7 @@ func TransferPoint(customer string, point string, text string) (*models.PointRes
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		logs.Error("Failed to unmarshaling response from open-loyalty ", err.Error())
+		logs.Error("Failed to unmarshaling response TransferPoint from open-loyalty ", err.Error())
 		return &resp, err
 	}
 	return &resp, nil
@@ -241,8 +244,10 @@ func TransferPoint(customer string, point string, text string) (*models.PointRes
 
 // Spend Point ..
 func SpendPoint(customer, point, text string) (*models.PointResponse, error) {
-
 	var resp models.PointResponse
+
+	logs.Info("[Package Host OPL]-[SpendPoint]")
+
 	urlSvr := host + endpointSpendPoint
 
 	jsonData := map[string]interface{}{
@@ -260,8 +265,42 @@ func SpendPoint(customer, point, text string) (*models.PointResponse, error) {
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		logs.Error("Failed to unmarshaling response from open-loyalty ", err.Error())
+		logs.Error("Failed to unmarshaling response SpendPoint from open-loyalty ", err.Error())
 		return &resp, err
 	}
 	return &resp, nil
+}
+
+// GetBalance
+func GetBalance(customer string) (*models.BalanceResponse, error) {
+	var result models.BalanceResponse
+
+	logs.Info("[Package Host OPL]-[GetBalance]")
+
+	cust := customer + "/status"
+	urlSvr := host + endpointGetBalance + cust
+	log.Print("url endpoind status : ", urlSvr)
+	data, err := HTTPxFormCustomerStatus(urlSvr, cust)
+	if err != nil {
+		logs.Error("CustomerStatus ", err.Error())
+		return &result, err
+	}
+
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		logs.Error("Failed to unmarshaling response GetBalance from open-loyalty ", err.Error())
+
+		return &result, err
+	}
+	return &result, nil
+}
+
+// GetServiceHealthCheck ..
+func GetServiceHealthCheck() hcmodels.ServiceHealthCheck {
+	redisClient := redis.GetRedisConnection()
+	return hcutils.GetServiceHealthCheck(&redisClient, &hcmodels.ServiceEnv{
+		Name:           name,
+		Address:        host,
+		HealthCheckKey: HealthCheckKey,
+	})
 }
