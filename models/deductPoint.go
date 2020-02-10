@@ -1,13 +1,13 @@
 package models
 
-type DeductPointReq struct {
-	// AccountNumber string `json:"accountNumber"`
-	Type  string `json:"type"`
-	Point int    `json:"point"`
-	Text  string `json:"text"`
+type PointReq struct {
+	AccountNumber string `json:"accountNumber"`
+	Type          string `json:"type"`
+	Point         int    `json:"point"`
+	Text          string `json:"text"`
 }
 
-type DeductPointResp struct {
+type PointResp struct {
 	Nama          string `json:"nama"`
 	AccountNumber string `json:"accountNumber"`
 	Point         int    `json:"points"`

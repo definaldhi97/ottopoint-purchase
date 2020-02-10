@@ -18,7 +18,7 @@ type TransferPointServices struct {
 	General models.GeneralModel
 }
 
-func (t TransferPointServices) NewTransferPointServices(req models.DeductPointReq, dataToken redismodels.TokenResp, header models.RequestHeader) models.Response {
+func (t TransferPointServices) NewTransferPointServices(req models.PointReq, dataToken redismodels.TokenResp, header models.RequestHeader) models.Response {
 	var res models.Response
 
 	resMeta := models.MetaData{
@@ -88,7 +88,7 @@ func (t TransferPointServices) NewTransferPointServices(req models.DeductPointRe
 	// }
 
 	res = models.Response{
-		Data: models.DeductPointResp{
+		Data: models.PointResp{
 			Nama:          dataDB.Nama,
 			AccountNumber: dataDB.Phone,
 			Point:         req.Point,

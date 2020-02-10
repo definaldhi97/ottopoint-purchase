@@ -18,7 +18,7 @@ type SpendPointServices struct {
 	General models.GeneralModel
 }
 
-func (t SpendPointServices) NewSpendPointServices(req models.DeductPointReq, dataToken redismodels.TokenResp, header models.RequestHeader) models.Response {
+func (t SpendPointServices) NewSpendPointServices(req models.PointReq, dataToken redismodels.TokenResp, header models.RequestHeader) models.Response {
 	var res models.Response
 
 	resMeta := models.MetaData{
@@ -88,7 +88,7 @@ func (t SpendPointServices) NewSpendPointServices(req models.DeductPointReq, dat
 	// }
 
 	res = models.Response{
-		Data: models.DeductPointResp{
+		Data: models.PointResp{
 			Nama:          dataDB.Nama,
 			AccountNumber: dataDB.Phone,
 			Point:         req.Point,

@@ -27,7 +27,7 @@ import (
 func ReversePoint(ctx *gin.Context) {
 	req := models.ReversePointReq{}
 	res := models.Response{}
-	reqDeduct := models.DeductPointReq{}
+	reqDeduct := models.PointReq{}
 
 	sugarLogger := ottologer.GetLogger()
 	namectrl := "[ReversePoint-Controller]"

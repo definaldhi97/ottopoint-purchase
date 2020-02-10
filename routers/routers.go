@@ -106,7 +106,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	// router.POST(healthcheck, controllers.HealthCheck)
 	router.POST(redeem, controllers.VoucherRedeem)
 	router.POST(use_voucher, controllers.UseVouhcer)
-	router.POST(deductPoint, controllers.DeductPoint)
+	router.POST(deductPoint, controllers.PointController)
 	router.POST(reversePoint, controllers.ReversePoint)
 	router.POST(earningPoint, controllers.Earning)
 
