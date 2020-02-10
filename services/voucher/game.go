@@ -1,8 +1,8 @@
 package voucher
 
 import (
+	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
-	redismodels "ottopoint-purchase/hosts/redis_token/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
@@ -13,7 +13,7 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-func RedeemGame(req models.UseRedeemRequest, dataToken redismodels.TokenResp, MemberID, namaVoucher, expDate, category string) models.UseRedeemResponse {
+func RedeemGame(req models.UseRedeemRequest, AccountNumber, InstitutionID, MemberID, namaVoucher, expDate, category string) models.UseRedeemResponse {
 	res := models.UseRedeemResponse{}
 
 	// ===== Inquiry OttoAG =====
@@ -43,61 +43,23 @@ func RedeemGame(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Me
 	}
 
 	inqRespOttoag := ottoagmodels.OttoAGInquiryResponse{}
-	inqRespOttoag = biller.InquiryBiller(inqReq.Data, req, dataToken, MemberID, namaVoucher, expDate)
+	inqRespOttoag = biller.InquiryBiller(inqReq.Data, req, AccountNumber, MemberID, namaVoucher, expDate)
 
 	if inqRespOttoag.Rc != "00" {
+
+		logs.Info("[Response Inquiry %v]", inqRespOttoag.Rc)
+		go SaveTransactionGame(AccountNumber, namaVoucher, inqRespOttoag.CustID, inqRespOttoag.Periode, inqRespOttoag.Rrn, inqRespOttoag.ProductCode, "Inquiry", "01", InstitutionID, inqRespOttoag.Amount)
+
 		res = models.UseRedeemResponse{
 			Rc:  "01",
 			Msg: "Inquiry Failed",
 		}
 
-		// save DB
-		labelInq := dbmodels.TransaksiRedeem{
-			AccountNumber: dataToken.Data,
-			Voucher:       namaVoucher,
-			CustID:        req.CustID,
-			// MerchantID:    dataToken.Data.MerchantID,
-			RRN:         inqRespOttoag.Rrn,
-			ProductCode: req.ProductCode,
-			Amount:      inqRespOttoag.Amount,
-			TransType:   "Inquiry",
-			Status:      "01 (Gagal)",
-			ExpDate:     expDate,
-			Institution: "Ottopay",
-			ProductType: "Pulsa",
-			DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
-		}
-		err1 := db.DbCon.Create(&labelInq).Error
-		if err1 != nil {
-			logs.Info("Failed Save to database", err1)
-			// return err1
-		}
-
 		return res
 	}
 
-	logs.Info("[SAVE-DB-Transaksi_Redeem]")
-	labelInq1 := dbmodels.TransaksiRedeem{
-		AccountNumber: dataToken.Data,
-		Voucher:       namaVoucher,
-		CustID:        req.CustID,
-		// MerchantID:    dataToken.Data.MerchantID,
-		RRN:         inqRespOttoag.Rrn,
-		ProductCode: req.ProductCode,
-		Amount:      inqRespOttoag.Amount,
-		TransType:   "Inquiry",
-		ProductType: "Pulsa",
-		Status:      "00 (Success)",
-		ExpDate:     expDate,
-		Institution: "Ottopay", // sementara
-		DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
-	}
-
-	err2 := db.DbCon.Create(&labelInq1).Error
-	if err2 != nil {
-		logs.Info("Failed Save to database", err2)
-		// return err1
-	}
+	logs.Info("[Response Inquiry %v]", inqRespOttoag.Rc)
+	go SaveTransactionGame(AccountNumber, namaVoucher, inqRespOttoag.CustID, inqRespOttoag.Periode, inqRespOttoag.Rrn, inqRespOttoag.ProductCode, "Inquiry", "01", InstitutionID, inqRespOttoag.Amount)
 
 	// ===== Payment OttoAG =====
 	logs.Info("[PAYMENT-BILLER][START]")
@@ -113,34 +75,12 @@ func RedeemGame(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Me
 		Rrn:         inqRespOttoag.Rrn,
 	}
 
-	// billerRes = models.OttoAGPaymentRes{
-	// 	Data: models.DataPayPulsa{},
-	// }
+	billerRes := biller.PaymentBiller(billerReq, req, AccountNumber, inqRespOttoag.Amount, inqRespOttoag.Rrn, MemberID, namaVoucher, expDate, category)
 
-	billerRes := biller.PaymentBiller(billerReq, req, dataToken, inqRespOttoag.Amount, inqRespOttoag.Rrn, MemberID, namaVoucher, expDate, category)
+	if billerRes.Rc == "09" || billerRes.Rc == "68" {
+		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-	if billerRes.Rc == "09" {
-		// save to DB transaski_redeem
-		labelPyment1 := dbmodels.TransaksiRedeem{
-			AccountNumber: dataToken.Data,
-			Voucher:       namaVoucher,
-			CustID:        req.CustID,
-			// MerchantID:    dataToken.Data.MerchantID,
-			RRN:         inqRespOttoag.Rrn,
-			ProductCode: req.ProductCode,
-			Amount:      inqRespOttoag.Amount,
-			TransType:   "Payment",
-			Status:      "09 (Pending)",
-			ExpDate:     expDate,
-			Institution: "Ottopay",
-			ProductType: "Pulsa",
-			DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
-		}
-		err1 := db.DbCon.Create(&labelPyment1).Error
-		if err1 != nil {
-			logs.Info("Failed Save to database", err1)
-			// return err1
-		}
+		go SaveTransactionGame(AccountNumber, namaVoucher, billerRes.Custid, billerRes.Period, billerRes.Rrn, billerRes.Productcode, "Payment", "09", InstitutionID, int64(billerRes.Amount))
 
 		res = models.UseRedeemResponse{
 			Rc:  "09",
@@ -149,89 +89,21 @@ func RedeemGame(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Me
 		return res
 	}
 
-	if billerRes.Rc != "00" {
+	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
+		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-		// save to DB transaski_redeem
-		labelPyment1 := dbmodels.TransaksiRedeem{
-			AccountNumber: dataToken.Data,
-			Voucher:       namaVoucher,
-			CustID:        req.CustID,
-			// MerchantID:    dataToken.Data.MerchantID,
-			RRN:         inqRespOttoag.Rrn,
-			ProductCode: req.ProductCode,
-			Amount:      inqRespOttoag.Amount,
-			TransType:   "Payment",
-			Status:      "01 (Gagal)",
-			ExpDate:     expDate,
-			Institution: "Ottopay",
-			ProductType: "Pulsa",
-			DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
-		}
-		err1 := db.DbCon.Create(&labelPyment1).Error
-		if err1 != nil {
-			logs.Info("Failed Save to database", err1)
-			// return err1
-		}
+		go SaveTransactionGame(AccountNumber, namaVoucher, billerRes.Custid, billerRes.Period, billerRes.Rrn, billerRes.Productcode, "Payment", "01", InstitutionID, int64(billerRes.Amount))
 
 		res = models.UseRedeemResponse{
 			Rc:  "01",
 			Msg: "Payment Failed",
 		}
+
 		return res
 	}
 
-	if billerRes.Rc != "00" && billerRes.Rc != "09" {
-		// save to DB transaski_redeem
-		labelPyment1 := dbmodels.TransaksiRedeem{
-			AccountNumber: dataToken.Data,
-			Voucher:       namaVoucher,
-			CustID:        req.CustID,
-			// MerchantID:    dataToken.Data.MerchantID,
-			RRN:         inqRespOttoag.Rrn,
-			ProductCode: req.ProductCode,
-			Amount:      inqRespOttoag.Amount,
-			TransType:   "Payment",
-			Status:      "01 (Gagal)",
-			ExpDate:     expDate,
-			Institution: "Ottopay",
-			ProductType: "Pulsa",
-			DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
-		}
-		err1 := db.DbCon.Create(&labelPyment1).Error
-		if err1 != nil {
-			logs.Info("Failed Save to database", err1)
-			// return err1
-		}
-
-		res = models.UseRedeemResponse{
-			Rc:  "01",
-			Msg: "Payment Failed",
-		}
-		return res
-	}
-
-	// save to DB transaski_redeem
-	labelPyment1 := dbmodels.TransaksiRedeem{
-		// AccountNumber: dataToken.Data,
-		Voucher: namaVoucher,
-		CustID:  req.CustID,
-		// // MerchantID:    dataToken.Data.MerchantID,
-		RRN:         inqRespOttoag.Rrn,
-		ProductCode: req.ProductCode,
-		Amount:      inqRespOttoag.Amount,
-		TransType:   "Payment",
-		Status:      "00 (Success)",
-		ExpDate:     expDate,
-		Institution: "Ottopay",
-		ProductType: "Pulsa",
-		DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
-	}
-
-	err1 := db.DbCon.Create(&labelPyment1).Error
-	if err1 != nil {
-		logs.Info("Failed Save to database", err1)
-		// return err1
-	}
+	logs.Info("[Response Payment %v]", billerRes.Rc)
+	go SaveTransactionGame(AccountNumber, namaVoucher, billerRes.Custid, billerRes.Period, billerRes.Rrn, billerRes.Productcode, "Payment", "00", InstitutionID, int64(billerRes.Amount))
 
 	res = models.UseRedeemResponse{
 		Rc:          billerRes.Rc,
@@ -248,4 +120,45 @@ func RedeemGame(req models.UseRedeemRequest, dataToken redismodels.TokenResp, Me
 	}
 
 	return res
+}
+
+func SaveTransactionGame(AccountNumber, voucher, CustID1, CustID2, RRN, ProductCode, trasnType, status, instituion string, amount int64) {
+
+	logs.Info("[Start-SaveDB]-[Game]")
+
+	var saveStatus string
+	switch status {
+	case "00":
+		saveStatus = constants.Success
+	case "09":
+		saveStatus = constants.Pending
+	case "01":
+		saveStatus = constants.Failed
+	}
+
+	cust_id := CustID1 + " || " + CustID2
+
+	save := dbmodels.TransaksiRedeem{
+		AccountNumber: AccountNumber,
+		Voucher:       voucher,
+		CustID:        cust_id,
+		// MerchantID:    AccountNumber.MerchantID,
+		RRN:         RRN,
+		ProductCode: ProductCode,
+		Amount:      amount,
+		TransType:   trasnType,
+		Status:      saveStatus,
+		// ExpDate:     expDate,
+		Institution: instituion,
+		ProductType: "Pulsa",
+		DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
+	}
+
+	err := db.DbCon.Create(&save).Error
+	if err != nil {
+		logs.Info("[Failed Save to DB ]", err)
+		logs.Info("[Package-Voucher]-[Service-RedeemGame]")
+		// return err
+
+	}
 }
