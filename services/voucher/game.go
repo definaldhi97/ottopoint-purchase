@@ -136,7 +136,12 @@ func SaveTransactionGame(AccountNumber, voucher, CustID1, CustID2, RRN, ProductC
 		saveStatus = constants.Failed
 	}
 
-	cust_id := CustID1 + " || " + CustID2
+	var cust_id string
+	if CustID2 != "" {
+		cust_id = CustID1 + " || " + CustID2
+	} else {
+		cust_id = CustID1
+	}
 
 	save := dbmodels.TransaksiRedeem{
 		AccountNumber: AccountNumber,
