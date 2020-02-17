@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"ottopoint-purchase/redis"
 	"ottopoint-purchase/utils"
@@ -174,6 +175,37 @@ func HTTPxFormPostAdmin2(url string, jsondata interface{}, key string) ([]byte, 
 	})
 
 	go redis.SaveRedis(key, healthCheckData)
+	if errs != nil {
+		logs.Error("Error Sending ", errs)
+		return nil, errs[0]
+	}
+	return []byte(body), nil
+}
+
+// Customer Status
+func HTTPxFormCustomerStatus(url string, customer string) ([]byte, error) {
+	token, _ := redishost.GetToken(utils.RedisKeyAuth)
+	data := strings.Replace(token.Data, `"`, "", 2)
+	dataToken := "Bearer" + " " + data
+	log.Print("ini token status : ", dataToken)
+	request := gorequest.New()
+	request.SetDebug(debugClientHTTP)
+	timeout, _ := time.ParseDuration(timeout)
+	//_ := errors.New("Connection Problem")
+	if strings.HasPrefix(url, "https") {
+		request.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	}
+	reqagent := request.Get(url + customer)
+	log.Print("url status : ", reqagent)
+	// reqagent := request.Get(url)
+	// reqagent.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	reqagent.Header.Set("Authorization", dataToken)
+	// reqagent.Param("customer", customer)
+	_, body, errs := reqagent.
+		// Send(jsondata).
+		Timeout(timeout).
+		Retry(retrybad, time.Second, http.StatusInternalServerError).
+		End()
 	if errs != nil {
 		logs.Error("Error Sending ", errs)
 		return nil, errs[0]

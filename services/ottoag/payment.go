@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"ottopoint-purchase/db"
 	ottoag "ottopoint-purchase/hosts/ottoag/host"
-	redismodels "ottopoint-purchase/hosts/redis_token/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
@@ -17,7 +16,7 @@ import (
 // 	General models.GeneralModel
 // }
 
-func PaymentBiller(reqdata interface{}, req models.UseRedeemRequest, dataToken redismodels.TokenResp, amount int64, rrn, MemberID, namaVoucher, expDate, category string) ottoagmodels.OttoAGPaymentRes {
+func PaymentBiller(reqdata interface{}, req models.UseRedeemRequest, AccountNumber string, amount int64, rrn, MemberID, namaVoucher, expDate, category string) ottoagmodels.OttoAGPaymentRes {
 
 	res := ottoagmodels.OttoAGPaymentRes{}
 
@@ -56,10 +55,10 @@ func PaymentBiller(reqdata interface{}, req models.UseRedeemRequest, dataToken r
 		logs.Info("[SAVE-DB-PAYMENT-Transaksi_Redeem]")
 
 		labelPyment1 := dbmodels.TransaksiRedeem{
-			AccountNumber: dataToken.Data,
+			AccountNumber: AccountNumber,
 			Voucher:       namaVoucher,
 			CustID:        req.CustID,
-			// MerchantID:    dataToken.Data.MerchantID,
+			// MerchantID:    AccountNumber.MerchantID,
 			RRN:         rrn,
 			ProductCode: req.ProductCode,
 			Amount:      amount,

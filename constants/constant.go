@@ -46,3 +46,9 @@ const (
 	CategoryMobileLegend = "mobile_legend"
 	CategoryToken        = "token"
 )
+
+const (
+	Success = "(00 Success)"
+	Pending = "(09 Pending)"
+	Failed  = "(01 Failed)"
+)
