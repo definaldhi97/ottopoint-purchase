@@ -27,6 +27,7 @@ import (
 func ReversePointController(ctx *gin.Context) {
 	req := models.ReversePointReq{}
 	res := models.Response{}
+
 	reqDeduct := models.PointReq{}
 
 	sugarLogger := ottologer.GetLogger()
@@ -106,7 +107,7 @@ func ReversePointController(ctx *gin.Context) {
 		return
 	}
 	// reqDeduct.AccountNumber = dataDeduct.CustomerID
-	reqDeduct.Point = dataDeduct.Point
+	reqDeduct.Point = dataDeduct.Point + int(dataDeduct.Amount)
 	reqDeduct.Text = "Reversal " + dataDeduct.ProductName
 	reqDeduct.Type = "adding"
 
