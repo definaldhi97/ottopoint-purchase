@@ -46,6 +46,18 @@ func GetMessageResponse(res models.Response, code int, status bool, err error) m
 	return res
 }
 
+func GetMessageResponseData(res models.Response, resData models.ResponseData, code int, status bool, err error) models.Response {
+
+	res = models.Response{}
+
+	res.Data = resData
+	res.Meta.Code = code
+	res.Meta.Status = status
+	res.Meta.Message = err.Error()
+
+	return res
+}
+
 func LogSpanMax(request interface{}) interface{} {
 	data, _ := json.Marshal(request)
 	if len(data) > constants.MAXUDP {
