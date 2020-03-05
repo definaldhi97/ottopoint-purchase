@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"ottopoint-purchase/db"
 	ottoag "ottopoint-purchase/hosts/ottoag/host"
-	redismodels "ottopoint-purchase/hosts/redis_token/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
@@ -17,7 +16,7 @@ import (
 // 	General models.GeneralModel
 // }
 
-func InquiryBiller(reqdata interface{}, req models.UseRedeemRequest, dataToken redismodels.TokenResp, MemberID, namaVoucher, expDate string) ottoagmodels.OttoAGInquiryResponse {
+func InquiryBiller(reqdata interface{}, req models.UseRedeemRequest, AccountNumber, MemberID, namaVoucher, expDate string) ottoagmodels.OttoAGInquiryResponse {
 	response := ottoagmodels.OttoAGInquiryResponse{}
 
 	logs.Info("[INQUIRY-SERVICES][START]")
@@ -53,10 +52,10 @@ func InquiryBiller(reqdata interface{}, req models.UseRedeemRequest, dataToken r
 		logs.Info("[SAVE-DB-INQUIRY-Transaksi_Redeem]")
 
 		saveInq := dbmodels.TransaksiRedeem{
-			AccountNumber: dataToken.Data,
+			AccountNumber: AccountNumber,
 			Voucher:       namaVoucher,
 			CustID:        req.CustID,
-			// MerchantID:    dataToken.Data.MerchantID,
+			// MerchantID:    AccountNumber.MerchantID,
 			RRN:         response.Rrn,
 			ProductCode: req.ProductCode,
 			Amount:      response.Amount,

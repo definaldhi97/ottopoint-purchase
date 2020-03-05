@@ -95,7 +95,7 @@ func UseVouhcerController(ctx *gin.Context) {
 		},
 	}
 
-	res = usevoucher.UseVoucher(req, dataToken)
+	res = usevoucher.UseVoucher(req, dataToken.Data, header.InstitutionID)
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", res))

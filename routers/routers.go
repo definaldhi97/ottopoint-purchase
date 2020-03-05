@@ -25,6 +25,7 @@ var (
 	reversePoint string
 	healthcheck  string
 	earningPoint string
+	splitbill    string
 
 	nameservice     string
 	agentracinghost string
@@ -43,6 +44,7 @@ func init() {
 	deductPoint = utils.GetEnv("deduct_point", "/v2/purchase/deduct")
 	reversePoint = utils.GetEnv("reverse_point", "/v2/purchase/reversal")
 	earningPoint = utils.GetEnv("earning_point", "/v2/purchase/earningpoint")
+	splitbill = utils.GetEnv("splitbill", "v2/purchase/splitbill")
 
 	debugmode = utils.GetEnv("apps.debug", "debug")
 
@@ -109,6 +111,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(deductPoint, controllers.PointController)
 	router.POST(reversePoint, controllers.ReversePointController)
 	router.POST(earningPoint, controllers.EarningController)
+	router.POST(splitbill, controllers.DeductSplitBillController)
 
 	ottoRouter.Router = router
 

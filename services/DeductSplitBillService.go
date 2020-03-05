@@ -28,6 +28,11 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		Message: "Succesful",
 	}
 
+	resData := models.ResponseData{
+		ResponseCode: "05",
+		ResponseDesc: "Error",
+	}
+
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[DeductSplitBill-Services]",
 		zap.String("AccountNumber : ", accountNumber), zap.Int("Point : ", req.Point),
@@ -49,7 +54,7 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		sugarLogger.Info("[DeductSplitBill-Services]")
 		sugarLogger.Info("[Get CustId OPL to DB]")
 
-		utils.GetMessageResponse(res, 422, false, errors.New("Nomor belum eligible"))
+		res = utils.GetMessageResponseData(res, resData, 422, false, errors.New("Nomor belum eligible"))
 		return res
 	}
 
@@ -67,7 +72,35 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		sugarLogger.Info("[DeductSplitBill-Services]")
 		sugarLogger.Info("[Get CustId OPL to DB]")
 
-		utils.GetMessageResponse(res, 422, false, errors.New("Failed to GetBalance"))
+		res = utils.GetMessageResponseData(res, resData, 422, false, errors.New("Failed to GetBalance"))
+		return res
+	}
+
+	// Validate TRX ID
+	dataTrx, errTrx := db.GetData(req.TrxID, institution)
+	if errTrx == nil {
+		logs.Info("Internal Server Error : ", errDB)
+		logs.Info("[DeductSplitBill-Services]")
+		logs.Info("[Get Data TRXID to DB]")
+
+		sugarLogger.Info("Internal Server Error : ", errDB)
+		sugarLogger.Info("[DeductSplitBill-Services]")
+		sugarLogger.Info("[Get Data TRXID to DB]")
+
+		// res = utils.GetMessageResponseData(res, resData, 422, false, errors.New("Failed to GetTRxID"))
+		// return res
+	}
+
+	if req.TrxID == dataTrx.TrxID {
+		// logs.Info("Internal Server Error : ", errDB)
+		logs.Info("[DeductSplitBill-Services]")
+		logs.Info("[Validate TrxID]")
+
+		// sugarLogger.Info("Internal Server Error : ", errDB)
+		sugarLogger.Info("[DeductSplitBill-Services]")
+		sugarLogger.Info("Validate TrxID]")
+
+		res = utils.GetMessageResponseData(res, resData, 422, false, errors.New("Duplicate TrxID"))
 		return res
 	}
 
@@ -75,6 +108,8 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 
 	// Validate Balance Point
 	if req.Point > point {
+		logs.Info("Request Point :", req.Point)
+		logs.Info("Balance Point :", point)
 		logs.Info("[DeductSplitBill-Services]-[Point Tidak Mencukupi]")
 		sugarLogger.Info("[DeductSplitBill-Services]-[Point Tidak Mencukupi]")
 
@@ -89,7 +124,7 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		return res
 	}
 
-	text := fmt.Sprintf("Deduct Point from %v")
+	text := fmt.Sprintf("Deduct Point from %v", req.ProductName)
 	// Hit to Openloyalty
 	data, err := opl.SpendPoint(dataDB.CustID, strconv.Itoa(req.Point), text)
 	if err != nil || data.PointsTransferId == "" {
@@ -102,23 +137,24 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		sugarLogger.Info("[DeductSplitBill-Services]")
 		sugarLogger.Info("[Hit Spend API to OPL]")
 
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Transfer Point"))
+		res = utils.GetMessageResponseData(res, resData, 422, false, errors.New("Gagal Transfer Point"))
+
 		return res
 	}
 
 	// save to DB
 	save := dbmodels.DeductTransaction{
-		ID:        utils.GenerateTokenUUID(),
-		TrxID:     req.TrxID,
-		AccountID: accountNumber,
-		// CustomerID   : req.
+		ID:            utils.GenerateTokenUUID(),
+		TrxID:         req.TrxID,
+		AccountID:     accountNumber,
+		CustomerID:    req.CustID,
 		InstitutionID: institution,
 		DeductType:    req.DeductType,
 		ProductCode:   req.ProductCode,
 		ProductName:   req.ProductName,
 		Amount:        req.Amount,
 		Point:         req.Point,
-		//Status       :
+		Status:        "00",
 	}
 
 	errSave := db.DbCon.Create(&save).Error

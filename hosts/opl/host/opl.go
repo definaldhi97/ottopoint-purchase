@@ -46,7 +46,7 @@ func init() {
 	endpointAddedPoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_ADD_POINT", "/api/points/transfer/add")
 	endpointSpendPoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_SPEND_POINT", "/api/points/transfer/spend")
 
-	endpointGetBalance = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_GET_BALANCE", "/api/points/transfer/add")
+	endpointGetBalance = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_GET_BALANCE", "/api/admin/customer")
 
 	HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_OPL", "OTTOPOINT-PURCHASE:OTTOPOINT")
 }
@@ -277,8 +277,8 @@ func GetBalance(customer string) (*models.BalanceResponse, error) {
 
 	logs.Info("[Package Host OPL]-[GetBalance]")
 
-	cust := customer + "/status"
-	urlSvr := host + endpointGetBalance + cust
+	cust := "/" + customer + "/status"
+	urlSvr := host + endpointGetBalance
 	log.Print("url endpoind status : ", urlSvr)
 	data, err := HTTPxFormCustomerStatus(urlSvr, cust)
 	if err != nil {
