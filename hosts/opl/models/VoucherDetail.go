@@ -2,8 +2,12 @@ package models
 
 // Voucher Detail
 type VoucherDetailResp struct {
-	Name       string `json:"name"`
-	CampaignID string `json:"campaignId"`
+	Name          string      `json:"name"`
+	CampaignID    string      `json:"campaignId"`
+	Coupons       []string    `json:"coupons"`
+	CategoryNames interface{} `json:"categoryNames"`
+	CostInPoints  int         `json:"costInPoints"`
+	RewardValue   int         `json:"rewardValue,omitempty"`
 }
 
 type CouponDetails struct {

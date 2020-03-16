@@ -13,7 +13,7 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-func RedeemPLN(req models.UseRedeemRequest, AccountNumber, InstitutionID, MemberID, namaVoucher, expDate, category string) models.UseRedeemResponse {
+func RedeemPLN(req models.UseRedeemRequest, reqOP interface{}, param models.Params) models.UseRedeemResponse {
 	res := models.UseRedeemResponse{}
 
 	logs.Info("[Start]-[Package-Voucher]-[RedeemPLN]")
@@ -21,7 +21,7 @@ func RedeemPLN(req models.UseRedeemRequest, AccountNumber, InstitutionID, Member
 
 	inqBiller := ottoagmodels.BillerInquiryDataReq{
 		ProductCode: req.ProductCode,
-		MemberID:    MemberID,
+		MemberID:    utils.MemberID,
 		CustID:      req.CustID,
 		Period:      req.CustID2,
 	}
@@ -43,13 +43,32 @@ func RedeemPLN(req models.UseRedeemRequest, AccountNumber, InstitutionID, Member
 		return res
 	}
 
-	inqRespOttoag := ottoagmodels.OttoAGInquiryResponse{}
-	inqRespOttoag = biller.InquiryBiller(inqReq.Data, req, AccountNumber, MemberID, namaVoucher, expDate)
+	// inqRespOttoag := ottoagmodels.OttoAGInquiryResponse{}
+	inqRespOttoag, errinqRespOttoag := biller.InquiryBiller(inqReq.Data, reqOP, req, param)
+
+	paramInq := models.Params{
+		AccountNumber: req.AccountNumber,
+		MerchantID:    param.MerchantID,
+		InstitutionID: param.InstitutionID,
+		CustID:        req.CustID,
+		// Reffnum
+		RRN:         inqRespOttoag.Rrn,
+		Amount:      inqRespOttoag.Amount,
+		NamaVoucher: param.NamaVoucher,
+		ProductType: "PLN",
+		ProductCode: req.ProductCode,
+		Category:    "PLN",
+		Point:       param.Point,
+		ExpDate:     param.ExpDate,
+		SupplierID:  param.SupplierID,
+	}
 
 	if inqRespOttoag.Rc != "00" {
 
-		logs.Info("[Response Inquiry %v]", inqRespOttoag.Rc)
-		go SaveTransactionPLN(AccountNumber, namaVoucher, inqRespOttoag.CustID, inqRespOttoag.Rrn, inqRespOttoag.ProductCode, "Inquiry", "01", InstitutionID, inqRespOttoag.Amount)
+		logs.Info("[Error-InquiryResponse]-[RedeemPLN]")
+		logs.Info("[Error : %v]", errinqRespOttoag)
+
+		go SaveTransactionPLN(paramInq, "Inquiry", "01")
 
 		res = models.UseRedeemResponse{
 			Rc:  "01",
@@ -60,7 +79,7 @@ func RedeemPLN(req models.UseRedeemRequest, AccountNumber, InstitutionID, Member
 	}
 
 	logs.Info("[Response Inquiry %v]", inqRespOttoag.Rc)
-	go SaveTransactionPLN(AccountNumber, namaVoucher, inqRespOttoag.CustID, inqRespOttoag.Rrn, inqRespOttoag.ProductCode, "Inquiry", "00", InstitutionID, inqRespOttoag.Amount)
+	go SaveTransactionPLN(paramInq, "Inquiry", "00")
 
 	// ===== Payment OttoAG =====
 	logs.Info("[PAYMENT-BILLER][START]")
@@ -69,18 +88,35 @@ func RedeemPLN(req models.UseRedeemRequest, AccountNumber, InstitutionID, Member
 	billerReq := ottoagmodels.OttoAGPaymentReq{
 		Amount:      uint64(inqRespOttoag.Amount),
 		CustID:      req.CustID,
-		MemberID:    MemberID,
+		MemberID:    utils.MemberID,
 		Period:      req.CustID2,
 		Productcode: req.ProductCode,
 		Rrn:         inqRespOttoag.Rrn,
 	}
 
-	billerRes := biller.PaymentBiller(billerReq, req, AccountNumber, inqRespOttoag.Amount, inqRespOttoag.Rrn, MemberID, namaVoucher, expDate, category)
+	billerRes := biller.PaymentBiller(billerReq, reqOP, req, param)
+
+	paramPay := models.Params{
+		AccountNumber: req.AccountNumber,
+		MerchantID:    param.MerchantID,
+		InstitutionID: param.InstitutionID,
+		CustID:        req.CustID,
+		// Reffnum
+		RRN:         billerRes.Rrn,
+		Amount:      int64(billerRes.Amount),
+		NamaVoucher: param.NamaVoucher,
+		ProductType: "PLN",
+		ProductCode: req.ProductCode,
+		Category:    "PLN",
+		Point:       param.Point,
+		ExpDate:     param.ExpDate,
+		SupplierID:  param.SupplierID,
+	}
 
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
 		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-		go SaveTransactionPLN(AccountNumber, namaVoucher, billerRes.Custid, billerRes.Rrn, billerRes.Productcode, "Payment", "09", InstitutionID, int64(billerRes.Amount))
+		go SaveTransactionPLN(paramPay, "Payment", "09")
 
 		res = models.UseRedeemResponse{
 			Rc:  "09",
@@ -92,7 +128,7 @@ func RedeemPLN(req models.UseRedeemRequest, AccountNumber, InstitutionID, Member
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
 		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-		go SaveTransactionPLN(AccountNumber, namaVoucher, billerRes.Custid, billerRes.Rrn, billerRes.Productcode, "Payment", "01", InstitutionID, int64(billerRes.Amount))
+		go SaveTransactionPLN(paramPay, "Payment", "01")
 
 		res = models.UseRedeemResponse{
 			Rc:  "01",
@@ -123,7 +159,7 @@ func RedeemPLN(req models.UseRedeemRequest, AccountNumber, InstitutionID, Member
 
 	logs.Info("[Response Payment %v]", billerRes.Rc)
 
-	go SaveTransactionPLN(AccountNumber, namaVoucher, billerRes.Custid, billerRes.Rrn, billerRes.Productcode, "Payment", "00", InstitutionID, int64(billerRes.Amount))
+	go SaveTransactionPLN(paramPay, "Payment", "00")
 
 	res = models.UseRedeemResponse{
 		Rc:          billerRes.Rc,
@@ -141,7 +177,7 @@ func RedeemPLN(req models.UseRedeemRequest, AccountNumber, InstitutionID, Member
 	return res
 }
 
-func SaveTransactionPLN(AccountNumber, voucher, CustID, RRN, ProductCode, trasnType, status, instituion string, amount int64) {
+func SaveTransactionPLN(param models.Params, trasnType, status string) {
 
 	logs.Info("[Start-SaveDB]-[PLN]")
 
@@ -156,19 +192,19 @@ func SaveTransactionPLN(AccountNumber, voucher, CustID, RRN, ProductCode, trasnT
 	}
 
 	save := dbmodels.TransaksiRedeem{
-		AccountNumber: AccountNumber,
-		Voucher:       voucher,
-		CustID:        CustID,
-		// MerchantID:    AccountNumber.MerchantID,
-		RRN:         RRN,
-		ProductCode: ProductCode,
-		Amount:      amount,
-		TransType:   trasnType,
-		Status:      saveStatus,
-		// ExpDate:     expDate,
-		Institution: instituion,
-		ProductType: "Pulsa",
-		DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
+		AccountNumber: param.AccountNumber,
+		Voucher:       param.NamaVoucher,
+		CustID:        param.CustID,
+		MerchantID:    param.MerchantID,
+		RRN:           param.RRN,
+		ProductCode:   param.ProductCode,
+		Amount:        param.Amount,
+		TransType:     trasnType,
+		Status:        saveStatus,
+		ExpDate:       param.ExpDate,
+		Institution:   param.InstitutionID,
+		ProductType:   param.ProductType,
+		DateTime:      utils.GetTimeFormatYYMMDDHHMMSS(),
 	}
 
 	err := db.DbCon.Create(&save).Error

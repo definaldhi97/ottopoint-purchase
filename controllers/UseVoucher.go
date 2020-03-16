@@ -95,7 +95,13 @@ func UseVouhcerController(ctx *gin.Context) {
 		},
 	}
 
-	res = usevoucher.UseVoucher(req, dataToken.Data, header.InstitutionID)
+	param := models.Params{
+		AccountNumber: dataToken.Data,
+		MerchantID:    dataToken.MerchantID,
+		InstitutionID: header.InstitutionID,
+	}
+
+	res = usevoucher.UseVoucher(req, param)
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", res))

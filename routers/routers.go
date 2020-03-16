@@ -40,7 +40,7 @@ func init() {
 
 	healthcheck = utils.GetEnv("healthcheck", "/v2/purchase/healthcheck")
 	redeem = utils.GetEnv("redeem", "/v2/purchase/redeem")
-	use_voucher = utils.GetEnv("use_voucher", "/v2/purchase/use_voucher")
+	use_voucher = utils.GetEnv("use_voucher", "/v2/purchase/usevoucher")
 	deductPoint = utils.GetEnv("deduct_point", "/v2/purchase/deduct")
 	reversePoint = utils.GetEnv("reverse_point", "/v2/purchase/reversal")
 	earningPoint = utils.GetEnv("earning_point", "/v2/purchase/earningpoint")
@@ -107,7 +107,8 @@ func (ottoRouter *OttoRouter) Routers() {
 	// router.GET(cashbackbyproduct, controllers.InquiryController)
 	// router.POST(healthcheck, controllers.HealthCheck)
 	router.POST(redeem, controllers.VoucherRedeemController)
-	router.POST(use_voucher, controllers.UseVouhcerController)
+	router.POST(use_voucher, controllers.VoucherComulativeController)
+	// router.POST(use_voucher, controllers.UseVouhcerController)
 	router.POST(deductPoint, controllers.PointController)
 	router.POST(reversePoint, controllers.ReversePointController)
 	router.POST(earningPoint, controllers.EarningController)

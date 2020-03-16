@@ -22,12 +22,12 @@ type UseVoucherServices struct {
 	General models.GeneralModel
 }
 
-func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, AccountNumber, InstitutionID string) models.Response {
+func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, param models.Params) models.Response {
 	var res models.Response
 
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[UseVoucher-Services]",
-		zap.String("AccountNumber : ", AccountNumber), zap.String("InstitutionID : ", InstitutionID),
+		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID),
 		zap.String("category : ", req.Category), zap.String("campaignId : ", req.CampaignID),
 		zap.String("cust_id : ", req.CustID), zap.String("cust_id2 : ", req.CustID2),
 		zap.String("product_code : ", req.ProductCode), zap.String("date : ", req.Date))
@@ -36,13 +36,13 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, AccountNumber, 
 	defer span.Finish()
 
 	// get CustID
-	dataUser, errUser := db.CheckUser(AccountNumber)
+	dataUser, errUser := db.CheckUser(param.AccountNumber)
 	if errUser != nil {
 		res = utils.GetMessageResponse(res, 422, false, errors.New("User belum Eligible"))
 		return res
 	}
 
-	data, err := opl.HistoryVoucherCustomer(AccountNumber, "")
+	data, err := opl.HistoryVoucherCustomer(param.AccountNumber, "")
 	if err != nil {
 		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Get History Voucher Customer"))
 		return res
@@ -84,19 +84,11 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, AccountNumber, 
 
 	// save to redis usedAt
 	req.Date = (time.Now().Local().Add(time.Hour * time.Duration(7))).Format("2006-01-02T15:04:05-0700")
-	keyTimeVoucher := fmt.Sprintf("usedVoucherAt-%s-%s", couponId, AccountNumber)
+	keyTimeVoucher := fmt.Sprintf("usedVoucherAt-%s-%s", couponId, param.AccountNumber)
 	go redis.SaveRedis(keyTimeVoucher, req.Date)
 
-	cekData, errDB := db.CheckUser(AccountNumber)
+	cekData, errDB := db.CheckUser(param.AccountNumber)
 	if errDB != nil || cekData.Phone == "" {
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
-		return res
-	}
-
-	//get config
-	memberid, errmember := db.GetConfig()
-	if errmember != nil {
-		fmt.Println("[EEROR-DATABASE]")
 		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
 		return res
 	}
@@ -112,18 +104,23 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, AccountNumber, 
 	resRedeem := models.UseRedeemResponse{}
 
 	reqRedeem := models.UseRedeemRequest{
-		AccountNumber: AccountNumber,
+		AccountNumber: param.AccountNumber,
 		CustID:        req.CustID,
 		CustID2:       req.CustID2,
 		ProductCode:   req.ProductCode,
 	}
+
+	param.ExpDate = expDate
+	param.NamaVoucher = resp[0].Name
+	param.Point = resp[0].CostInPoints
+
 	switch category {
 	case constants.CategoryPulsa, constants.CategoryPaketData:
-		resRedeem = redeem.RedeemPulsa(reqRedeem, AccountNumber, InstitutionID, memberid.MemberID, nama, expDate, category)
+		resRedeem = redeem.RedeemPulsa(reqRedeem, req, param)
 	case constants.CategoryToken:
-		resRedeem = redeem.RedeemPLN(reqRedeem, AccountNumber, InstitutionID, memberid.MemberID, nama, expDate, category)
+		resRedeem = redeem.RedeemPLN(reqRedeem, req, param)
 	case constants.CategoryMobileLegend, constants.CategoryFreeFire:
-		resRedeem = redeem.RedeemGame(reqRedeem, AccountNumber, InstitutionID, memberid.MemberID, nama, expDate, category)
+		resRedeem = redeem.RedeemGame(reqRedeem, req, param)
 	}
 
 	if resRedeem.Msg == "Prefix Failed" {

@@ -52,3 +52,8 @@ const (
 	Pending = "(09 Pending)"
 	Failed  = "(01 Failed)"
 )
+
+const (
+	UV     = "Ultra Voucher"
+	OttoAG = "OttoAG"
+)

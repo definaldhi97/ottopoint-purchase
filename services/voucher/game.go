@@ -13,14 +13,15 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-func RedeemGame(req models.UseRedeemRequest, AccountNumber, InstitutionID, MemberID, namaVoucher, expDate, category string) models.UseRedeemResponse {
+func RedeemGame(req models.UseRedeemRequest, reqOP interface{}, param models.Params) models.UseRedeemResponse {
 	res := models.UseRedeemResponse{}
 
-	// ===== Inquiry OttoAG =====
+	logs.Info("[Start]-[Package-Voucher]-[RedeemGame]")
 
+	// ===== Inquiry OttoAG =====
 	inqBiller := ottoagmodels.BillerInquiryDataReq{
 		ProductCode: req.ProductCode,
-		MemberID:    MemberID,
+		MemberID:    utils.MemberID,
 		CustID:      req.CustID,
 		Period:      req.CustID2,
 	}
@@ -42,13 +43,41 @@ func RedeemGame(req models.UseRedeemRequest, AccountNumber, InstitutionID, Membe
 		return res
 	}
 
-	inqRespOttoag := ottoagmodels.OttoAGInquiryResponse{}
-	inqRespOttoag = biller.InquiryBiller(inqReq.Data, req, AccountNumber, MemberID, namaVoucher, expDate)
+	// inqRespOttoag := ottoagmodels.OttoAGInquiryResponse{}
+	inqRespOttoag, errinqRespOttoag := biller.InquiryBiller(inqReq.Data, reqOP, req, param)
+
+	var custIDGame string
+	if req.CustID2 != "" {
+		custIDGame = req.CustID + " || " + req.CustID2
+	} else {
+		custIDGame = req.CustID
+	}
+
+	// custIDGame := req.CustID + " || " + req.CustID2
+
+	paramInq := models.Params{
+		AccountNumber: req.AccountNumber,
+		MerchantID:    param.MerchantID,
+		InstitutionID: param.InstitutionID,
+		CustID:        custIDGame,
+		// Reffnum
+		RRN:         inqRespOttoag.Rrn,
+		Amount:      inqRespOttoag.Amount,
+		NamaVoucher: param.NamaVoucher,
+		ProductType: "Game",
+		ProductCode: req.ProductCode,
+		Category:    "Game",
+		Point:       param.Point,
+		ExpDate:     param.ExpDate,
+		SupplierID:  param.SupplierID,
+	}
 
 	if inqRespOttoag.Rc != "00" {
 
-		logs.Info("[Response Inquiry %v]", inqRespOttoag.Rc)
-		go SaveTransactionGame(AccountNumber, namaVoucher, inqRespOttoag.CustID, inqRespOttoag.Periode, inqRespOttoag.Rrn, inqRespOttoag.ProductCode, "Inquiry", "01", InstitutionID, inqRespOttoag.Amount)
+		logs.Info("[Error-InquiryResponse]-[RedeemGame]")
+		logs.Info("[Error : %v]", errinqRespOttoag)
+
+		go SaveTransactionGame(paramInq, "Inquiry", "01")
 
 		res = models.UseRedeemResponse{
 			Rc:  "01",
@@ -59,7 +88,7 @@ func RedeemGame(req models.UseRedeemRequest, AccountNumber, InstitutionID, Membe
 	}
 
 	logs.Info("[Response Inquiry %v]", inqRespOttoag.Rc)
-	go SaveTransactionGame(AccountNumber, namaVoucher, inqRespOttoag.CustID, inqRespOttoag.Periode, inqRespOttoag.Rrn, inqRespOttoag.ProductCode, "Inquiry", "01", InstitutionID, inqRespOttoag.Amount)
+	go SaveTransactionGame(paramInq, "Inquiry", "00")
 
 	// ===== Payment OttoAG =====
 	logs.Info("[PAYMENT-BILLER][START]")
@@ -69,18 +98,35 @@ func RedeemGame(req models.UseRedeemRequest, AccountNumber, InstitutionID, Membe
 	billerReq := ottoagmodels.OttoAGPaymentReq{
 		Amount:      uint64(inqRespOttoag.Amount),
 		CustID:      req.CustID,
-		MemberID:    MemberID,
+		MemberID:    utils.MemberID,
 		Period:      req.CustID2,
 		Productcode: req.ProductCode,
 		Rrn:         inqRespOttoag.Rrn,
 	}
 
-	billerRes := biller.PaymentBiller(billerReq, req, AccountNumber, inqRespOttoag.Amount, inqRespOttoag.Rrn, MemberID, namaVoucher, expDate, category)
+	billerRes := biller.PaymentBiller(billerReq, reqOP, req, param)
+
+	paramPay := models.Params{
+		AccountNumber: req.AccountNumber,
+		MerchantID:    param.MerchantID,
+		InstitutionID: param.InstitutionID,
+		CustID:        custIDGame,
+		// Reffnum
+		RRN:         billerRes.Rrn,
+		Amount:      int64(billerRes.Amount),
+		NamaVoucher: param.NamaVoucher,
+		ProductType: "Game",
+		ProductCode: req.ProductCode,
+		Category:    "Game",
+		Point:       param.Point,
+		ExpDate:     param.ExpDate,
+		SupplierID:  param.SupplierID,
+	}
 
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
 		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-		go SaveTransactionGame(AccountNumber, namaVoucher, billerRes.Custid, billerRes.Period, billerRes.Rrn, billerRes.Productcode, "Payment", "09", InstitutionID, int64(billerRes.Amount))
+		go SaveTransactionGame(paramPay, "Payment", "09")
 
 		res = models.UseRedeemResponse{
 			Rc:  "09",
@@ -92,7 +138,7 @@ func RedeemGame(req models.UseRedeemRequest, AccountNumber, InstitutionID, Membe
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
 		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-		go SaveTransactionGame(AccountNumber, namaVoucher, billerRes.Custid, billerRes.Period, billerRes.Rrn, billerRes.Productcode, "Payment", "01", InstitutionID, int64(billerRes.Amount))
+		go SaveTransactionGame(paramPay, "Payment", "01")
 
 		res = models.UseRedeemResponse{
 			Rc:  "01",
@@ -103,7 +149,7 @@ func RedeemGame(req models.UseRedeemRequest, AccountNumber, InstitutionID, Membe
 	}
 
 	logs.Info("[Response Payment %v]", billerRes.Rc)
-	go SaveTransactionGame(AccountNumber, namaVoucher, billerRes.Custid, billerRes.Period, billerRes.Rrn, billerRes.Productcode, "Payment", "00", InstitutionID, int64(billerRes.Amount))
+	go SaveTransactionGame(paramPay, "Payment", "00")
 
 	res = models.UseRedeemResponse{
 		Rc:          billerRes.Rc,
@@ -122,7 +168,7 @@ func RedeemGame(req models.UseRedeemRequest, AccountNumber, InstitutionID, Membe
 	return res
 }
 
-func SaveTransactionGame(AccountNumber, voucher, CustID1, CustID2, RRN, ProductCode, trasnType, status, instituion string, amount int64) {
+func SaveTransactionGame(param models.Params, trasnType, status string) {
 
 	logs.Info("[Start-SaveDB]-[Game]")
 
@@ -136,27 +182,20 @@ func SaveTransactionGame(AccountNumber, voucher, CustID1, CustID2, RRN, ProductC
 		saveStatus = constants.Failed
 	}
 
-	var cust_id string
-	if CustID2 != "" {
-		cust_id = CustID1 + " || " + CustID2
-	} else {
-		cust_id = CustID1
-	}
-
 	save := dbmodels.TransaksiRedeem{
-		AccountNumber: AccountNumber,
-		Voucher:       voucher,
-		CustID:        cust_id,
-		// MerchantID:    AccountNumber.MerchantID,
-		RRN:         RRN,
-		ProductCode: ProductCode,
-		Amount:      amount,
-		TransType:   trasnType,
-		Status:      saveStatus,
-		// ExpDate:     expDate,
-		Institution: instituion,
-		ProductType: "Pulsa",
-		DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
+		AccountNumber: param.AccountNumber,
+		Voucher:       param.NamaVoucher,
+		CustID:        param.CustID,
+		MerchantID:    param.MerchantID,
+		RRN:           param.RRN,
+		ProductCode:   param.ProductCode,
+		Amount:        param.Amount,
+		TransType:     trasnType,
+		Status:        saveStatus,
+		ExpDate:       param.ExpDate,
+		Institution:   param.InstitutionID,
+		ProductType:   param.ProductType,
+		DateTime:      utils.GetTimeFormatYYMMDDHHMMSS(),
 	}
 
 	err := db.DbCon.Create(&save).Error

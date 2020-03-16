@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"os/exec"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/redis"
+	"strconv"
 	"strings"
 	"time"
 
@@ -23,6 +25,7 @@ var (
 	DefaultStatusMsg  string
 	RedisKeyAuth      string
 	LimitTRXPoint     string
+	MemberID          string
 
 	ListErrorCode []models.MappingErrorCodes
 )
@@ -33,6 +36,8 @@ func init() {
 	rrnkey = ODU.GetEnv("REDISKEY.OTTOFIN.RRN", "OTTOFIN:KEYRRN")
 	RedisKeyAuth = ODU.GetEnv("redis.key.auth", "Ottopoint-Token-Admin :")
 	LimitTRXPoint = ODU.GetEnv("limit.trx.point", "999999999999999")
+	MemberID = ODU.GetEnv("ottoag.memberid", "OTPOINT")
+
 }
 
 func GetMessageResponse(res models.Response, code int, status bool, err error) models.Response {
@@ -41,6 +46,17 @@ func GetMessageResponse(res models.Response, code int, status bool, err error) m
 
 	res.Meta.Code = code
 	res.Meta.Status = status
+	res.Meta.Message = err.Error()
+
+	return res
+}
+
+func GetMessageFailedError(res models.Response, code int, err error) models.Response {
+
+	res = models.Response{}
+
+	res.Meta.Code = code
+	res.Meta.Status = false
 	res.Meta.Message = err.Error()
 
 	return res
@@ -231,4 +247,20 @@ func GenerateTokenUUID() string {
 	encode64Token := base64.StdEncoding.EncodeToString([]byte(tokenString))
 	log.Print(encode64Token)
 	return encode64Token
+}
+
+func GenTransactionId() string {
+
+	currentTime := fmt.Sprintf(time.Now().Format("060102"))
+	currentMilitmp := strconv.FormatInt(time.Now().UnixNano()/int64(time.Millisecond), 10)
+	currentMili := currentMilitmp[8:len(currentMilitmp)]
+	randomvalue := strconv.Itoa(Random(11111, 99999))
+	transactionID := currentTime + currentMili + randomvalue
+
+	return transactionID
+}
+
+func Random(min, max int) int {
+	rand.Seed(time.Now().Unix())
+	return rand.Intn(max-min) + min
 }

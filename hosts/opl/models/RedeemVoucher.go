@@ -5,5 +5,6 @@ type BuyVocuherResp struct {
 }
 
 type GetCoupons struct {
+	Id   string `json:"id"`
 	Code string `json:"code"`
 }
