@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"ottopoint-purchase/constants"
 	db "ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
 	redismodels "ottopoint-purchase/hosts/redis_token/models"
@@ -42,7 +43,7 @@ func (t SpendPointServices) NewSpendPointServices(req models.PointReq, dataToken
 		logs.Info("[SpendPoint-Services]")
 		logs.Info("[Get CustId OPL to DB]")
 
-		sugarLogger.Info("Internal Server Error : ", errDB)
+		sugarLogger.Info("Internal Server Error : ")
 		sugarLogger.Info("[SpendPoint-Services]")
 		sugarLogger.Info("[Get CustId OPL to DB]")
 
@@ -51,7 +52,7 @@ func (t SpendPointServices) NewSpendPointServices(req models.PointReq, dataToken
 	}
 
 	logs.Info("CustID OPL : ", dataDB.CustID)
-	sugarLogger.Info("CustID OPL : ", dataDB.CustID)
+	sugarLogger.Info("CustID OPL : ")
 
 	// Hit to Openloyalty
 	data, err := opl.SpendPoint(dataDB.CustID, strconv.Itoa(req.Point), req.Text)
@@ -61,11 +62,11 @@ func (t SpendPointServices) NewSpendPointServices(req models.PointReq, dataToken
 		logs.Info("[SpendPoint-Services]")
 		logs.Info("[Hit Transfer API to OPL]")
 
-		sugarLogger.Info("Internal Server Error : ", err)
+		sugarLogger.Info("Internal Server Error : ")
 		sugarLogger.Info("[SpendPoint-Services]")
 		sugarLogger.Info("[Hit Transfer API to OPL]")
-
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Transfer Point"))
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_FAILED_TRANS_POINT, constants.RD_ERROR_FAILED_TRANS_POINT)
+		//res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Transfer Point"))
 		return res
 	}
 

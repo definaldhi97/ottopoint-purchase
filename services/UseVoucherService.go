@@ -38,13 +38,15 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, param models.Pa
 	// get CustID
 	dataUser, errUser := db.CheckUser(param.AccountNumber)
 	if errUser != nil {
-		res = utils.GetMessageResponse(res, 422, false, errors.New("User belum Eligible"))
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_ACC_NOT_ELIGIBLE, constants.RD_ERROR_ACC_NOT_ELIGIBLE)
+		//res = utils.GetMessageResponse(res, 422, false, errors.New("User belum Eligible"))
 		return res
 	}
 
 	data, err := opl.HistoryVoucherCustomer(param.AccountNumber, "")
 	if err != nil {
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Get History Voucher Customer"))
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_FAILED_GET_HISTORY_VOUCHER, constants.RD_ERROR_FAILED_GET_HISTORY_VOUCHER)
+		//res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Get History Voucher Customer"))
 		return res
 	}
 
@@ -78,7 +80,7 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, param models.Pa
 	// Use Voucher to Openloyalty
 	_, err2 := opl.CouponVoucherCustomer(campaign, couponId, couponCode, dataUser.CustID, 1)
 	if err2 != nil {
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_FAILED_REDEEM_VOUCHER, constants.RD_ERROR_FAILED_REDEEM_VOUCHER)
 		return res
 	}
 
@@ -126,8 +128,8 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, param models.Pa
 	if resRedeem.Msg == "Prefix Failed" {
 		logs.Info("[Prefix Failed]")
 		logs.Info("[Services-Voucher-UserVoucher]")
-
-		res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Gagal"))
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_FAILED_TRANSACTION, constants.RD_ERROR_FAILED_TRANSACTION)
+		//res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Gagal"))
 		return res
 	}
 
@@ -138,11 +140,13 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, param models.Pa
 		logs.Info("[Reversal Voucher")
 		_, erv := opl.CouponVoucherCustomer(campaign, couponId, couponCode, dataUser.CustID, 0)
 		if erv != nil {
-			res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Reversal Voucher"))
+			res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_FAILED_REVERSAL_VOUCHER, constants.RD_ERROR_FAILED_REVERSAL_VOUCHER)
+			//res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Reversal Voucher"))
 			return res
 		}
 
-		res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Gagal"))
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_FAILED_TRANSACTION, constants.RD_ERROR_FAILED_TRANSACTION)
+		//res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Gagal"))
 		return res
 	}
 
@@ -153,19 +157,21 @@ func (t UseVoucherServices) UseVoucher(req models.UseVoucherReq, param models.Pa
 		logs.Info("[Reversal Voucher")
 		_, erv := opl.CouponVoucherCustomer(campaign, couponId, couponCode, dataUser.CustID, 0)
 		if erv != nil {
-			res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Reversal Voucher"))
+			res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_FAILED_REVERSAL_VOUCHER, constants.RD_ERROR_FAILED_REVERSAL_VOUCHER)
+			//res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Reversal Voucher"))
 			return res
 		}
 
-		res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Gagal"))
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_FAILED_TRANSACTION, constants.RD_ERROR_FAILED_TRANSACTION)
+		//res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Gagal"))
 		return res
 	}
 
 	if resRedeem.Msg == "Request in progress" {
 		logs.Info("[Prefix Failed]")
 		logs.Info("[Services-Voucher-UserVoucher]")
-
-		res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Pending"))
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_PENDING_TRANSACTION, constants.RD_ERROR_PENDING_TRANSACTION)
+		//res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Pending"))
 		return res
 	}
 

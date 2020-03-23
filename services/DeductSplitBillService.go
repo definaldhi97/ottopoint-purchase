@@ -1,8 +1,8 @@
 package services
 
 import (
-	"errors"
 	"fmt"
+	"ottopoint-purchase/constants"
 	db "ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
 	"ottopoint-purchase/models"
@@ -28,10 +28,10 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		Message: "Succesful",
 	}
 
-	resData := models.ResponseData{
-		ResponseCode: "05",
-		ResponseDesc: "Error",
-	}
+	// resData := models.ResponseData{
+	// 	ResponseCode: "05",
+	// 	ResponseDesc: "Error",
+	// }
 
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[DeductSplitBill-Services]",
@@ -46,20 +46,20 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 	// Get CustID OPL from DB
 	dataDB, errDB := db.CheckUser(accountNumber)
 	if errDB != nil || dataDB.CustID == "" {
-		logs.Info("Internal Server Error : ", errDB)
+		logs.Info("Internal Server Error : ")
 		logs.Info("[DeductSplitBill-Services]")
 		logs.Info("[Get CustId OPL to DB]")
 
-		sugarLogger.Info("Internal Server Error : ", errDB)
+		sugarLogger.Info("Internal Server Error : ")
 		sugarLogger.Info("[DeductSplitBill-Services]")
 		sugarLogger.Info("[Get CustId OPL to DB]")
-
-		res = utils.GetMessageResponseData(res, resData, 422, false, errors.New("Nomor belum eligible"))
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_ACC_NOT_ELIGIBLE, constants.RD_ERROR_ACC_NOT_ELIGIBLE)
+		//res = utils.GetMessageResponseData(res, resData, 422, false, errors.New("Nomor belum eligible"))
 		return res
 	}
 
 	logs.Info("CustID OPL : ", dataDB.CustID)
-	sugarLogger.Info("CustID OPL : ", dataDB.CustID)
+	sugarLogger.Info("CustID OPL : ")
 
 	// Cek Balance
 	dataBalance, errBalance := opl.GetBalance(dataDB.CustID)
@@ -68,22 +68,22 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		logs.Info("[DeductSplitBill-Services]")
 		logs.Info("[Get CustId OPL to DB]")
 
-		sugarLogger.Info("Internal Server Error : ", errDB)
+		sugarLogger.Info("Internal Server Error : ")
 		sugarLogger.Info("[DeductSplitBill-Services]")
 		sugarLogger.Info("[Get CustId OPL to DB]")
-
-		res = utils.GetMessageResponseData(res, resData, 422, false, errors.New("Failed to GetBalance"))
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_FAILED_GETBALANCE, constants.RD_ERROR_FAILED_GETBALANCE)
+		//res = utils.GetMessageResponseData(res, resData, 422, false, errors.New("Failed to GetBalance"))
 		return res
 	}
 
 	// Validate TRX ID
 	dataTrx, errTrx := db.GetData(req.TrxID, institution)
 	if errTrx == nil {
-		logs.Info("Internal Server Error : ", errDB)
+		logs.Info("Internal Server Error : ")
 		logs.Info("[DeductSplitBill-Services]")
 		logs.Info("[Get Data TRXID to DB]")
 
-		sugarLogger.Info("Internal Server Error : ", errDB)
+		sugarLogger.Info("Internal Server Error : ")
 		sugarLogger.Info("[DeductSplitBill-Services]")
 		sugarLogger.Info("[Get Data TRXID to DB]")
 
@@ -99,8 +99,8 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		// sugarLogger.Info("Internal Server Error : ", errDB)
 		sugarLogger.Info("[DeductSplitBill-Services]")
 		sugarLogger.Info("Validate TrxID]")
-
-		res = utils.GetMessageResponseData(res, resData, 422, false, errors.New("Duplicate TrxID"))
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_DUPLICATE_TRXID, constants.RD_ERROR_DUPLICATE_TRXID)
+		//res = utils.GetMessageResponseData(res, resData, 422, false, errors.New("Duplicate TrxID"))
 		return res
 	}
 
@@ -113,13 +113,15 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		logs.Info("[DeductSplitBill-Services]-[Point Tidak Mencukupi]")
 		sugarLogger.Info("[DeductSplitBill-Services]-[Point Tidak Mencukupi]")
 
-		res = models.Response{
-			Meta: resMeta,
-			Data: models.ResponseData{
-				ResponseCode: "27",
-				ResponseDesc: "Point Anda Tidak Mencukupi",
-			},
-		}
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_NOT_ENOUGH_BALANCE, constants.RD_ERROR_NOT_ENOUGH_BALANCE)
+
+		// res = models.Response{
+		// 	Meta: resMeta,
+		// 	Data: models.ResponseData{
+		// 		ResponseCode: "27",
+		// 		ResponseDesc: "Point Anda Tidak Mencukupi",
+		// 	},
+		// }
 
 		return res
 	}
@@ -133,12 +135,11 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		logs.Info("[DeductSplitBill-Services]")
 		logs.Info("[Hit Transfer API to OPL]")
 
-		sugarLogger.Info("Internal Server Error : ", err)
+		sugarLogger.Info("Internal Server Error : ")
 		sugarLogger.Info("[DeductSplitBill-Services]")
 		sugarLogger.Info("[Hit Spend API to OPL]")
-
-		res = utils.GetMessageResponseData(res, resData, 422, false, errors.New("Gagal Transfer Point"))
-
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_FAILED_TRANS_POINT, constants.RD_ERROR_FAILED_TRANS_POINT)
+		//res = utils.GetMessageResponseData(res, resData, 422, false, errors.New("Gagal Transfer Point"))
 		return res
 	}
 
@@ -163,7 +164,7 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		logs.Info("Failed Save to database", errSave)
 
 		sugarLogger.Info("[DeductSplitBill-Services]")
-		sugarLogger.Info("Failed Save to database", errSave)
+		sugarLogger.Info("Failed Save to database")
 		// return errSave
 	}
 
