@@ -1,11 +1,16 @@
 package controllers
 
 import (
+	"errors"
+	"fmt"
+
+	"ottopoint-purchase/constants"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/services"
 	"ottopoint-purchase/utils"
 	"time"
 
+	opl "ottopoint-purchase/hosts/opl/host"
 	token "ottopoint-purchase/hosts/redis_token/host"
 
 	"github.com/gin-gonic/gin"
@@ -60,13 +65,45 @@ func UseVouhcerController(ctx *gin.Context) {
 		},
 	}
 
+	cekVoucher, errVoucher := opl.HistoryVoucherCustomer(dataToken.Data, "")
+	if errVoucher != nil || cekVoucher.Campaigns[0].CampaignID == "" {
+		sugarLogger.Info("[HistoryVoucherCustomer]-[UseVouhcerController]")
+		sugarLogger.Info(fmt.Sprintf("Error : ", errVoucher))
+
+		logs.Info("[HistoryVoucherCustomer]-[UseVouhcerController]")
+		logs.Info(fmt.Sprintf("Error : ", errVoucher))
+
+		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	data := SwitchCheckData(cekVoucher.Campaigns, req.Category, req.CampaignID)
+
+	logs.Info("SupplierID : ", data.SupplierID)
+	logs.Info("producrType : ", data.ProductType)
+
+	sugarLogger.Info("SupplierID : ", data.SupplierID)
+	sugarLogger.Info("producrType : ", data.ProductType)
+
 	param := models.Params{
 		AccountNumber: dataToken.Data,
 		MerchantID:    dataToken.MerchantID,
 		InstitutionID: header.InstitutionID,
+		SupplierID:    data.SupplierID,
+		ProductType:   data.ProductType,
+		ProductCode:   data.ProductCode,
+		NamaVoucher:   data.NamaVoucher,
+		Category:      req.Category,
+		CouponID:      data.CouponID,
 	}
 
-	res = usevoucher.UseVoucher(req, param)
+	switch data.SupplierID {
+	case constants.UV:
+		res = usevoucher.UseVoucherUV(req, param)
+	case constants.OttoAG:
+		res = usevoucher.UseVoucherOttoAG(req, param)
+	}
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", res))

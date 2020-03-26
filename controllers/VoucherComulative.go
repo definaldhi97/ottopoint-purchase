@@ -6,6 +6,7 @@ import (
 
 	"ottopoint-purchase/constants"
 	opl "ottopoint-purchase/hosts/opl/host"
+	modelsopl "ottopoint-purchase/hosts/opl/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/services"
 	"ottopoint-purchase/utils"
@@ -66,12 +67,21 @@ func VoucherComulativeController(ctx *gin.Context) {
 		},
 	}
 
-	cekVoucher, errVoucher := opl.VoucherDetail(req.CampaignID)
-	if errVoucher != nil || cekVoucher.Name == "" {
-		sugarLogger.Info("[GetVoucherDetail]-[VoucherComulative-Controller]")
+	ultraVoucher := services.UseVoucherUltraVoucher{
+		General: models.GeneralModel{
+			ParentSpan: span,
+			OttoZaplog: sugarLogger,
+			SpanId:     spanid,
+			Context:    context,
+		},
+	}
+
+	cekVoucher, errVoucher := opl.HistoryVoucherCustomer(dataToken.Data, "")
+	if errVoucher != nil || cekVoucher.Campaigns[0].CampaignID == "" {
+		sugarLogger.Info("[HistoryVoucherCustomer]-[VoucherComulative-Controller]")
 		sugarLogger.Info(fmt.Sprintf("Error : ", errVoucher))
 
-		logs.Info("[GetVoucherDetail]-[VoucherComulative-Controller]")
+		logs.Info("[HistoryVoucherCustomer]-[VoucherComulative-Controller]")
 		logs.Info(fmt.Sprintf("Error : ", errVoucher))
 
 		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
@@ -79,12 +89,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 		return
 	}
 
-	var supplier string
-	for _, val := range cekVoucher.Coupons {
-		supplier = val
-	}
-
-	data := SwitchCheckData(supplier, req.Category)
+	data := SwitchCheckData(cekVoucher.Campaigns, req.Category, req.CampaignID)
 
 	logs.Info("SupplierID : ", data.SupplierID)
 	logs.Info("producrType : ", data.ProductType)
@@ -98,13 +103,15 @@ func VoucherComulativeController(ctx *gin.Context) {
 		InstitutionID: header.InstitutionID,
 		SupplierID:    data.SupplierID,
 		ProductType:   data.ProductType,
-		NamaVoucher:   cekVoucher.Name,
+		ProductCode:   data.ProductCode,
+		NamaVoucher:   data.NamaVoucher,
 		Category:      req.Category,
+		CouponID:      data.CouponID,
 	}
 
 	switch data.SupplierID {
-	// case constants.UV:
-	// 	res = voucherComulative.VoucherComulative(req, param)
+	case constants.UV:
+		res = ultraVoucher.UltraVoucherServices(req, param)
 	case constants.OttoAG:
 		res = voucherComulative.VoucherComulative(req, param)
 	}
@@ -122,10 +129,35 @@ func VoucherComulativeController(ctx *gin.Context) {
 
 }
 
-func SwitchCheckData(supplier, product string) models.Params {
+func SwitchCheckData(data []modelsopl.CampaignsDetail, product, CampaignID string) models.Params {
 	res := models.Params{}
 
-	supplierid := supplier[0:2]
+	resp := []models.CampaignsDetail{}
+	for _, val := range data {
+		if val.CampaignID == CampaignID && val.CanBeUsed == true {
+			a := models.CampaignsDetail{
+				Name:       val.Campaign.Name,
+				CampaignID: val.CampaignID,
+				ActiveTo:   val.ActiveTo,
+				Coupon: models.CouponDetail{
+					Code: val.Coupon.Code,
+					ID:   val.Coupon.ID,
+				},
+			}
+
+			resp = append(resp, a)
+		}
+	}
+
+	var couponId, couponCode, nama, expDate string
+	for _, valco := range resp {
+		nama = valco.Name
+		couponId = valco.Coupon.ID
+		couponCode = valco.Coupon.Code
+		expDate = valco.ActiveTo
+	}
+
+	supplierid := couponCode[2:]
 	var supplierID string
 	if supplierid == "UV" {
 		supplierID = "Ultra Voucher"
@@ -146,6 +178,9 @@ func SwitchCheckData(supplier, product string) models.Params {
 	res = models.Params{
 		ProductType: producrType,
 		SupplierID:  supplierID,
+		NamaVoucher: nama,
+		CouponID:    couponId,
+		ExpDate:     expDate,
 	}
 
 	return res

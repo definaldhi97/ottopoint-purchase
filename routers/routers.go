@@ -26,6 +26,7 @@ var (
 	healthcheck  string
 	earningPoint string
 	splitbill    string
+	comulative   string
 
 	nameservice     string
 	agentracinghost string
@@ -41,10 +42,11 @@ func init() {
 	healthcheck = utils.GetEnv("healthcheck", "/transaction/v2/healthcheck")
 	redeem = utils.GetEnv("redeem", "/transaction/v2/redeem")
 	use_voucher = utils.GetEnv("use_voucher", "/transaction/v2/usevoucher")
+	comulative = utils.GetEnv("comulative", "/transaction/v2/comulative")
 	deductPoint = utils.GetEnv("deduct_point", "/transaction/v2/deduct")
 	reversePoint = utils.GetEnv("reverse_point", "/transaction/v2/reversal")
 	earningPoint = utils.GetEnv("earning_point", "/transaction/v2/earningpoint")
-	splitbill = utils.GetEnv("splitbill", "/transaction/v2/splitbill")
+	splitbill = utils.GetEnv("splitbill", "v2/transaction/splitbill")
 
 	debugmode = utils.GetEnv("apps.debug", "debug")
 
@@ -105,10 +107,10 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.Use(gin.Recovery())
 
 	// router.GET(cashbackbyproduct, controllers.InquiryController)
-	// router.POST(healthcheck, controllers.HealthCheck)
+	router.POST(healthcheck, controllers.HealthCheckService)
 	router.POST(redeem, controllers.VoucherRedeemController)
-	router.POST(use_voucher, controllers.VoucherComulativeController)
-	// router.POST(use_voucher, controllers.UseVouhcerController)
+	router.POST(comulative, controllers.VoucherComulativeController)
+	router.POST(use_voucher, controllers.UseVouhcerController)
 	router.POST(deductPoint, controllers.PointController)
 	router.POST(reversePoint, controllers.ReversePointController)
 	router.POST(earningPoint, controllers.EarningController)

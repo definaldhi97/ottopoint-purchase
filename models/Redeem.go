@@ -15,6 +15,7 @@ type RedeemResp struct {
 type CouponsRedeem struct {
 	Voucher string `json:"voucher"`
 	Code    string `json:"code"`
+	ID      string `json:"id"`
 }
 
 type Redeem struct {

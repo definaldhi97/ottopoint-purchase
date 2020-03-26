@@ -72,7 +72,7 @@ func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Pa
 		AccountNumber: param.AccountNumber,
 		CustID:        req.CustID,
 		CustID2:       req.CustID2,
-		ProductCode:   req.ProductCode,
+		ProductCode:   param.ProductCode,
 	}
 
 	resRedeem := models.UseRedeemResponse{}
