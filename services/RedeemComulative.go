@@ -26,7 +26,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 	logs.Info("[Start]-[Package-Services]-[RedeemComulativeVoucher]")
 
 	// validate prefix
-	validate, errValidate := ValidatePrefixComulative(req.CustID, req.ProductCode)
+	validate, errValidate := ValidatePrefixComulative(req.CustID, param.ProductCode)
 	if validate == false {
 
 		redeemRes = models.RedeemComuResp{
@@ -45,7 +45,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 	// ==========Inquery OttoAG==========
 
 	inqBiller := ottoagmodels.BillerInquiryDataReq{
-		ProductCode: req.ProductCode,
+		ProductCode: param.ProductCode,
 		MemberID:    utils.MemberID,
 		CustID:      req.CustID,
 	}
@@ -62,7 +62,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		AccountNumber: param.AccountNumber,
 		CustID:        req.CustID,
 		CustID2:       req.CustID2,
-		ProductCode:   req.ProductCode,
+		ProductCode:   param.ProductCode,
 	}
 
 	if !ottoag.ValidateDataInq(inqReq) {
@@ -97,7 +97,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		Amount:        dataInquery.Amount,
 		NamaVoucher:   param.NamaVoucher,
 		ProductType:   param.ProductType,
-		ProductCode:   req.ProductCode,
+		ProductCode:   param.ProductCode,
 		Category:      param.Category,
 		Point:         param.Point,
 		ExpDate:       param.ExpDate,

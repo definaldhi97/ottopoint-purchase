@@ -60,7 +60,7 @@ func EarningController(ctx *gin.Context) {
 		logs.Info("[InstitutionId]-[EarningController]")
 		logs.Info(fmt.Sprintf("Error when validation request header"))
 
-		res = utils.GetMessageResponse(res, 400, false, errors.New("InstitutionId tidaj tersedia"))
+		res = utils.GetMessageResponse(res, 400, false, errors.New("InstitutionId tidak tersedia"))
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}

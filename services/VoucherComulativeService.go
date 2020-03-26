@@ -24,7 +24,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	sugarLogger.Info("[VoucherComulative-Services]",
 		zap.String("NameVoucher : ", param.NamaVoucher), zap.Int("Jumlah : ", req.Jumlah),
 		zap.String("CampaignID : ", req.CampaignID), zap.String("CampaignID : ", req.CampaignID),
-		zap.String("CustID2 : ", req.CustID2), zap.String("ProductCode : ", req.ProductCode),
+		zap.String("CustID2 : ", req.CustID2), zap.String("ProductCode : ", param.ProductCode),
 		zap.Int("Point : ", req.Point),
 		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID))
 

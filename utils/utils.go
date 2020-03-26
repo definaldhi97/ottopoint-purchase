@@ -249,6 +249,7 @@ func GenerateTokenUUID() string {
 	return encode64Token
 }
 
+// ReffNumb
 func GenTransactionId() string {
 
 	currentTime := fmt.Sprintf(time.Now().Format("060102"))

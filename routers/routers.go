@@ -26,6 +26,7 @@ var (
 	healthcheck  string
 	earningPoint string
 	splitbill    string
+	comulative   string
 
 	nameservice     string
 	agentracinghost string
@@ -38,13 +39,14 @@ var (
 func init() {
 	//TODO pls change UPERCASE & _ Not using dot
 
-	healthcheck = utils.GetEnv("healthcheck", "/v2/purchase/healthcheck")
-	redeem = utils.GetEnv("redeem", "/v2/purchase/redeem")
-	use_voucher = utils.GetEnv("use_voucher", "/v2/purchase/usevoucher")
-	deductPoint = utils.GetEnv("deduct_point", "/v2/purchase/deduct")
-	reversePoint = utils.GetEnv("reverse_point", "/v2/purchase/reversal")
-	earningPoint = utils.GetEnv("earning_point", "/v2/purchase/earningpoint")
-	splitbill = utils.GetEnv("splitbill", "v2/purchase/splitbill")
+	healthcheck = utils.GetEnv("healthcheck", "/transaction/v2/healthcheck")
+	redeem = utils.GetEnv("redeem", "/transaction/v2/redeem")
+	use_voucher = utils.GetEnv("use_voucher", "/transaction/v2/usevoucher")
+	comulative = utils.GetEnv("comulative", "/transaction/v2/comulative")
+	deductPoint = utils.GetEnv("deduct_point", "/transaction/v2/deduct")
+	reversePoint = utils.GetEnv("reverse_point", "/transaction/v2/reversal")
+	earningPoint = utils.GetEnv("earning_point", "/transaction/v2/earningpoint")
+	splitbill = utils.GetEnv("splitbill", "v2/transaction/splitbill")
 
 	debugmode = utils.GetEnv("apps.debug", "debug")
 
@@ -105,10 +107,10 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.Use(gin.Recovery())
 
 	// router.GET(cashbackbyproduct, controllers.InquiryController)
-	// router.POST(healthcheck, controllers.HealthCheck)
+	router.POST(healthcheck, controllers.HealthCheckService)
 	router.POST(redeem, controllers.VoucherRedeemController)
-	router.POST(use_voucher, controllers.VoucherComulativeController)
-	// router.POST(use_voucher, controllers.UseVouhcerController)
+	router.POST(comulative, controllers.VoucherComulativeController)
+	router.POST(use_voucher, controllers.UseVouhcerController)
 	router.POST(deductPoint, controllers.PointController)
 	router.POST(reversePoint, controllers.ReversePointController)
 	router.POST(earningPoint, controllers.EarningController)
