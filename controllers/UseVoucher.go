@@ -13,6 +13,7 @@ import (
 	opl "ottopoint-purchase/hosts/opl/host"
 	token "ottopoint-purchase/hosts/redis_token/host"
 
+	"github.com/astaxie/beego/logs"
 	"github.com/gin-gonic/gin"
 	zaplog "github.com/opentracing-contrib/go-zap/log"
 	"github.com/opentracing/opentracing-go"
@@ -83,8 +84,11 @@ func UseVouhcerController(ctx *gin.Context) {
 	logs.Info("SupplierID : ", data.SupplierID)
 	logs.Info("producrType : ", data.ProductType)
 
-	sugarLogger.Info("SupplierID : ", data.SupplierID)
-	sugarLogger.Info("producrType : ", data.ProductType)
+	sugarLogger.Info("=== SupplierID ===")
+	sugarLogger.Info(data.SupplierID)
+
+	sugarLogger.Info("=== producrType ===")
+	sugarLogger.Info(data.ProductType)
 
 	param := models.Params{
 		AccountNumber: dataToken.Data,

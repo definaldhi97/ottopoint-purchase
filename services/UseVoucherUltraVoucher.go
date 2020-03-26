@@ -48,9 +48,9 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			logs.Info("[UltraVoucherServices]-[OrderVoucher]")
 			logs.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
 
-			sugarLogger.Info("Internal Server Error : ", errOrder)
 			sugarLogger.Info("[UltraVoucherServices]-[OrderVoucher]")
 			sugarLogger.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
+			// sugarLogger.Info("Internal Server Error : ", errOrder)
 
 			// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Order Voucher"))
 			// return res
@@ -64,9 +64,9 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			logs.Info("[UltraVoucherServices]-[RedeemVoucher]")
 			logs.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
 
-			sugarLogger.Info("Internal Server Error : ", errredeem)
 			sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
 			sugarLogger.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
+			// sugarLogger.Info("Internal Server Error : ", errredeem)
 
 			// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
 			// return res
