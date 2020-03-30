@@ -39,59 +39,14 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 		return res
 	}
 
-	data, err := opl.HistoryVoucherCustomer(param.AccountNumber, "")
-
-	// var campaign, couponId, couponCode string
-	resp := []models.CampaignsDetail{}
-	for _, val := range data.Campaigns {
-		if val.CampaignID == req.CampaignID && val.CanBeUsed == true {
-			a := models.CampaignsDetail{
-				Name:       val.Campaign.Name,
-				CampaignID: val.CampaignID,
-				ActiveTo:   val.ActiveTo,
-				Coupon: models.CouponDetail{
-					Code: val.Coupon.Code,
-					ID:   val.Coupon.ID,
-				},
-			}
-
-			resp = append(resp, a)
-		}
-	}
-
-	var campaign, couponId, couponCode, nama, expDate string
-	for _, valco := range resp {
-		nama = valco.Name
-		campaign = valco.CampaignID
-		couponId = valco.Coupon.ID
-		couponCode = valco.Coupon.Code
-		expDate = valco.ActiveTo
-	}
-
-	if err != nil || nama == "" {
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Get History Voucher Customer"))
-		return res
-	}
-
 	// Use Voucher to Openloyalty
-	_, err2 := opl.CouponVoucherCustomer(campaign, couponId, couponCode, dataUser.CustID, 1)
+	_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, dataUser.CustID, 1)
 	if err2 != nil {
 		res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
 		return res
 	}
 
-	// // save to redis usedAt
-	// req.Date = (time.Now().Local().Add(time.Hour * time.Duration(7))).Format("2006-01-02T15:04:05-0700")
-	// keyTimeVoucher := fmt.Sprintf("usedVoucherAt-%s-%s", couponId, param.AccountNumber)
-	// go redis.SaveRedis(keyTimeVoucher, req.Date)
-
 	category := strings.ToLower(req.Category)
-
-	logs.Info("===== nama : %v =====", resp[0].Name)
-	logs.Info("===== Category : %v =====", category)
-	logs.Info("===== couponId : %v =====", couponId)
-	logs.Info("===== couponCode : %v =====", couponCode)
-	logs.Info("===== expDate : %v =====", expDate)
 
 	resRedeem := models.UseRedeemResponse{}
 
@@ -101,10 +56,6 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 		CustID2:       req.CustID2,
 		ProductCode:   param.ProductCode,
 	}
-
-	param.ExpDate = expDate
-	param.NamaVoucher = resp[0].Name
-	param.Point = resp[0].CostInPoints
 
 	switch category {
 	case constants.CategoryPulsa, constants.CategoryPaketData:
@@ -128,7 +79,7 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 		logs.Info("[Services-Voucher-UserVoucher]")
 
 		logs.Info("[Reversal Voucher")
-		_, erv := opl.CouponVoucherCustomer(campaign, couponId, couponCode, dataUser.CustID, 0)
+		_, erv := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, dataUser.CustID, 0)
 		if erv != nil {
 			res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Reversal Voucher"))
 			return res
@@ -143,7 +94,7 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 		logs.Info("[Services-Voucher-UserVoucher]")
 
 		logs.Info("[Reversal Voucher")
-		_, erv := opl.CouponVoucherCustomer(campaign, couponId, couponCode, dataUser.CustID, 0)
+		_, erv := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, dataUser.CustID, 0)
 		if erv != nil {
 			res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Reversal Voucher"))
 			return res
@@ -165,7 +116,7 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 		if resRedeem.Category == "PLN" {
 			res = models.Response{
 				Data: models.ResponseUseVoucherPLN{
-					Voucher:     nama,
+					Voucher:     param.NamaVoucher,
 					CustID:      resRedeem.CustID,
 					CustID2:     resRedeem.CustID2,
 					ProductCode: resRedeem.ProductCode,
@@ -179,7 +130,7 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 
 		res = models.Response{
 			Data: models.ResponseUseVoucher{
-				Voucher:     nama,
+				Voucher:     param.NamaVoucher,
 				CustID:      resRedeem.CustID,
 				CustID2:     resRedeem.CustID2,
 				ProductCode: resRedeem.ProductCode,

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	opl "ottopoint-purchase/hosts/opl/host"
+	modelsopl "ottopoint-purchase/hosts/opl/models"
 	token "ottopoint-purchase/hosts/redis_token/host"
 
 	"github.com/astaxie/beego/logs"
@@ -67,19 +68,20 @@ func UseVouhcerController(ctx *gin.Context) {
 	}
 
 	cekVoucher, errVoucher := opl.HistoryVoucherCustomer(dataToken.Data, "")
-	if errVoucher != nil || cekVoucher.Campaigns[0].CampaignID == "" {
+
+	data := switchData(cekVoucher.Campaigns, req.CampaignID, req.Category)
+
+	if errVoucher != nil || data.NamaVoucher == "" {
 		sugarLogger.Info("[HistoryVoucherCustomer]-[UseVouhcerController]")
 		sugarLogger.Info(fmt.Sprintf("Error : ", errVoucher))
 
 		logs.Info("[HistoryVoucherCustomer]-[UseVouhcerController]")
 		logs.Info(fmt.Sprintf("Error : ", errVoucher))
 
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
+		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Get History Voucher Customer"))
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
-
-	data := SwitchCheckData(cekVoucher.Campaigns, req.Category, req.CampaignID)
 
 	logs.Info("SupplierID : ", data.SupplierID)
 	logs.Info("producrType : ", data.ProductType)
@@ -100,6 +102,7 @@ func UseVouhcerController(ctx *gin.Context) {
 		NamaVoucher:   data.NamaVoucher,
 		Category:      req.Category,
 		CouponID:      data.CouponID,
+		Point:         data.Point,
 	}
 
 	switch data.SupplierID {
@@ -120,4 +123,65 @@ func UseVouhcerController(ctx *gin.Context) {
 	defer span.Finish()
 	ctx.JSON(http.StatusOK, res)
 
+}
+
+func switchData(data []modelsopl.CampaignsDetail, CampaignID, product string) models.Params {
+	res := models.Params{}
+
+	resp := []models.CampaignsDetail{}
+	for _, val := range data {
+		if val.CampaignID == CampaignID && val.CanBeUsed == true {
+			a := models.CampaignsDetail{
+				Name:       val.Campaign.Name,
+				CampaignID: val.CampaignID,
+				ActiveTo:   val.ActiveTo,
+				Coupon: models.CouponDetail{
+					Code: val.Coupon.Code,
+					ID:   val.Coupon.ID,
+				},
+			}
+
+			resp = append(resp, a)
+		}
+	}
+
+	var couponId, couponCode, nama, expDate string
+	var point int
+	for _, valco := range resp {
+		nama = valco.Name
+		point = valco.CostInPoints
+		couponId = valco.Coupon.ID
+		couponCode = valco.Coupon.Code
+		expDate = valco.ActiveTo
+	}
+
+	supplierid := couponCode[:2]
+	var supplierID string
+	if supplierid == "UV" {
+		supplierID = "Ultra Voucher"
+	} else {
+		supplierID = "OttoAG"
+	}
+
+	var producrType string
+	switch product {
+	case constants.CategoryPulsa:
+		producrType = "Pulsa"
+	case constants.CategoryFreeFire, constants.CategoryMobileLegend:
+		producrType = "Game"
+	case constants.CategoryToken:
+		producrType = "PLN"
+	}
+
+	res = models.Params{
+		ProductType: producrType,
+		ProductCode: couponCode,
+		SupplierID:  supplierID,
+		CouponID:    couponId,
+		NamaVoucher: nama,
+		ExpDate:     expDate,
+		Point:       point,
+	}
+
+	return res
 }

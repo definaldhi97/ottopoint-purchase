@@ -31,6 +31,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[UltraVoucherServices]")
 	defer span.Finish()
 
+	var err bool
 	success := 0
 	failed := 0
 	couponOPL := []models.CouponsRedeem{}
@@ -74,6 +75,12 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			continue
 		}
 
+		if redeem.Error != "" {
+			err = true
+			failed++
+			continue
+		}
+
 		// opl
 		var coupon, code string
 		for _, val := range redeem.Coupons {
@@ -94,6 +101,24 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 		id := utils.GenerateTokenUUID()
 		go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber)
+		success++
+	}
+
+	if err == true {
+		res = models.Response{
+			Meta: models.MetaData{
+				Status:  true,
+				Message: "Point Tidak Cukup",
+				Code:    201,
+			},
+			Data: models.UltraVoucherResp{
+				Success: success,
+				Failed:  failed,
+				Total:   req.Jumlah,
+				Voucher: param.NamaVoucher,
+			},
+		}
+		return res
 	}
 
 	res = models.Response{

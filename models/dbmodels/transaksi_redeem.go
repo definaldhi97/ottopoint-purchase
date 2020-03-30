@@ -16,9 +16,8 @@ type TransaksiRedeem struct {
 	Status          string    `gorm:"status"`
 	ExpDate         string    `gorm:"exp_date"`
 	Institution     string    `gorm:"institution"`
-	CummulativeRef  string    `gorm:"cummulative_ref" json:"cummulative_ref"`
+	CummulativeRef  string    `gorm:"cummulative_ref"`
 	DateTime        string    `gorm:"date_time"`
-	ComulativeReff  string    `gorm:"comulative_ref"`
 	ResponderData   string    `gorm:"responder_data"`
 	Point           int       `gorm:"point"`
 	ResponderRc     string    `gorm:"responder_rc"`
@@ -28,7 +27,6 @@ type TransaksiRedeem struct {
 	SupplierID      string    `gorm:"supplier_id"`
 	CreatedAT       time.Time `gorm:"created_at" json:"created_at"`
 	UpdatedAT       time.Time `gorm:"updated_at" json:"updated_at"`
-	Count           int       `gorm:"count" json:"count"`
 }
 
 func (t *TransaksiRedeem) TableName() string {

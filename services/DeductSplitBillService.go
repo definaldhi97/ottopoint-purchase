@@ -59,7 +59,7 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 	}
 
 	logs.Info("CustID OPL : ", dataDB.CustID)
-	sugarLogger.Info("CustID OPL : ")
+	// sugarLogger.Info("CustID OPL : ", dataDB.CustID)
 
 	// Cek Balance
 	dataBalance, errBalance := opl.GetBalance(dataDB.CustID)

@@ -24,7 +24,7 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_UV", "http://13.228.25.85:8704/uvservice/v0.1.0")
+	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_UV", "http://13.228.25.85:8704/uv-service/v0.1.0")
 	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_UV", "ULTRA VOUCHER")
 
 	endpointOrderVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_UV_ORDER", "/purchase/order")

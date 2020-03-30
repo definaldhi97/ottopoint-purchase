@@ -86,7 +86,6 @@ func InquiryBiller(reqdata interface{}, reqOP interface{}, req models.UseRedeemR
 			Institution:     param.InstitutionID,
 			CummulativeRef:  param.Reffnum,
 			DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
-			ComulativeReff:  param.Reffnum,
 			ResponderData:   "01",
 			Point:           param.Point,
 			ResponderRc:     resOttAG.Rc,

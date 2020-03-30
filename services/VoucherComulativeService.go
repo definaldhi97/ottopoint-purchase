@@ -1,8 +1,8 @@
 package services
 
 import (
-	"otto-openloyalty-gw/openloyalty/host"
 	"ottopoint-purchase/db"
+	"ottopoint-purchase/hosts/opl/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
 	"strconv"
@@ -23,7 +23,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[VoucherComulative-Services]",
 		zap.String("NameVoucher : ", param.NamaVoucher), zap.Int("Jumlah : ", req.Jumlah),
-		zap.String("CampaignID : ", req.CampaignID), zap.String("CampaignID : ", req.CampaignID),
+		zap.String("CampaignID : ", req.CampaignID), zap.String("CustID : ", req.CustID),
 		zap.String("CustID2 : ", req.CustID2), zap.String("ProductCode : ", param.ProductCode),
 		zap.Int("Point : ", req.Point),
 		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID))
@@ -103,7 +103,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	* Sukses sebagian (success != jumlah request)
 	* Gagal (success == 0)
 	 */
-	logs.Info(" jumlah success transaction pyenment : ", countSuccess.Count)
+	logs.Info(" jumlah success transaction success : ", countSuccess.Count)
 	logs.Info(" jumlah success transaction Pending : ", countPending.Count)
 	logs.Info(" jumlah success transaction failed : ", pyenmentFail)
 	logs.Info(" jumlah request : ", req.Jumlah)

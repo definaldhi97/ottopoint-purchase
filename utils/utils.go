@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -233,7 +232,22 @@ func GetFormattedToken(token string) string {
 	return formattedToken
 }
 
-// generate token using UUID and base64
+// // generate token using UUID and base64
+// func GenerateTokenUUID() string {
+// 	out, err := exec.Command("uuidgen").Output()
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	fmt.Printf("%s", out)
+// 	tokenString := string(out)
+
+// 	tokenString = strings.ReplaceAll(tokenString, "\n", "")
+
+// 	encode64Token := base64.StdEncoding.EncodeToString([]byte(tokenString))
+// 	log.Print(encode64Token)
+// 	return encode64Token
+// }
+
 func GenerateTokenUUID() string {
 	out, err := exec.Command("uuidgen").Output()
 	if err != nil {
@@ -243,10 +257,8 @@ func GenerateTokenUUID() string {
 	tokenString := string(out)
 
 	tokenString = strings.ReplaceAll(tokenString, "\n", "")
-
-	encode64Token := base64.StdEncoding.EncodeToString([]byte(tokenString))
-	log.Print(encode64Token)
-	return encode64Token
+	tokenString = strings.ToLower(tokenString)
+	return tokenString
 }
 
 // ReffNumb
