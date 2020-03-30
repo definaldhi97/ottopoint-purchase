@@ -112,7 +112,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 			Message: "Invalid Prefix",
 		}
 
-		go voucher.SaveTransactionPulsa(paramInq, "Inquiry", "01")
+		go voucher.SaveTransactionPulsa(paramInq, dataInquery, req, inqBiller, "Inquiry", "01", dataInquery.Rc)
 
 		ErrRespRedeem <- errInquiry
 
@@ -169,7 +169,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 	ErrRespRedeem <- nil
 
-	go voucher.SaveTransactionPulsa(paramInq, "Inquiry", "00")
+	go voucher.SaveTransactionPulsa(paramInq, dataInquery, req, inqBiller, "Inquiry", "00", dataInquery.Rc)
 
 	r := models.RedeemResponse{
 		Rc:          dataInquery.Rc,

@@ -7,13 +7,12 @@ import (
 	"ottopoint-purchase/constants"
 	opl "ottopoint-purchase/hosts/opl/host"
 	modelsopl "ottopoint-purchase/hosts/opl/models"
+	token "ottopoint-purchase/hosts/redis_token/host"
+	signature "ottopoint-purchase/hosts/signature/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/services"
 	"ottopoint-purchase/utils"
 	"time"
-
-	token "ottopoint-purchase/hosts/redis_token/host"
-	signature "ottopoint-purchase/hosts/signature/host"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/gin-gonic/gin"
@@ -107,8 +106,8 @@ func VoucherComulativeController(ctx *gin.Context) {
 		},
 	}
 
-	cekVoucher, errVoucher := opl.HistoryVoucherCustomer(dataToken.Data, "")
-	if errVoucher != nil || cekVoucher.Campaigns[0].CampaignID == "" {
+	cekVoucher, errVoucher := opl.VoucherDetail(req.CampaignID)
+	if errVoucher != nil || cekVoucher.CampaignID == "" {
 		sugarLogger.Info("[HistoryVoucherCustomer]-[VoucherComulative-Controller]")
 		sugarLogger.Info(fmt.Sprintf("Error : ", errVoucher))
 
@@ -120,24 +119,25 @@ func VoucherComulativeController(ctx *gin.Context) {
 		return
 	}
 
-	data := SwitchCheckData(cekVoucher.Campaigns, req.Category, req.CampaignID)
+	data := switchCheckData(cekVoucher, req.Category)
 
 	logs.Info("SupplierID : ", data.SupplierID)
 	logs.Info("producrType : ", data.ProductType)
 
-	sugarLogger.Info("SupplierID : ", data.SupplierID)
-	sugarLogger.Info("producrType : ", data.ProductType)
+	// sugarLogger.Info("SupplierID : ", data.SupplierID)
+	// sugarLogger.Info("producrType : ", data.ProductType)
 
 	param := models.Params{
 		AccountNumber: dataToken.Data,
 		MerchantID:    dataToken.MerchantID,
 		InstitutionID: header.InstitutionID,
-		SupplierID:    data.SupplierID,
-		ProductType:   data.ProductType,
-		ProductCode:   data.ProductCode,
-		NamaVoucher:   data.NamaVoucher,
-		Category:      req.Category,
-		CouponID:      data.CouponID,
+		// CustID:        req.CustID,
+		SupplierID:  data.SupplierID,
+		ProductType: data.ProductType,
+		ProductCode: data.ProductCode,
+		NamaVoucher: data.NamaVoucher,
+		Point:       data.Point,
+		Category:    req.Category,
 	}
 
 	switch data.SupplierID {
@@ -160,35 +160,12 @@ func VoucherComulativeController(ctx *gin.Context) {
 
 }
 
-func SwitchCheckData(data []modelsopl.CampaignsDetail, product, CampaignID string) models.Params {
+func switchCheckData(data modelsopl.VoucherDetailResp, product string) models.Params {
 	res := models.Params{}
 
-	resp := []models.CampaignsDetail{}
-	for _, val := range data {
-		if val.CampaignID == CampaignID && val.CanBeUsed == true {
-			a := models.CampaignsDetail{
-				Name:       val.Campaign.Name,
-				CampaignID: val.CampaignID,
-				ActiveTo:   val.ActiveTo,
-				Coupon: models.CouponDetail{
-					Code: val.Coupon.Code,
-					ID:   val.Coupon.ID,
-				},
-			}
+	coupon := data.Coupons[0]
 
-			resp = append(resp, a)
-		}
-	}
-
-	var couponId, couponCode, nama, expDate string
-	for _, valco := range resp {
-		nama = valco.Name
-		couponId = valco.Coupon.ID
-		couponCode = valco.Coupon.Code
-		expDate = valco.ActiveTo
-	}
-
-	supplierid := couponCode[2:]
+	supplierid := coupon[:2]
 	var supplierID string
 	if supplierid == "UV" {
 		supplierID = "Ultra Voucher"
@@ -208,10 +185,11 @@ func SwitchCheckData(data []modelsopl.CampaignsDetail, product, CampaignID strin
 
 	res = models.Params{
 		ProductType: producrType,
+		ProductCode: coupon,
 		SupplierID:  supplierID,
-		NamaVoucher: nama,
-		CouponID:    couponId,
-		ExpDate:     expDate,
+		NamaVoucher: data.Name,
+		Point:       data.CostInPoints,
+		ExpDate:     data.CampaignActivity.ActiveTo,
 	}
 
 	return res

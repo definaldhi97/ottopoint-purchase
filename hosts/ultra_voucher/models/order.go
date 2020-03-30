@@ -16,7 +16,7 @@ type OrderVoucherReq struct {
 type OrderVoucherResp struct {
 	ResponseCode string    `json:"responseCode"`
 	ResponseDesc string    `json:"responseDesc"`
-	Data         DataOrder `json:"Data"`
+	Data         DataOrder `json:"data"`
 }
 
 type DataOrder struct {

@@ -31,6 +31,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[UltraVoucherServices]")
 	defer span.Finish()
 
+	var err bool
 	success := 0
 	failed := 0
 	couponOPL := []models.CouponsRedeem{}
@@ -48,7 +49,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			logs.Info("[UltraVoucherServices]-[OrderVoucher]")
 			logs.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
 
-			sugarLogger.Info("Internal Server Error : ", errOrder)
+			// sugarLogger.Info("Internal Server Error : ", errOrder)
 			sugarLogger.Info("[UltraVoucherServices]-[OrderVoucher]")
 			sugarLogger.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
 
@@ -64,12 +65,18 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			logs.Info("[UltraVoucherServices]-[RedeemVoucher]")
 			logs.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
 
-			sugarLogger.Info("Internal Server Error : ", errredeem)
+			// sugarLogger.Info("Internal Server Error : ", errredeem)
 			sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
 			sugarLogger.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
 
 			// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
 			// return res
+			failed++
+			continue
+		}
+
+		if redeem.Error != "" {
+			err = true
 			failed++
 			continue
 		}
@@ -94,6 +101,24 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 		id := utils.GenerateTokenUUID()
 		go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber)
+		success++
+	}
+
+	if err == true {
+		res = models.Response{
+			Meta: models.MetaData{
+				Status:  true,
+				Message: "Point Tidak Cukup",
+				Code:    201,
+			},
+			Data: models.UltraVoucherResp{
+				Success: success,
+				Failed:  failed,
+				Total:   req.Jumlah,
+				Voucher: param.NamaVoucher,
+			},
+		}
+		return res
 	}
 
 	res = models.Response{

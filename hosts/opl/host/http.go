@@ -92,18 +92,18 @@ func HTTPxFormGETAdmin(url, key string) ([]byte, error) {
 	reqagent := request.Get(url)
 	// reqagent.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	reqagent.Header.Set("Authorization", dataToken)
-	resp, body, errs := reqagent.
+	_, body, errs := reqagent.
 		// Send(jsondata).
 		Timeout(timeout).
 		Retry(retrybad, time.Second, http.StatusInternalServerError).
 		End()
 
-	healthCheckData, _ := json.Marshal(hcredismodels.ServiceHealthCheckRedis{
-		StatusCode: resp.StatusCode,
-		UpdatedAt:  time.Now().UTC(),
-	})
+	// healthCheckData, _ := json.Marshal(hcredismodels.ServiceHealthCheckRedis{
+	// 	StatusCode: resp.StatusCode,
+	// 	UpdatedAt:  time.Now().UTC(),
+	// })
 
-	go redis.SaveRedis(key, healthCheckData)
+	// go redis.SaveRedis(key, healthCheckData)
 	if errs != nil {
 		logs.Error("Error Sending ", errs)
 		return nil, errs[0]

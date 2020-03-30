@@ -45,7 +45,7 @@ func (t VoucherRedeemServices) VoucherRedeem(req models.RedeemReq, AccountNumber
 		logs.Info("[VoucherRedeem-Services]")
 		logs.Info("[Get VoucherDetail]")
 
-		sugarLogger.Info("Internal Server Error : ", errCoupon)
+		// sugarLogger.Info("Internal Server Error : ", errCoupon)
 		sugarLogger.Info("[VoucherRedeem-Services]")
 		sugarLogger.Info("[Get VoucherDetail]")
 
@@ -62,7 +62,7 @@ func (t VoucherRedeemServices) VoucherRedeem(req models.RedeemReq, AccountNumber
 			logs.Info("[VoucherRedeem-Services]")
 			logs.Info("[Failed Redeem Voucher]")
 
-			sugarLogger.Info("Internal Server Error : ", err)
+			// sugarLogger.Info("Internal Server Error : ", err)
 			sugarLogger.Info("[VoucherRedeem-Services]")
 			sugarLogger.Info("[Failed Redeem Voucher]")
 

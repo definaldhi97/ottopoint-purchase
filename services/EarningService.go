@@ -37,7 +37,7 @@ func (t EarningServices) EarningPoint(req models.RulePointReq, dataToken redismo
 		logs.Info("[EarningPoint-Services]")
 		logs.Info("[Get CustId OPL to DB]")
 
-		sugarLogger.Info("Internal Server Error : ", errDB)
+		// sugarLogger.Info("Internal Server Error : ", errDB)
 		sugarLogger.Info("[EarningPoint-Services]")
 		sugarLogger.Info("[Get CustId OPL to DB]")
 
@@ -48,7 +48,7 @@ func (t EarningServices) EarningPoint(req models.RulePointReq, dataToken redismo
 	// Get ALL RulePoint
 	getRule, errgetRule := opl.ListRulePoint(dataToken.Data)
 	if errgetRule != nil || len(getRule.EarningRules) == 0 {
-		sugarLogger.Info("[Error-dataPoint :", errgetRule)
+		// sugarLogger.Info("[Error-dataPoint :", errgetRule)
 		logs.Info("[Error-dataPoint :", errgetRule)
 		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Dapat Point"))
 		return res
@@ -90,7 +90,7 @@ func (t EarningServices) EarningPoint(req models.RulePointReq, dataToken redismo
 
 		dataPoint, errPoint := opl.RulePoint(req.EventName, dataToken.Data)
 		if errPoint != nil || dataPoint.Point == 0 {
-			sugarLogger.Info("[Error-dataPoint :", errPoint)
+			// sugarLogger.Info("[Error-dataPoint :", errPoint)
 			logs.Info("[Error-dataPoint :", errPoint)
 			res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Dapat Point"))
 			return res
@@ -147,7 +147,7 @@ func (t EarningServices) EarningPoint(req models.RulePointReq, dataToken redismo
 		logs.Info("[EarningPoint-Services]")
 		logs.Info("[Hit Transfer API to OPL]")
 
-		sugarLogger.Info("Internal Server Error : ", errTfPoint)
+		// sugarLogger.Info("Internal Server Error : ", errTfPoint)
 		sugarLogger.Info("[EarningPoint-Services]")
 		sugarLogger.Info("[Hit Transfer API to OPL]")
 
@@ -185,7 +185,7 @@ func (t EarningServices) EarningPointSupplyChen(req models.RulePointReq, dataTok
 		logs.Info("[EarningPointSupplyChen-Services]")
 		logs.Info("[Get CustId OPL to DB]")
 
-		sugarLogger.Info("Internal Server Error : ", errDB)
+		// sugarLogger.Info("Internal Server Error : ", errDB)
 		sugarLogger.Info("[EarningPointSupplyChen-Services]")
 		sugarLogger.Info("[Get CustId OPL to DB]")
 
@@ -196,7 +196,7 @@ func (t EarningServices) EarningPointSupplyChen(req models.RulePointReq, dataTok
 	// Get ALL RulePoint
 	getRule, errgetRule := opl.ListRulePoint(dataToken.Data)
 	if errgetRule != nil || len(getRule.EarningRules) == 0 {
-		sugarLogger.Info("[Error-dataPoint :", errgetRule)
+		// sugarLogger.Info("[Error-dataPoint :", errgetRule)
 		logs.Info("[Error-dataPoint :", errgetRule)
 		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Dapat Point"))
 		return res
@@ -272,7 +272,7 @@ func (t EarningServices) EarningPointSupplyChen(req models.RulePointReq, dataTok
 		logs.Info("[EarningPointSupplyChen-Services]")
 		logs.Info("[Hit Transfer API to OPL]")
 
-		sugarLogger.Info("Internal Server Error : ", errTfPoint)
+		// sugarLogger.Info("Internal Server Error : ", errTfPoint)
 		sugarLogger.Info("[EarningPointSupplyChen-Services]")
 		sugarLogger.Info("[Hit Transfer API to OPL]")
 

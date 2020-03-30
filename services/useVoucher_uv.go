@@ -51,7 +51,7 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 		logs.Info("[UseVoucherUV-Servcies]-[GetVoucherUV]")
 		logs.Info("[Failed get data from DB]")
 
-		sugarLogger.Info("Internal Server Error : ", errGet)
+		// sugarLogger.Info("Internal Server Error : ", errGet)
 		sugarLogger.Info("[UseVoucherUV-Servcies]-[GetVoucherUV]")
 		sugarLogger.Info("[Failed get data from DB]")
 
@@ -66,7 +66,7 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 		logs.Info("[UseVoucherUV-Servcies]-[UseVoucherUV]")
 		logs.Info("[Failed Use Voucher UV]-[Gagal Use Voucher UV]")
 
-		sugarLogger.Info("Internal Server Error : ", errUV)
+		// sugarLogger.Info("Internal Server Error : ", errUV)
 		sugarLogger.Info("[UseVoucherUV-Servcies]-[UseVoucherUV]")
 		sugarLogger.Info("[Failed Use Voucher UV]-[Gagal Use Voucher UV]")
 

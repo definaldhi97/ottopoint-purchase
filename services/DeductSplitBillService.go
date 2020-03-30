@@ -50,16 +50,16 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		logs.Info("[DeductSplitBill-Services]")
 		logs.Info("[Get CustId OPL to DB]")
 
-		sugarLogger.Info("Internal Server Error : ", errDB)
-		sugarLogger.Info("[DeductSplitBill-Services]")
-		sugarLogger.Info("[Get CustId OPL to DB]")
+		// sugarLogger.Info("Internal Server Error : ", errDB)
+		// sugarLogger.Info("[DeductSplitBill-Services]")
+		// sugarLogger.Info("[Get CustId OPL to DB]")
 
 		res = utils.GetMessageResponseData(res, resData, 422, false, errors.New("Nomor belum eligible"))
 		return res
 	}
 
 	logs.Info("CustID OPL : ", dataDB.CustID)
-	sugarLogger.Info("CustID OPL : ", dataDB.CustID)
+	// sugarLogger.Info("CustID OPL : ", dataDB.CustID)
 
 	// Cek Balance
 	dataBalance, errBalance := opl.GetBalance(dataDB.CustID)
@@ -68,7 +68,7 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		logs.Info("[DeductSplitBill-Services]")
 		logs.Info("[Get CustId OPL to DB]")
 
-		sugarLogger.Info("Internal Server Error : ", errDB)
+		// sugarLogger.Info("Internal Server Error : ", errDB)
 		sugarLogger.Info("[DeductSplitBill-Services]")
 		sugarLogger.Info("[Get CustId OPL to DB]")
 
@@ -83,7 +83,7 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		logs.Info("[DeductSplitBill-Services]")
 		logs.Info("[Get Data TRXID to DB]")
 
-		sugarLogger.Info("Internal Server Error : ", errDB)
+		// sugarLogger.Info("Internal Server Error : ", errDB)
 		sugarLogger.Info("[DeductSplitBill-Services]")
 		sugarLogger.Info("[Get Data TRXID to DB]")
 
@@ -133,7 +133,7 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		logs.Info("[DeductSplitBill-Services]")
 		logs.Info("[Hit Transfer API to OPL]")
 
-		sugarLogger.Info("Internal Server Error : ", err)
+		// sugarLogger.Info("Internal Server Error : ", err)
 		sugarLogger.Info("[DeductSplitBill-Services]")
 		sugarLogger.Info("[Hit Spend API to OPL]")
 
@@ -163,7 +163,7 @@ func (t DeductSplitBillServices) DeductSplitBill(req models.DeductPointReq, acco
 		logs.Info("Failed Save to database", errSave)
 
 		sugarLogger.Info("[DeductSplitBill-Services]")
-		sugarLogger.Info("Failed Save to database", errSave)
+		// sugarLogger.Info("Failed Save to database", errSave)
 		// return errSave
 	}
 

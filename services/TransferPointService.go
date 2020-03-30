@@ -42,7 +42,7 @@ func (t TransferPointServices) NewTransferPointServices(req models.PointReq, dat
 		logs.Info("[TransferPoint-Services]")
 		logs.Info("[Get CustId OPL to DB]")
 
-		sugarLogger.Info("Internal Server Error : ", errDB)
+		// sugarLogger.Info("Internal Server Error : ", errDB)
 		sugarLogger.Info("[TransferPoint-Services]")
 		sugarLogger.Info("[Get CustId OPL to DB]")
 
@@ -51,7 +51,7 @@ func (t TransferPointServices) NewTransferPointServices(req models.PointReq, dat
 	}
 
 	logs.Info("CustID OPL : ", dataDB.CustID)
-	sugarLogger.Info("CustID OPL : ", dataDB.CustID)
+	// sugarLogger.Info("CustID OPL : ", dataDB.CustID)
 
 	// Hit to Openloyalty
 	data, err := opl.TransferPoint(dataDB.CustID, strconv.Itoa(req.Point), req.Text)
@@ -61,7 +61,7 @@ func (t TransferPointServices) NewTransferPointServices(req models.PointReq, dat
 		logs.Info("[TransferPoint-Services]")
 		logs.Info("[Hit Transfer API to OPL]")
 
-		sugarLogger.Info("Internal Server Error : ", err)
+		// sugarLogger.Info("Internal Server Error : ", err)
 		sugarLogger.Info("[TransferPoint-Services]")
 		sugarLogger.Info("[Hit Transfer API to OPL]")
 
