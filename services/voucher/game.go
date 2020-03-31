@@ -1,6 +1,7 @@
 package voucher
 
 import (
+	"encoding/json"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/models"
@@ -77,7 +78,7 @@ func RedeemGame(req models.UseRedeemRequest, reqOP interface{}, param models.Par
 		logs.Info("[Error-InquiryResponse]-[RedeemGame]")
 		logs.Info("[Error : %v]", errinqRespOttoag)
 
-		go SaveTransactionGame(paramInq, "Inquiry", "01")
+		go SaveTransactionGame(paramInq, inqRespOttoag, inqBiller, reqOP, "Inquiry", "01", inqRespOttoag.Rc)
 
 		res = models.UseRedeemResponse{
 			Rc:  "01",
@@ -88,7 +89,7 @@ func RedeemGame(req models.UseRedeemRequest, reqOP interface{}, param models.Par
 	}
 
 	logs.Info("[Response Inquiry %v]", inqRespOttoag.Rc)
-	go SaveTransactionGame(paramInq, "Inquiry", "00")
+	go SaveTransactionGame(paramInq, inqRespOttoag, inqBiller, reqOP, "Inquiry", "00", inqRespOttoag.Rc)
 
 	// ===== Payment OttoAG =====
 	logs.Info("[PAYMENT-BILLER][START]")
@@ -126,7 +127,7 @@ func RedeemGame(req models.UseRedeemRequest, reqOP interface{}, param models.Par
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
 		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-		go SaveTransactionGame(paramPay, "Payment", "09")
+		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
 
 		res = models.UseRedeemResponse{
 			Rc:  "09",
@@ -138,7 +139,7 @@ func RedeemGame(req models.UseRedeemRequest, reqOP interface{}, param models.Par
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
 		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-		go SaveTransactionGame(paramPay, "Payment", "01")
+		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
 
 		res = models.UseRedeemResponse{
 			Rc:  "01",
@@ -149,7 +150,7 @@ func RedeemGame(req models.UseRedeemRequest, reqOP interface{}, param models.Par
 	}
 
 	logs.Info("[Response Payment %v]", billerRes.Rc)
-	go SaveTransactionGame(paramPay, "Payment", "00")
+	go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
 
 	res = models.UseRedeemResponse{
 		Rc:          billerRes.Rc,
@@ -168,7 +169,7 @@ func RedeemGame(req models.UseRedeemRequest, reqOP interface{}, param models.Par
 	return res
 }
 
-func SaveTransactionGame(param models.Params, trasnType, status string) {
+func SaveTransactionGame(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
 
 	logs.Info("[Start-SaveDB]-[Game]")
 
@@ -182,20 +183,32 @@ func SaveTransactionGame(param models.Params, trasnType, status string) {
 		saveStatus = constants.Failed
 	}
 
+	reqOttoag, _ := json.Marshal(&reqdata)  // Req Ottoag
+	responseOttoag, _ := json.Marshal(&res) // Response Ottoag
+	reqdataOP, _ := json.Marshal(&reqOP)    // Req Service
+
 	save := dbmodels.TransaksiRedeem{
-		AccountNumber: param.AccountNumber,
-		Voucher:       param.NamaVoucher,
-		CustID:        param.CustID,
-		MerchantID:    param.MerchantID,
-		RRN:           param.RRN,
-		ProductCode:   param.ProductCode,
-		Amount:        param.Amount,
-		TransType:     trasnType,
-		Status:        saveStatus,
-		ExpDate:       param.ExpDate,
-		Institution:   param.InstitutionID,
-		ProductType:   param.ProductType,
-		DateTime:      utils.GetTimeFormatYYMMDDHHMMSS(),
+		AccountNumber:   param.AccountNumber,
+		Voucher:         param.NamaVoucher,
+		MerchantID:      param.MerchantID,
+		CustID:          param.CustID,
+		RRN:             param.RRN,
+		ProductCode:     param.ProductCode,
+		Amount:          int64(param.Amount),
+		TransType:       trasnType,
+		ProductType:     "Pulsa",
+		Status:          saveStatus,
+		ExpDate:         param.ExpDate,
+		Institution:     param.InstitutionID,
+		CummulativeRef:  param.Reffnum,
+		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
+		ResponderData:   status,
+		Point:           param.Point,
+		ResponderRc:     rc,
+		RequestorData:   string(reqOttoag),
+		ResponderData2:  string(responseOttoag),
+		RequestorOPData: string(reqdataOP),
+		SupplierID:      param.SupplierID,
 	}
 
 	err := db.DbCon.Create(&save).Error
