@@ -8,7 +8,6 @@ import (
 	opl "ottopoint-purchase/hosts/opl/host"
 	modelsopl "ottopoint-purchase/hosts/opl/models"
 	token "ottopoint-purchase/hosts/redis_token/host"
-	signature "ottopoint-purchase/hosts/signature/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/services"
 	"ottopoint-purchase/utils"
