@@ -233,7 +233,7 @@ func ValidatePrefix(OperatorCode int, custID, productCode string) bool {
 }
 
 // func SaveTransactionPulsa(AccountNumber, voucher, CustID, RRN, ProductCode, trasnType, status, instituion string, amount int64) {
-func SaveTransactionPulsa(param models.Params, res interface{}, reqOP interface{}, reqdata interface{}, trasnType, status, rc string) {
+func SaveTransactionPulsa(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
 
 	logs.Info("[Start-SaveDB]-[Pulsa]")
 
@@ -247,9 +247,9 @@ func SaveTransactionPulsa(param models.Params, res interface{}, reqOP interface{
 		saveStatus = constants.Failed
 	}
 
-	reqOttoag, _ := json.Marshal(&reqdata)
-	responseOttoag, _ := json.Marshal(&res)
-	reqdataOP, _ := json.Marshal(&reqOP)
+	reqOttoag, _ := json.Marshal(&reqdata)  // Req Ottoag
+	responseOttoag, _ := json.Marshal(&res) // Response Ottoag
+	reqdataOP, _ := json.Marshal(&reqOP)    // Req Service
 
 	save := dbmodels.TransaksiRedeem{
 		AccountNumber:   param.AccountNumber,

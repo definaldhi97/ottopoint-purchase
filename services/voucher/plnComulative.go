@@ -1,6 +1,9 @@
 package voucher
 
 import (
+	"fmt"
+	ottomart "ottopoint-purchase/hosts/ottomart/host"
+	ottomartmodels "ottopoint-purchase/hosts/ottomart/models"
 	"ottopoint-purchase/models"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 	biller "ottopoint-purchase/services/ottoag"
@@ -49,7 +52,7 @@ func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param m
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
 		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-		go SaveTransactionPLN(paramPay, "Payment", "09")
+		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
 
 		res = models.UseRedeemResponse{
 			Rc:  "09",
@@ -61,7 +64,7 @@ func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param m
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
 		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-		go SaveTransactionPLN(paramPay, "Payment", "01")
+		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
 
 		res = models.UseRedeemResponse{
 			Rc:  "01",
@@ -71,28 +74,31 @@ func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param m
 		return res
 	}
 
-	// // Format Token
-	// stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
+	// Format Token
+	stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
 
-	// Format Struct notif
-	// notifReq := ottomartmodels.NotifReq{
-	// 	CollapseKey: "type_c",
-	// 	Title:       "Transaksi Berhasil",
-	// 	Body:        fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
-	// 	Target:      "earning point",
-	// 	Phone:       "",
-	// 	Rc:          "00",
-	// }
+	notifReq := ottomartmodels.NotifRequest{
+		AccountNumber:    req.AccountNumber,
+		Title:            "Transaksi Berhasil",
+		Message:          fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
+		NotificationType: 3,
+	}
 
-	// // send notif & inbox
-	// _, errNotif := ottomart.NotifInboxOttomart(notifReq, header)
-	// if errNotif != nil {
-	// 	logs.Info("Error to send Notif & Inbox")
-	// }
+	// send notif & inbox
+	dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
+	if errNotif != nil {
+		logs.Info("Error to send Notif & Inbox")
+	}
+
+	if dataNotif.RC != "00" {
+		logs.Info("[Response Notif PLN]")
+		logs.Info("Gagal Send Notif & Inbox")
+		logs.Info("Error : ", errNotif)
+	}
 
 	logs.Info("[Response Payment %v]", billerRes.Rc)
 
-	go SaveTransactionPLN(paramPay, "Payment", "00")
+	go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
 
 	res = models.UseRedeemResponse{
 		Rc:          billerRes.Rc,

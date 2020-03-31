@@ -1,8 +1,12 @@
 package voucher
 
 import (
+	"encoding/json"
+	"fmt"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
+	ottomart "ottopoint-purchase/hosts/ottomart/host"
+	ottomartmodels "ottopoint-purchase/hosts/ottomart/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
@@ -68,7 +72,7 @@ func RedeemPLN(req models.UseRedeemRequest, reqOP interface{}, param models.Para
 		logs.Info("[Error-InquiryResponse]-[RedeemPLN]")
 		logs.Info("[Error : %v]", errinqRespOttoag)
 
-		go SaveTransactionPLN(paramInq, "Inquiry", "01")
+		go SaveTransactionPLN(paramInq, inqRespOttoag, inqBiller, reqOP, "Inquiry", "01", inqRespOttoag.Rc)
 
 		res = models.UseRedeemResponse{
 			Rc:  "01",
@@ -79,7 +83,7 @@ func RedeemPLN(req models.UseRedeemRequest, reqOP interface{}, param models.Para
 	}
 
 	logs.Info("[Response Inquiry %v]", inqRespOttoag.Rc)
-	go SaveTransactionPLN(paramInq, "Inquiry", "00")
+	go SaveTransactionPLN(paramInq, inqRespOttoag, inqBiller, reqOP, "Inquiry", "00", inqRespOttoag.Rc)
 
 	// ===== Payment OttoAG =====
 	logs.Info("[PAYMENT-BILLER][START]")
@@ -116,7 +120,7 @@ func RedeemPLN(req models.UseRedeemRequest, reqOP interface{}, param models.Para
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
 		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-		go SaveTransactionPLN(paramPay, "Payment", "09")
+		go SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
 
 		res = models.UseRedeemResponse{
 			Rc:  "09",
@@ -128,7 +132,7 @@ func RedeemPLN(req models.UseRedeemRequest, reqOP interface{}, param models.Para
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
 		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-		go SaveTransactionPLN(paramPay, "Payment", "01")
+		go SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
 
 		res = models.UseRedeemResponse{
 			Rc:  "01",
@@ -138,28 +142,31 @@ func RedeemPLN(req models.UseRedeemRequest, reqOP interface{}, param models.Para
 		return res
 	}
 
-	// // Format Token
-	// stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
+	// Format Token
+	stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
 
-	// Format Struct notif
-	// notifReq := ottomartmodels.NotifReq{
-	// 	CollapseKey: "type_c",
-	// 	Title:       "Transaksi Berhasil",
-	// 	Body:        fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
-	// 	Target:      "earning point",
-	// 	Phone:       "",
-	// 	Rc:          "00",
-	// }
+	notifReq := ottomartmodels.NotifRequest{
+		AccountNumber:    req.AccountNumber,
+		Title:            "Transaksi Berhasil",
+		Message:          fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
+		NotificationType: 3,
+	}
 
-	// // send notif & inbox
-	// _, errNotif := ottomart.NotifInboxOttomart(notifReq, header)
-	// if errNotif != nil {
-	// 	logs.Info("Error to send Notif & Inbox")
-	// }
+	// send notif & inbox
+	dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
+	if errNotif != nil {
+		logs.Info("Error to send Notif & Inbox")
+	}
+
+	if dataNotif.RC != "00" {
+		logs.Info("[Response Notif PLN]")
+		logs.Info("Gagal Send Notif & Inbox")
+		logs.Info("Error : ", errNotif)
+	}
 
 	logs.Info("[Response Payment %v]", billerRes.Rc)
 
-	go SaveTransactionPLN(paramPay, "Payment", "00")
+	go SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
 
 	res = models.UseRedeemResponse{
 		Rc:          billerRes.Rc,
@@ -177,7 +184,7 @@ func RedeemPLN(req models.UseRedeemRequest, reqOP interface{}, param models.Para
 	return res
 }
 
-func SaveTransactionPLN(param models.Params, trasnType, status string) {
+func SaveTransactionPLN(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
 
 	logs.Info("[Start-SaveDB]-[PLN]")
 
@@ -191,20 +198,32 @@ func SaveTransactionPLN(param models.Params, trasnType, status string) {
 		saveStatus = constants.Failed
 	}
 
+	reqOttoag, _ := json.Marshal(&reqdata)
+	responseOttoag, _ := json.Marshal(&res)
+	reqdataOP, _ := json.Marshal(&reqOP)
+
 	save := dbmodels.TransaksiRedeem{
-		AccountNumber: param.AccountNumber,
-		Voucher:       param.NamaVoucher,
-		CustID:        param.CustID,
-		MerchantID:    param.MerchantID,
-		RRN:           param.RRN,
-		ProductCode:   param.ProductCode,
-		Amount:        param.Amount,
-		TransType:     trasnType,
-		Status:        saveStatus,
-		ExpDate:       param.ExpDate,
-		Institution:   param.InstitutionID,
-		ProductType:   param.ProductType,
-		DateTime:      utils.GetTimeFormatYYMMDDHHMMSS(),
+		AccountNumber:   param.AccountNumber,
+		Voucher:         param.NamaVoucher,
+		MerchantID:      param.MerchantID,
+		CustID:          param.CustID,
+		RRN:             param.RRN,
+		ProductCode:     param.ProductCode,
+		Amount:          int64(param.Amount),
+		TransType:       trasnType,
+		ProductType:     "Pulsa",
+		Status:          saveStatus,
+		ExpDate:         param.ExpDate,
+		Institution:     param.InstitutionID,
+		CummulativeRef:  param.Reffnum,
+		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
+		ResponderData:   status,
+		Point:           param.Point,
+		ResponderRc:     rc,
+		RequestorData:   string(reqOttoag),
+		ResponderData2:  string(responseOttoag),
+		RequestorOPData: string(reqdataOP),
+		SupplierID:      param.SupplierID,
 	}
 
 	err := db.DbCon.Create(&save).Error

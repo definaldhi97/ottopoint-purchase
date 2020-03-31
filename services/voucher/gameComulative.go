@@ -57,7 +57,7 @@ func RedeemGameComulative(req models.UseRedeemRequest, reqOP interface{}, param 
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
 		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-		go SaveTransactionGame(paramPay, "Payment", "09")
+		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
 
 		res = models.UseRedeemResponse{
 			Rc:  "09",
@@ -69,7 +69,7 @@ func RedeemGameComulative(req models.UseRedeemRequest, reqOP interface{}, param 
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
 		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-		go SaveTransactionGame(paramPay, "Payment", "01")
+		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
 
 		res = models.UseRedeemResponse{
 			Rc:  "01",
@@ -80,7 +80,7 @@ func RedeemGameComulative(req models.UseRedeemRequest, reqOP interface{}, param 
 	}
 
 	logs.Info("[Response Payment %v]", billerRes.Rc)
-	go SaveTransactionGame(paramPay, "Payment", "00")
+	go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
 
 	res = models.UseRedeemResponse{
 		Rc:          billerRes.Rc,
