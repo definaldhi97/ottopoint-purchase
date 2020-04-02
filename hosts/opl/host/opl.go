@@ -166,7 +166,7 @@ func HistoryVoucherCustomer(phone, page string) (*models.HistoryVoucherCustomerR
 
 	logs.Info("[Package Host OPL]-[HistoryVoucherCustomer]")
 
-	param := fmt.Sprintf("?includeDetails=1&page=%s&perPage=100&sort&direction", page)
+	param := fmt.Sprintf("?includeDetails=1&page=%s&perPage=1000&sort&direction", page)
 	urlSvr := host + endpointHistoryVoucherCustomer + param
 	data, err := HTTPxFormGETCustomer(urlSvr, phone, HealthCheckKey)
 	if err != nil {
