@@ -7,8 +7,8 @@ import (
 type UseVoucherReq struct {
 	Category   string `json:"category"`
 	CampaignID string `json:"campaignId"`
-	CustID     string `json:"cust_id"`
-	CustID2    string `json:"cust_id2"`
+	CustID     string `json:"custId"`
+	CustID2    string `json:"custId2"`
 	// ProductCode string `json:"product_code"`
 	// Date string `json:"date"`
 }

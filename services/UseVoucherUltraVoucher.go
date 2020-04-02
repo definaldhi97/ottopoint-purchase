@@ -25,7 +25,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		zap.String("NameVoucher : ", param.NamaVoucher), zap.Int("Jumlah : ", req.Jumlah),
 		zap.String("CampaignID : ", req.CampaignID), zap.String("CampaignID : ", req.CampaignID),
 		zap.String("CustID2 : ", req.CustID2), zap.String("ProductCode : ", param.ProductCode),
-		zap.Int("Point : ", req.Point),
+		// zap.Int("Point : ", req.Point),
 		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID))
 
 	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[UltraVoucherServices]")

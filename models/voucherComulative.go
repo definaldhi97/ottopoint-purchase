@@ -8,7 +8,7 @@ type VoucherComultaiveReq struct {
 	CustID     string `json:"custId"`
 	CustID2    string `json:"custId2"`
 	// ProductCode string `json:"productCode"`
-	Point int `json:"point"`
+	// Point int `json:"point"`
 	// Date        string `json:"date"`
 }
 
