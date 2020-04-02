@@ -89,7 +89,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		// get Custid from user where acount nomor
 		dataUser, _ := db.CheckUser(rcUseVoucher.AccountNumber)
 		logs.Info("CustId user OPL from tb user : ", dataUser.CustID)
-		Text := "Reversal point cause transaction " + param.NamaVoucher + " is failed"
+		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		_, errReversal := host.TransferPoint(dataUser.CustID, strconv.Itoa(rcUseVoucher.Count), Text)
 		if errReversal != nil {
 			logs.Info("[ERROR DB]")
