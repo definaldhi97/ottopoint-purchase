@@ -6,8 +6,8 @@ type CouponVoucherCustomerResp struct {
 	Code          string `json:"code"`
 	CampaignID    string `json:"campaignId"`
 	CouponID      string `json:"couponId"`
-	AccountNumber string `json:"account_number"`
-	CustID        string `json:"cust_id"`
+	AccountNumber string `json:"accountNumber"`
+	CustID        string `json:"custId"`
 	Date          string `json:"date"`
 	// Name          string `json:"name"`
 }
