@@ -31,6 +31,9 @@ func RedeemPulsaComulative(req models.UseRedeemRequest, reqOP interface{}, param
 
 	billerRes := biller.PaymentBiller(billerReq, reqOP, req, param)
 
+	logs.Info("Jumlah Voucher : ", param.Total)
+	logs.Info("Response OttoAG Payment : ", billerRes)
+	logs.Info("[Response Payment %v]", billerRes.Rc)
 	paramPay := models.Params{
 		AccountNumber: param.AccountNumber,
 		MerchantID:    param.MerchantID,
@@ -48,8 +51,9 @@ func RedeemPulsaComulative(req models.UseRedeemRequest, reqOP interface{}, param
 		SupplierID:    param.SupplierID,
 	}
 
+	logs.Info("[Payment Response : %v]", billerRes)
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
-		logs.Info("[Response Payment %v]", billerRes.Rc)
+		logs.Info("[Payment Pending]")
 
 		go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
 
@@ -61,7 +65,7 @@ func RedeemPulsaComulative(req models.UseRedeemRequest, reqOP interface{}, param
 	}
 
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
-		logs.Info("[Response Payment %v]", billerRes.Rc)
+		logs.Info("[Payment Failed]")
 
 		go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
 
@@ -73,7 +77,8 @@ func RedeemPulsaComulative(req models.UseRedeemRequest, reqOP interface{}, param
 		return res
 	}
 
-	logs.Info("[Response Payment %v]", billerRes.Rc)
+	logs.Info("[Payment Success]", billerRes.Rc)
+	// logs.Info("[Response Payment %v]", billerRes.Rc)
 	go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
 
 	res = models.UseRedeemResponse{

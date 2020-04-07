@@ -46,7 +46,7 @@ func init() {
 	deductPoint = utils.GetEnv("deduct_point", "/transaction/v2/deduct")
 	reversePoint = utils.GetEnv("reverse_point", "/transaction/v2/reversal")
 	earningPoint = utils.GetEnv("earning_point", "/transaction/v2/earningpoint")
-	splitbill = utils.GetEnv("splitbill", "v2/transaction/splitbill")
+	splitbill = utils.GetEnv("splitbill", "/transaction/v2/splitbill")
 
 	debugmode = utils.GetEnv("apps.debug", "debug")
 

@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/hosts/opl/host"
 	"ottopoint-purchase/models"
@@ -23,23 +24,25 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		Code: "00",
 	}
 
-	logs.Info("[Start]-[Package-Services]-[RedeemComulativeVoucher]")
+	logs.Info("[Start][Inquiry]-[Package-Services]-[RedeemComulativeVoucher]")
 
-	// validate prefix
-	validate, errValidate := ValidatePrefixComulative(req.CustID, param.ProductCode)
-	if validate == false {
+	if req.Category == constants.CategoryPulsa {
+		// validate prefix
+		validate, errValidate := ValidatePrefixComulative(req.CustID, param.ProductCode)
+		if validate == false {
 
-		redeemRes = models.RedeemComuResp{
-			Code:    "01",
-			Message: "Invalid Prefix",
+			redeemRes = models.RedeemComuResp{
+				Code:    "01",
+				Message: "Invalid Prefix",
+			}
+
+			ErrRespRedeem <- errValidate
+
+			resRedeemComu.Code = redeemRes.Code
+			resRedeemComu.Message = redeemRes.Message
+
+			return
 		}
-
-		ErrRespRedeem <- errValidate
-
-		resRedeemComu.Code = redeemRes.Code
-		resRedeemComu.Message = redeemRes.Message
-
-		return
 	}
 
 	// ==========Inquery OttoAG==========
@@ -104,7 +107,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		SupplierID:    param.SupplierID,
 	}
 
-	if dataInquery.Rc == "01" {
+	if dataInquery.Rc != "00" {
 		logs.Info("[Error-DataInquiry]-[RedeemComulativeVoucher]")
 		logs.Info("[Error : %v]", errInquiry)
 		redeemRes = models.RedeemComuResp{
@@ -123,9 +126,11 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 	}
 
+	go voucher.SaveTransactionPulsa(paramInq, dataInquery, req, inqBiller, "Inquiry", "00", dataInquery.Rc)
+
 	coupon := []models.CouponsRedeem{}
 
-	logs.Info("============= Redeem voucher 1 =============")
+	logs.Info("[Start][Redeem]-[Package-Services]-[RedeemComulativeVoucher]")
 	data, errx := host.RedeemVoucher(req.CampaignID, param.AccountNumber)
 
 	if errx != nil {
@@ -164,12 +169,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		}
 	}
 
-	logs.Info("========== rrn ", dataInquery.Rrn)
-	logs.Info("========== Amount ", dataInquery.Amount)
-
 	ErrRespRedeem <- nil
-
-	go voucher.SaveTransactionPulsa(paramInq, dataInquery, req, inqBiller, "Inquiry", "00", dataInquery.Rc)
 
 	r := models.RedeemResponse{
 		Rc:          dataInquery.Rc,

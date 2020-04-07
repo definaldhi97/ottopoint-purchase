@@ -1,8 +1,11 @@
 package services
 
 import (
+	"fmt"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/hosts/opl/host"
+	ottomart "ottopoint-purchase/hosts/ottomart/host"
+	ottomartmodels "ottopoint-purchase/hosts/ottomart/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
 	"strconv"
@@ -43,9 +46,11 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	comulative_ref := utils.GenTransactionId()
 	param.Reffnum = comulative_ref
 
+	var inqGagal int
 	for i := 0; i < req.Jumlah; i++ {
 		// wg.Add(2)
 
+		param.Total = i + 1
 		getRespChan := make(chan models.RedeemComuResp)
 		getErrChan := make(chan error)
 		getRespUseVouChan := make(chan models.RedeemResponse)
@@ -54,19 +59,19 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		go RedeemComulativeVoucher(req, param, getRespChan, getErrChan)
 
 		if getErr := <-getErrChan; getErr != nil {
-			logs.Info("=========== Error redeem voucher ===========")
-			// return
+			getResp = <-getRespChan
+			logs.Info("Gagal Redeem or Inquiry")
+			logs.Info("Error Message : ", getResp.Message)
+			inqGagal++
 			continue
 		} else {
-			logs.Info("=========== Continue to use voucher ===========")
 			getResp = <-getRespChan
 		}
 
-		// wg.Add(1)
-		logs.Info("========== response code redeem : ", getResp.Code)
+		getResp = <-getRespChan
 		if getResp.Code == "00" {
 			wg.Add(1)
-			logs.Info("================ doing use voucher ================")
+			// req.Jumlah = i
 			go UseVoucherComulative(req, getResp, param, getRespUseVouChan, getRespUseVoucErr, &wg)
 			getResRedeem = <-getRespUseVouChan
 
@@ -74,18 +79,44 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	}
 	wg.Wait()
 
-	/* Get total count pyenment success dan failed dari DB */
-	logs.Info("===== comulative_ref : ", comulative_ref)
-	countSuccess, _ := db.GetCountSucc_Pyenment(comulative_ref)
+	logs.Info("Response OttoAG Payment : ", getResRedeem)
+	total := req.Jumlah * 2
+	countPayment, _ := db.GetCountPyenment(comulative_ref)
+	if countPayment.Count != total {
+		countPayment, _ = db.GetCountPyenment(comulative_ref)
+	}
+
 	countPending, _ := db.GetCountPending_Pyenment(comulative_ref)
+	if countPending.Count == 0 {
+		countPending, _ = db.GetCountPending_Pyenment(comulative_ref)
+	}
+
+	// countFailed, _ := db.GetCountFailedPyenment(comulative_ref)
+	// if countFailed.Count == 0 {
+	// 	countFailed, _ = db.GetCountFailedPyenment(comulative_ref)
+	// }
+
+	countSuccess, _ := db.GetCountSucc_Pyenment(comulative_ref)
+	if countSuccess.Count == 0 {
+		countSuccess, _ = db.GetCountSucc_Pyenment(comulative_ref)
+	}
+
 	pyenmentFail := req.Jumlah - countSuccess.Count
+
+	// if inqGagal != 0 {
+
+	// }
+	// countInqFailed, _ := db.GetCountInquiryGagal(comulative_ref)
+
+	// if countSuccess.Count == 0 && countFailed.Count == 0 && countPending.Count == 0 {
+	// 	countFailed.Count = countInqFailed.Count
+	// }
 
 	/* ------ Reversal to Point ----- */
 	rcUseVoucher, _ := db.GetPyenmentFailed(comulative_ref)
 	logs.Info("get RC use voucher : ", rcUseVoucher)
 	if rcUseVoucher.AccountNumber != "" {
 		logs.Info("============= Reversal to Point ===========")
-		logs.Info("Response Code from Payment OttoAG : ", getResRedeem.Rc)
 		// get Custid from user where acount nomor
 		dataUser, _ := db.CheckUser(rcUseVoucher.AccountNumber)
 		logs.Info("CustId user OPL from tb user : ", dataUser.CustID)
@@ -96,6 +127,26 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 			logs.Info("[transfer point] : ", errReversal)
 		}
 
+		logs.Info("========== Send Notif ==========")
+		notifReq := ottomartmodels.NotifRequest{
+			AccountNumber:    rcUseVoucher.AccountNumber,
+			Title:            "Reversal Point",
+			Message:          fmt.Sprintf("Point anda berhasil di reversal sebesar %v", int64(rcUseVoucher.Count)),
+			NotificationType: 3,
+		}
+
+		// send notif & inbox
+		dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
+		if errNotif != nil {
+			logs.Info("Error to send Notif & Inbox")
+		}
+
+		if dataNotif.RC != "00" {
+			logs.Info("[Response Notif PLN]")
+			logs.Info("Gagal Send Notif & Inbox")
+			logs.Info("Error : ", errNotif)
+		}
+
 	}
 
 	/* ---- Message ----
@@ -103,6 +154,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	* Sukses sebagian (success != jumlah request)
 	* Gagal (success == 0)
 	 */
+	logs.Info(" jumlah transaction payment : ", countPayment.Count)
 	logs.Info(" jumlah success transaction success : ", countSuccess.Count)
 	logs.Info(" jumlah success transaction Pending : ", countPending.Count)
 	logs.Info(" jumlah success transaction failed : ", pyenmentFail)

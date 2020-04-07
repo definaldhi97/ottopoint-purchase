@@ -49,8 +49,9 @@ func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param m
 		SupplierID:    param.SupplierID,
 	}
 
+	logs.Info("[Payment Response : %v]", billerRes)
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
-		logs.Info("[Response Payment %v]", billerRes.Rc)
+		logs.Info("[Payment Pending]")
 
 		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
 
@@ -62,7 +63,7 @@ func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param m
 	}
 
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
-		logs.Info("[Response Payment %v]", billerRes.Rc)
+		logs.Info("[Payment Failed]")
 
 		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
 
@@ -96,7 +97,7 @@ func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param m
 		logs.Info("Error : ", errNotif)
 	}
 
-	logs.Info("[Response Payment %v]", billerRes.Rc)
+	logs.Info("[Payment Success]")
 
 	go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
 

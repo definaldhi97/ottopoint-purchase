@@ -55,7 +55,8 @@ func (t TransferPointServices) NewTransferPointServices(req models.PointReq, dat
 	sugarLogger.Info("CustID OPL : ")
 
 	// Hit to Openloyalty
-	data, err := opl.TransferPoint(dataDB.CustID, strconv.Itoa(req.Point), req.Text)
+	text := "OP009 - " + req.Text
+	data, err := opl.TransferPoint(dataDB.CustID, strconv.Itoa(req.Point), text)
 	if err != nil || data.PointsTransferId == "" {
 
 		logs.Info("Internal Server Error : ", err)

@@ -16,4 +16,6 @@ type Params struct {
 	ExpDate       string
 	CouponID      string
 	SupplierID    string
+	// percobaan
+	Total int
 }

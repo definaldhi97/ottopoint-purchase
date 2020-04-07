@@ -28,6 +28,7 @@ type UseRedeemRequest struct {
 	CustID        string `json:"custId"`
 	CustID2       string `json:"custId2"`
 	ProductCode   string `json:"product_code"`
+	Jumlah        int
 }
 
 type UseRedeemResponse struct {
