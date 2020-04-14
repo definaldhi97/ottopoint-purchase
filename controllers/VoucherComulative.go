@@ -99,7 +99,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 		sugarLogger.Info("[UltraVoucherServices]-[CheckUser]")
 		sugarLogger.Info("[Failed Redeem Voucher]-[Get Data User]")
 
-		res = utils.GetMessageResponse(res, 01, false, errors.New("User belum Eligible"))
+		res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
 	}
 
 	data := switchCheckData(cekVoucher, req.Category)

@@ -92,6 +92,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			logs.Info("[Failed Order Voucher]-[Gagal Reversal Point]")
 		}
 
+		// res.Data = "Transaksi Gagal"
 		res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
 
 		return res
@@ -101,11 +102,11 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		logs.Info("Internal Server Error : ", errOrder)
 		logs.Info("ResponseCode : ", order.ResponseCode)
 		logs.Info("[UltraVoucherServices]-[OrderVoucher]")
-		logs.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
+		logs.Info("[Stock not Available]-[Gagal Order Voucher]")
 
 		// sugarLogger.Info("Internal Server Error : ", errOrder)
 		sugarLogger.Info("[UltraVoucherServices]-[OrderVoucher]")
-		sugarLogger.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
+		sugarLogger.Info("[Stock not Available]-[Gagal Order Voucher]")
 
 		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		point := param.Point * req.Jumlah
@@ -117,8 +118,8 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			logs.Info("[Failed Order Voucher]-[Gagal Reversal Point]")
 		}
 
-		msg := fmt.Sprintf("Voucher yg tersedia %v", order.Data.VouchersAvailable)
-		res = utils.GetMessageResponse(res, 500, false, errors.New(msg))
+		res.Data = fmt.Sprintf("Voucher yg tersedia %v", order.Data.VouchersAvailable)
+		res = utils.GetMessageResponse(res, 145, false, errors.New("Stok Tidak Tersedia"))
 
 		return res
 	}
@@ -142,7 +143,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	}
 
 	id := utils.GenerateTokenUUID()
-	go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber)
+	go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber, param.CustID)
 	// success++
 	// }
 
@@ -163,6 +164,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	// 	return res
 	// }
 
+	logs.Info("ResponseCode : ", order.ResponseCode)
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
 		Data: models.UltraVoucherResp{
@@ -176,13 +178,14 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	return res
 }
 
-func SaveDB(id, institution, coupon, vouchercode, phone string) {
+func SaveDB(id, institution, coupon, vouchercode, phone, custIdOPL string) {
 	save := dbmodels.UserMyVocuher{
 		ID:            id,
 		InstitutionID: institution,
 		CouponID:      coupon,
 		VoucherCode:   vouchercode,
 		Phone:         phone,
+		AccountId:     custIdOPL,
 	}
 
 	err := db.DbCon.Create(&save).Error

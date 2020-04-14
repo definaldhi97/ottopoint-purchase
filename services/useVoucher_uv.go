@@ -43,7 +43,7 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 		sugarLogger.Info("[UseVoucherUV-Servcies]-[GetVoucherUV]")
 		sugarLogger.Info("[Failed get data from DB]")
 
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Internal Server Error"))
+		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
 		return res
 	}
 
@@ -58,29 +58,22 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 		sugarLogger.Info("[UseVoucherUV-Servcies]-[UseVoucherUV]")
 		sugarLogger.Info("[Failed Use Voucher UV]-[Gagal Use Voucher UV]")
 
-		res = utils.GetMessageResponse(res, 129, false, errors.New("Voucher gagal digunakan, silahkan coba beberapa saat lagi"))
+		// res.Data = "Transaksi Gagal"
+		res = utils.GetMessageResponse(res, 129, false, errors.New("Voucher Gagal Digunakan, Silahkan Coba Beberapa Saat Lagi"))
 		return res
 	}
 
 	if useUV.ResponseCode == "14" {
-		// Use Voucher to Openloyalty
-		_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 0)
-		if err2 != nil {
-			res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
-			return res
-		}
-		res = utils.GetMessageResponse(res, 148, true, errors.New("Voucher sudah digunakan"))
+
+		// res.Data = "Transaksi Gagal"
+		res = utils.GetMessageResponse(res, 148, false, errors.New("Voucher Sudah Digunakan"))
 		return res
 	}
 
 	if useUV.ResponseCode == "10" {
-		// Use Voucher to Openloyalty
-		_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 0)
-		if err2 != nil {
-			res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
-			return res
-		}
-		res = utils.GetMessageResponse(res, 147, false, errors.New("Voucher tidak ditemukan"))
+
+		// res.Data = "Transaksi Gagal"
+		res = utils.GetMessageResponse(res, 147, false, errors.New("Voucher Tidak Ditemukan"))
 		return res
 	}
 
@@ -97,6 +90,3 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 
 	return res
 }
-
-
-func 
