@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"ottopoint-purchase/constants"
+	"ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
 	modelsopl "ottopoint-purchase/hosts/opl/models"
 	token "ottopoint-purchase/hosts/redis_token/host"
@@ -88,6 +89,19 @@ func VoucherComulativeController(ctx *gin.Context) {
 		return
 	}
 
+	dataUser, errUser := db.CheckUser(dataToken.Data)
+	if errUser != nil || dataUser.CustID == "" {
+		logs.Info("Internal Server Error : ", errUser)
+		logs.Info("[UltraVoucherServices]-[CheckUser]")
+		logs.Info("[Failed Redeem Voucher]-[Get Data User]")
+
+		// sugarLogger.Info("Internal Server Error : ", errredeem)
+		sugarLogger.Info("[UltraVoucherServices]-[CheckUser]")
+		sugarLogger.Info("[Failed Redeem Voucher]-[Get Data User]")
+
+		res = utils.GetMessageResponse(res, 01, false, errors.New("User belum Eligible"))
+	}
+
 	data := switchCheckData(cekVoucher, req.Category)
 
 	logs.Info("SupplierID : ", data.SupplierID)
@@ -100,13 +114,13 @@ func VoucherComulativeController(ctx *gin.Context) {
 		AccountNumber: dataToken.Data,
 		MerchantID:    dataToken.MerchantID,
 		InstitutionID: header.InstitutionID,
-		// CustID:        req.CustID,
-		SupplierID:  data.SupplierID,
-		ProductType: data.ProductType,
-		ProductCode: data.ProductCode,
-		NamaVoucher: data.NamaVoucher,
-		Point:       data.Point,
-		Category:    req.Category,
+		CustID:        dataUser.CustID,
+		SupplierID:    data.SupplierID,
+		ProductType:   data.ProductType,
+		ProductCode:   data.ProductCode,
+		NamaVoucher:   data.NamaVoucher,
+		Point:         data.Point,
+		Category:      req.Category,
 	}
 
 	switch data.SupplierID {
@@ -138,6 +152,7 @@ func switchCheckData(data modelsopl.VoucherDetailResp, product string) models.Pa
 	var supplierID string
 	if supplierid == "UV" {
 		supplierID = "Ultra Voucher"
+		coupon = coupon[3:]
 	} else {
 		supplierID = "OttoAG"
 	}
@@ -158,7 +173,7 @@ func switchCheckData(data modelsopl.VoucherDetailResp, product string) models.Pa
 		SupplierID:  supplierID,
 		NamaVoucher: data.Name,
 		Point:       data.CostInPoints,
-		ExpDate:     data.CampaignActivity.ActiveTo,
+		// ExpDate:     data.CampaignActivity.ActiveTo,
 	}
 
 	return res

@@ -26,15 +26,8 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[RedeemVoucher]")
 	defer span.Finish()
 
-	// get CustID
-	dataUser, errUser := db.CheckUser(param.AccountNumber)
-	if errUser != nil {
-		res = utils.GetMessageResponse(res, 422, false, errors.New("User belum Eligible"))
-		return res
-	}
-
 	// Use Voucher to Openloyalty
-	_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, dataUser.CustID, 1)
+	_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 1)
 	if err2 != nil {
 		res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
 		return res
@@ -76,7 +69,7 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 
 	if useUV.ResponseCode == "" {
 		// Use Voucher to Openloyalty
-		_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, dataUser.CustID, 0)
+		_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 0)
 		if err2 != nil {
 			res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
 			return res
