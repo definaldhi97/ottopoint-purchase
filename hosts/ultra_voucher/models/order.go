@@ -4,9 +4,9 @@ package models
 type OrderVoucherReq struct {
 	Sku               string `json:"sku"`
 	Qty               int    `json:"qty"`
-	AccountID         string `json:"account_id"`
-	InstitutionRefno  string `json:"institution_refno"`
-	ExpireDateVoucher int    `json:"expire_date_voucher"`
+	AccountID         string `json:"accountId"`
+	InstitutionRefno  string `json:"institutionRefno"`
+	ExpireDateVoucher int    `json:"expireDateVoucher"`
 	ReceiverName      string `json:"receiverName"`
 	ReceiverEmail     string `json:"receiverEmail"`
 	ReceiverPhone     string `json:"receiverPhone"`
@@ -22,7 +22,7 @@ type OrderVoucherResp struct {
 type DataOrder struct {
 	OrderID           string            `json:"orderId"`
 	InvoiceOp         string            `json:"invoiceOp"`
-	VouchersAvailable int               `json:"vouchersAvailable"`
+	VouchersAvailable string            `json:"vouchersAvailable"`
 	VouchersCode      []DataVoucherCode `json:"vouchersCode"`
 }
 

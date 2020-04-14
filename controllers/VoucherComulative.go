@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"ottopoint-purchase/constants"
+	"ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
 	modelsopl "ottopoint-purchase/hosts/opl/models"
 	token "ottopoint-purchase/hosts/redis_token/host"
-	signature "ottopoint-purchase/hosts/signature/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/services"
 	"ottopoint-purchase/utils"
@@ -44,44 +44,14 @@ func VoucherComulativeController(ctx *gin.Context) {
 	c := ctx.Request.Context()
 	context := opentracing.ContextWithSpan(c, span)
 
-	header := models.RequestHeader{
-		DeviceID:      ctx.Request.Header.Get("DeviceId"),
-		InstitutionID: ctx.Request.Header.Get("InstitutionId"),
-		Geolocation:   ctx.Request.Header.Get("Geolocation"),
-		ChannelID:     ctx.Request.Header.Get("ChannelId"),
-		AppsID:        ctx.Request.Header.Get("AppsId"),
-		Timestamp:     ctx.Request.Header.Get("Timestamp"),
-		Authorization: ctx.Request.Header.Get("Authorization"),
-		Signature:     ctx.Request.Header.Get("Signature"),
-	}
-
-	ValidateSignature, errSignature := signature.Signature(req, header)
-	if errSignature != nil || ValidateSignature.ResponseCode == "" {
-		sugarLogger.Info("[ValidateSignature]-[VoucherComulative-Controller]")
-		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
-
-		logs.Info("[ValidateSignature]-[VoucherComulative-Controller]")
-		logs.Info(fmt.Sprintf("Error when validation request header"))
-
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Signature salah"))
-		ctx.JSON(http.StatusBadRequest, res)
+	//validate request
+	header, resultValidate := ValidateRequest(ctx, true, req)
+	if !resultValidate.Meta.Status {
+		ctx.JSON(http.StatusOK, resultValidate)
 		return
 	}
 
-	dataToken, errToken := token.CheckToken(header)
-	if errToken != nil || dataToken.ResponseCode != "00" {
-		sugarLogger.Info("[ValidateToken]-[VoucherComulative-Controller]")
-		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
-		sugarLogger.Info(fmt.Sprintf("Error : ", errToken))
-
-		logs.Info("[ValidateToken]-[VoucherComulative-Controller]")
-		logs.Info(fmt.Sprintf("Error when validation request header"))
-		logs.Info(fmt.Sprintf("Error : ", errToken))
-
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
-		ctx.JSON(http.StatusBadRequest, res)
-		return
-	}
+	dataToken, _ := token.CheckToken(header)
 
 	spanid := utilsgo.GetSpanId(span)
 	sugarLogger.Info("REQUEST : ", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
@@ -119,6 +89,19 @@ func VoucherComulativeController(ctx *gin.Context) {
 		return
 	}
 
+	dataUser, errUser := db.CheckUser(dataToken.Data)
+	if errUser != nil || dataUser.CustID == "" {
+		logs.Info("Internal Server Error : ", errUser)
+		logs.Info("[UltraVoucherServices]-[CheckUser]")
+		logs.Info("[Failed Redeem Voucher]-[Get Data User]")
+
+		// sugarLogger.Info("Internal Server Error : ", errredeem)
+		sugarLogger.Info("[UltraVoucherServices]-[CheckUser]")
+		sugarLogger.Info("[Failed Redeem Voucher]-[Get Data User]")
+
+		res = utils.GetMessageResponse(res, 01, false, errors.New("User belum Eligible"))
+	}
+
 	data := switchCheckData(cekVoucher, req.Category)
 
 	logs.Info("SupplierID : ", data.SupplierID)
@@ -131,13 +114,13 @@ func VoucherComulativeController(ctx *gin.Context) {
 		AccountNumber: dataToken.Data,
 		MerchantID:    dataToken.MerchantID,
 		InstitutionID: header.InstitutionID,
-		// CustID:        req.CustID,
-		SupplierID:  data.SupplierID,
-		ProductType: data.ProductType,
-		ProductCode: data.ProductCode,
-		NamaVoucher: data.NamaVoucher,
-		Point:       data.Point,
-		Category:    req.Category,
+		CustID:        dataUser.CustID,
+		SupplierID:    data.SupplierID,
+		ProductType:   data.ProductType,
+		ProductCode:   data.ProductCode,
+		NamaVoucher:   data.NamaVoucher,
+		Point:         data.Point,
+		Category:      req.Category,
 	}
 
 	switch data.SupplierID {
@@ -169,6 +152,7 @@ func switchCheckData(data modelsopl.VoucherDetailResp, product string) models.Pa
 	var supplierID string
 	if supplierid == "UV" {
 		supplierID = "Ultra Voucher"
+		coupon = coupon[3:]
 	} else {
 		supplierID = "OttoAG"
 	}
@@ -189,7 +173,7 @@ func switchCheckData(data modelsopl.VoucherDetailResp, product string) models.Pa
 		SupplierID:  supplierID,
 		NamaVoucher: data.Name,
 		Point:       data.CostInPoints,
-		ExpDate:     data.CampaignActivity.ActiveTo,
+		// ExpDate:     data.CampaignActivity.ActiveTo,
 	}
 
 	return res

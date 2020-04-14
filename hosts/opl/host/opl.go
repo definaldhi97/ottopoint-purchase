@@ -17,13 +17,14 @@ var (
 	host string
 	name string
 
-	endpointVoucherDetail          string
-	endpointRedeemVoucher          string
-	endpointCouponVoucherCustomer  string
-	endpointHistoryVoucherCustomer string
-	endpointRulePoint              string
-	endpointListRulePoint          string
-	endpointGetBalance             string
+	endpointVoucherDetail           string
+	endpointRedeemVoucher           string
+	endpointCouponVoucherCustomer   string
+	endpointHistoryVoucherCustomer  string
+	endpointRulePoint               string
+	endpointListRulePoint           string
+	endpointGetBalance              string
+	endpointRedeemCumulativeVoucher string
 
 	endpointAddedPoint string
 	endpointSpendPoint string
@@ -36,6 +37,7 @@ func init() {
 	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_OPL", "OPENLOYALTY")
 
 	endpointRedeemVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM", "/api/customer/campaign/")
+	endpointRedeemCumulativeVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM_CUMULATIVE", "/api/admin/customer/")
 	endpointVoucherDetail = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_DETAIL", "/api/campaign/")
 	endpointHistoryVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_HISTORY_VOUCHER", "/api/customer/campaign/bought")
 	endpointCouponVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_COUPONVOUCHER", "/api/admin/campaign/coupons/mark_as_used")
@@ -70,6 +72,36 @@ func RedeemVoucher(campaignID, phone string) (*models.BuyVocuherResp, error) {
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
 		logs.Error("Failed to unmarshaling response RedeemVoucher from open-loyalty ", err.Error())
+
+		return &resp, err
+	}
+
+	return &resp, nil
+}
+
+// Redeem Voucher Cumulative
+func RedeemVoucherCumulative(campaignID, custIdOPL, total string) (*models.BuyVocuherResp, error) {
+	var resp models.BuyVocuherResp
+
+	logs.Info("[Package Host OPL]-[RedeemVoucherCumulative]")
+
+	jsonData := map[string]interface{}{
+		"quantity": total,
+	}
+
+	api := custIdOPL + "/campaign/" + campaignID + "/buy"
+	urlSvr := host + endpointRedeemCumulativeVoucher + api
+
+	data, err := HTTPxFormPostAdmin2(urlSvr, jsonData, HealthCheckKey)
+	if err != nil {
+		logs.Error("Check error", err.Error())
+
+		return &resp, err
+	}
+
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+		logs.Error("Failed to unmarshaling response RedeemVoucherCumulative from open-loyalty ", err.Error())
 
 		return &resp, err
 	}
