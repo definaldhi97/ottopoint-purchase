@@ -74,6 +74,17 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 		return res
 	}
 
+	if useUV.ResponseCode == "" {
+		// Use Voucher to Openloyalty
+		_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, dataUser.CustID, 0)
+		if err2 != nil {
+			res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
+			return res
+		}
+		res = utils.GetMessageResponse(res, 129, false, errors.New("Voucher gagal digunakan, silahkan coba beberapa saat lagi"))
+		return res
+	}
+
 	if useUV.ResponseCode == "00" {
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -83,11 +94,6 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 			},
 		}
 		return res
-	}
-
-	res = models.Response{
-		Meta: utils.ResponseMetaOK(),
-		Data: useUV.ResponseDesc,
 	}
 
 	return res

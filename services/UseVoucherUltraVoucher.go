@@ -42,6 +42,23 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		param.Reffnum = utils.GenTransactionId()
 		param.ExpDate = dataorder.Expired
 
+		// redeem to opl (potong point)
+		redeem, errredeem := host.RedeemVoucher(req.CampaignID, param.AccountNumber)
+		if errredeem != nil {
+			logs.Info("Internal Server Error : ", errredeem)
+			logs.Info("[UltraVoucherServices]-[RedeemVoucher]")
+			logs.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
+
+			// sugarLogger.Info("Internal Server Error : ", errredeem)
+			sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
+			sugarLogger.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
+
+			// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
+			// return res
+			failed++
+			continue
+		}
+
 		// order to u
 		order, errOrder := uv.OrderVoucher(param, req.Jumlah, dataorder.Email, dataorder.Phone, dataorder.Nama)
 		if errOrder != nil {
@@ -59,23 +76,11 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			continue
 		}
 
-		redeem, errredeem := host.RedeemVoucher(req.CampaignID, param.AccountNumber)
-		if errredeem != nil {
-			logs.Info("Internal Server Error : ", errredeem)
-			logs.Info("[UltraVoucherServices]-[RedeemVoucher]")
-			logs.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
-
-			// sugarLogger.Info("Internal Server Error : ", errredeem)
-			sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
-			sugarLogger.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
-
-			// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
-			// return res
-			failed++
-			continue
-		}
-
 		if redeem.Error != "" {
+			sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
+			sugarLogger.Info(redeem.Error)
+
+			logs.Info("[UltraVoucherServices]-[RedeemVoucher]-[Error : %v]", redeem.Error)
 			err = true
 			failed++
 			continue
