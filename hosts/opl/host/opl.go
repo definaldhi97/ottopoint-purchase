@@ -92,7 +92,7 @@ func RedeemVoucherCumulative(campaignID, custIdOPL, total string) (*models.BuyVo
 	api := custIdOPL + "/campaign/" + campaignID + "/buy"
 	urlSvr := host + endpointRedeemCumulativeVoucher + api
 
-	data, err := HTTPxFormPostAdmin2(urlSvr, jsonData, HealthCheckKey)
+	data, err := HTTPxFormPostAdmin2(urlSvr, jsonData)
 	if err != nil {
 		logs.Error("Check error", err.Error())
 
