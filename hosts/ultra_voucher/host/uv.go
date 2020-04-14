@@ -20,7 +20,7 @@ var (
 	endpointOrderVoucher string
 	endpointUseVoucher   string
 
-	healthCheckKey string
+	// healthCheckKey string
 )
 
 func init() {
@@ -30,21 +30,22 @@ func init() {
 	endpointOrderVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_UV_ORDER", "/purchase/order")
 	endpointUseVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_UV_USE", "/voucher/use")
 
-	healthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_UV", "OTTOPOINT-PURCHASE:OTTOPOINT-UV")
+	// healthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_UV", "OTTOPOINT-PURCHASE:OTTOPOINT-UV")
 }
 
 // OrderVoucher
 func OrderVoucher(param m.Params, total int, email, phone, nama string) (*models.OrderVoucherResp, error) {
 	var resp models.OrderVoucherResp
 
-	logs.Info("[Package Host UV]-[OrderVoucher]")
+	logs.Info("[PackageHostUV]-[OrderVoucher]")
 
+	nama = "OTTOPOINT"
 	expired, _ := strconv.Atoi(param.ExpDate)
 
 	req := models.OrderVoucherReq{
 		Sku:               param.ProductCode,
 		Qty:               total,
-		AccountID:         phone,
+		AccountID:         param.CustID,
 		InstitutionRefno:  param.Reffnum,
 		ExpireDateVoucher: expired,
 		ReceiverName:      nama,
@@ -54,7 +55,7 @@ func OrderVoucher(param m.Params, total int, email, phone, nama string) (*models
 
 	urlSvr := host + endpointOrderVoucher
 
-	data, err := HTTPxFormPostUV(urlSvr, healthCheckKey, req)
+	data, err := HTTPxFormPostUV(urlSvr, param.InstitutionID, req)
 	if err != nil {
 		logs.Error("Check error : ", err.Error())
 
@@ -84,7 +85,7 @@ func UseVoucherUV(accountNumber, code string) (*models.UseVoucherUVResp, error) 
 
 	urlSvr := host + endpointUseVoucher
 
-	data, err := HTTPxFormPostUV(urlSvr, healthCheckKey, req)
+	data, err := HTTPxFormPostUV(urlSvr, "", req)
 	if err != nil {
 		logs.Error("Check error : ", err.Error())
 
@@ -105,8 +106,8 @@ func UseVoucherUV(accountNumber, code string) (*models.UseVoucherUVResp, error) 
 func GetServiceHealthCheck() hcmodels.ServiceHealthCheck {
 	redisClient := redis.GetRedisConnection()
 	return hcutils.GetServiceHealthCheck(&redisClient, &hcmodels.ServiceEnv{
-		Name:           name,
-		Address:        host,
-		HealthCheckKey: healthCheckKey,
+		Name:    name,
+		Address: host,
+		// HealthCheckKey: healthCheckKey,
 	})
 }

@@ -2,11 +2,9 @@ package host
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"ottopoint-purchase/redis"
 	"ottopoint-purchase/utils"
 	"strconv"
 	"strings"
@@ -16,7 +14,6 @@ import (
 
 	"github.com/astaxie/beego/logs"
 	"github.com/parnurzeal/gorequest"
-	hcredismodels "ottodigital.id/library/healthcheck/models/redismodels"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -42,7 +39,7 @@ func init() {
 }
 
 // Post (Tanpa Request), Token Customer
-func HTTPxFormPostCustomer1(url, phone, key string) ([]byte, error) {
+func HTTPxFormPostCustomer1(url, phone string) ([]byte, error) {
 	logs.Info("PhoneNumber :", phone)
 	token, _ := redishost.GetToken(fmt.Sprintf("Ottopoint-Token-Customer-%s :", phone))
 	data := strings.Replace(token.Data, `"`, "", 2)
@@ -58,18 +55,18 @@ func HTTPxFormPostCustomer1(url, phone, key string) ([]byte, error) {
 	reqagent := request.Post(url)
 	// reqagent.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	reqagent.Header.Set("Authorization", dataToken)
-	resp, body, errs := reqagent.
+	_, body, errs := reqagent.
 		// Send(jsondata).
 		Timeout(timeout).
 		Retry(retrybad, time.Second, http.StatusInternalServerError).
 		End()
 
-	healthCheckData, _ := json.Marshal(hcredismodels.ServiceHealthCheckRedis{
-		StatusCode: resp.StatusCode,
-		UpdatedAt:  time.Now().UTC(),
-	})
+	// healthCheckData, _ := json.Marshal(hcredismodels.ServiceHealthCheckRedis{
+	// 	StatusCode: resp.StatusCode,
+	// 	UpdatedAt:  time.Now().UTC(),
+	// })
 
-	go redis.SaveRedis(key, healthCheckData)
+	// go redis.SaveRedis(key, healthCheckData)
 	if errs != nil {
 		logs.Error("Error Sending ", errs)
 		return nil, errs[0]
@@ -78,7 +75,7 @@ func HTTPxFormPostCustomer1(url, phone, key string) ([]byte, error) {
 }
 
 // GET, Token Admin
-func HTTPxFormGETAdmin(url, key string) ([]byte, error) {
+func HTTPxFormGETAdmin(url string) ([]byte, error) {
 	token, _ := redishost.GetToken(utils.RedisKeyAuth)
 	data := strings.Replace(token.Data, `"`, "", 2)
 	dataToken := "Bearer" + " " + data
@@ -112,7 +109,7 @@ func HTTPxFormGETAdmin(url, key string) ([]byte, error) {
 }
 
 // GET, Token Customer
-func HTTPxFormGETCustomer(url, phone string, key string) ([]byte, error) {
+func HTTPxFormGETCustomer(url, phone string) ([]byte, error) {
 
 	token, _ := redishost.GetToken(fmt.Sprintf("Ottopoint-Token-Customer-%s :", phone))
 	data := strings.Replace(token.Data, `"`, "", 2)
@@ -128,18 +125,11 @@ func HTTPxFormGETCustomer(url, phone string, key string) ([]byte, error) {
 	// reqagent.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	reqagent.Header.Set("Authorization", dataToken)
 
-	resp, body, errs := reqagent.
+	_, body, errs := reqagent.
 		// Send(jsondata).
 		Timeout(timeout).
 		Retry(retrybad, time.Second, http.StatusInternalServerError).
 		End()
-
-	healthCheckData, _ := json.Marshal(hcredismodels.ServiceHealthCheckRedis{
-		StatusCode: resp.StatusCode,
-		UpdatedAt:  time.Now().UTC(),
-	})
-
-	go redis.SaveRedis(key, healthCheckData)
 	if errs != nil {
 		logs.Error("Error Sending ", errs)
 		return nil, errs[0]
@@ -148,7 +138,7 @@ func HTTPxFormGETCustomer(url, phone string, key string) ([]byte, error) {
 }
 
 // Post (Request), Token Admin
-func HTTPxFormPostAdmin2(url string, jsondata interface{}, key string) ([]byte, error) {
+func HTTPxFormPostAdmin2(url string, jsondata interface{}) ([]byte, error) {
 	token, _ := redishost.GetToken(utils.RedisKeyAuth)
 	data := strings.Replace(token.Data, `"`, "", 2)
 	dataToken := "Bearer" + " " + data
@@ -163,18 +153,12 @@ func HTTPxFormPostAdmin2(url string, jsondata interface{}, key string) ([]byte, 
 	reqagent := request.Post(url)
 	reqagent.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	reqagent.Header.Set("Authorization", dataToken)
-	resp, body, errs := reqagent.
+	_, body, errs := reqagent.
 		Send(jsondata).
 		Timeout(timeout).
 		Retry(retrybad, time.Second, http.StatusInternalServerError).
 		End()
 
-	healthCheckData, _ := json.Marshal(hcredismodels.ServiceHealthCheckRedis{
-		StatusCode: resp.StatusCode,
-		UpdatedAt:  time.Now().UTC(),
-	})
-
-	go redis.SaveRedis(key, healthCheckData)
 	if errs != nil {
 		logs.Error("Error Sending ", errs)
 		return nil, errs[0]

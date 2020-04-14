@@ -4,7 +4,7 @@ type Params struct {
 	AccountNumber string
 	MerchantID    string
 	InstitutionID string
-	CustID        string
+	CustID        string //opl
 	Reffnum       string // internal
 	RRN           string // eksternal
 	Amount        int64

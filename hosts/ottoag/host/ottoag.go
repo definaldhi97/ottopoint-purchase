@@ -86,7 +86,7 @@ func Send(msgreq interface{}, head HeaderHTTP, typetrans string) ([]byte, error)
 
 	datareq, _ := json.Marshal(msgreq)
 	logs.Info(fmt.Sprintf("[Request %s]", typetrans), fmt.Sprintf("[%s]", string(datareq)))
-	data, err := HTTPPostWithHeader(urlSvr, msgreq, header, HealthCheckKey)
+	data, err := HTTPPostWithHeader(urlSvr, msgreq, header)
 
 	logs.Info(fmt.Sprintf("[Response %s]", typetrans), fmt.Sprintf("[%s]", string(data)))
 	return data, err

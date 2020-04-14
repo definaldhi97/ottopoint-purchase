@@ -28,7 +28,7 @@ var (
 	endpointAddedPoint string
 	endpointSpendPoint string
 
-	HealthCheckKey string
+	// HealthCheckKey string
 )
 
 func init() {
@@ -48,7 +48,7 @@ func init() {
 
 	endpointGetBalance = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_GET_BALANCE", "/api/admin/customer")
 
-	HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_OPL", "OTTOPOINT-PURCHASE:OTTOPOINT")
+	// HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_OPL", "OTTOPOINT-PURCHASE:OTTOPOINT")
 }
 
 // Redeem Voucher
@@ -60,7 +60,7 @@ func RedeemVoucher(campaignID, phone string) (*models.BuyVocuherResp, error) {
 	api := campaignID + "/buy"
 	urlSvr := host + endpointRedeemVoucher + api
 
-	data, err := HTTPxFormPostCustomer1(urlSvr, phone, HealthCheckKey)
+	data, err := HTTPxFormPostCustomer1(urlSvr, phone)
 	if err != nil {
 		logs.Error("Check error", err.Error())
 
@@ -88,7 +88,7 @@ func RulePoint(eventName, phone string) (models.RulePointResponse, error) {
 
 	urlSvr := host + todo
 
-	data, err := HTTPxFormPostCustomer1(urlSvr, phone, HealthCheckKey)
+	data, err := HTTPxFormPostCustomer1(urlSvr, phone)
 	if err != nil {
 		logs.Error("Check error Rule Point", err.Error())
 		//fmt.Printf("Check error %v", err.Error())
@@ -116,7 +116,7 @@ func ListRulePoint(phone string) (models.LisrRulePointResponse, error) {
 
 	urlSvr := host + todo
 
-	data, err := HTTPxFormGETCustomer(urlSvr, phone, HealthCheckKey)
+	data, err := HTTPxFormGETCustomer(urlSvr, phone)
 	if err != nil {
 		logs.Error("Check error Rule Point", err.Error())
 		//fmt.Printf("Check error %v", err.Error())
@@ -142,7 +142,7 @@ func VoucherDetail(campaign string) (models.VoucherDetailResp, error) {
 
 	urlSvr := host + endpointVoucherDetail + campaign
 
-	data, err := HTTPxFormGETAdmin(urlSvr, HealthCheckKey)
+	data, err := HTTPxFormGETAdmin(urlSvr)
 	if err != nil {
 		logs.Error("Check error Voucher Detail ", err.Error())
 		//fmt.Printf("Check error %v", err.Error())
@@ -168,7 +168,7 @@ func HistoryVoucherCustomer(phone, page string) (*models.HistoryVoucherCustomerR
 
 	param := fmt.Sprintf("?includeDetails=1&page=%s&perPage=1000&sort&direction", page)
 	urlSvr := host + endpointHistoryVoucherCustomer + param
-	data, err := HTTPxFormGETCustomer(urlSvr, phone, HealthCheckKey)
+	data, err := HTTPxFormGETCustomer(urlSvr, phone)
 	if err != nil {
 		logs.Error("Check error ", err.Error())
 		return &resp, err
@@ -200,7 +200,7 @@ func CouponVoucherCustomer(campaign, couponId, couponCode, custID string, useVou
 		"coupons[0][customerId]": custID}
 
 	logs.Info("===== Use Voucher True / False =====")
-	data, err := HTTPxFormPostAdmin2(urlSvr, jsonData, HealthCheckKey)
+	data, err := HTTPxFormPostAdmin2(urlSvr, jsonData)
 	if err != nil {
 		logs.Error("Check error ", err.Error())
 		return &resp, err
@@ -228,7 +228,7 @@ func TransferPoint(customer string, point string, text string) (*models.PointRes
 	}
 
 	logs.Info("Request to OPL : ", jsonData)
-	data, err := HTTPxFormPostAdmin2(urlSvr, jsonData, HealthCheckKey)
+	data, err := HTTPxFormPostAdmin2(urlSvr, jsonData)
 	if err != nil {
 		logs.Error("Check error ", err.Error())
 		return &resp, err
@@ -257,7 +257,7 @@ func SpendPoint(customer, point, text string) (*models.PointResponse, error) {
 	}
 
 	logs.Info("Request to OPL : ", jsonData)
-	data, err := HTTPxFormPostAdmin2(urlSvr, jsonData, HealthCheckKey)
+	data, err := HTTPxFormPostAdmin2(urlSvr, jsonData)
 	if err != nil {
 		logs.Error("Check error ", err.Error())
 		return &resp, err
@@ -299,8 +299,8 @@ func GetBalance(customer string) (*models.BalanceResponse, error) {
 func GetServiceHealthCheck() hcmodels.ServiceHealthCheck {
 	redisClient := redis.GetRedisConnection()
 	return hcutils.GetServiceHealthCheck(&redisClient, &hcmodels.ServiceEnv{
-		Name:           name,
-		Address:        host,
-		HealthCheckKey: HealthCheckKey,
+		Name:    name,
+		Address: host,
+		// HealthCheckKey: HealthCheckKey,
 	})
 }
