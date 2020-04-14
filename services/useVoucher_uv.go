@@ -33,11 +33,6 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 		return res
 	}
 
-	// save to redis usedAt
-	// req.Date = (time.Now().Local().Add(time.Hour * time.Duration(7))).Format("2006-01-02T15:04:05-0700")
-	// keyTimeVoucher := fmt.Sprintf("usedVoucherAt-%s-%s", param.CouponID, param.AccountNumber)
-	// go redis.SaveRedis(keyTimeVoucher, req.Date)
-
 	get, errGet := db.GetVoucherUV(param.AccountNumber, param.CouponID)
 	if errGet != nil {
 		logs.Info("Internal Server Error : ", errGet)
@@ -54,7 +49,7 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 
 	// get to UV
 	useUV, errUV := uv.UseVoucherUV(param.AccountNumber, get.VoucherCode)
-	if errUV != nil {
+	if errUV != nil || useUV.ResponseCode == "" {
 		logs.Info("Internal Server Error : ", errUV)
 		logs.Info("[UseVoucherUV-Servcies]-[UseVoucherUV]")
 		logs.Info("[Failed Use Voucher UV]-[Gagal Use Voucher UV]")
@@ -63,18 +58,29 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 		sugarLogger.Info("[UseVoucherUV-Servcies]-[UseVoucherUV]")
 		sugarLogger.Info("[Failed Use Voucher UV]-[Gagal Use Voucher UV]")
 
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
+		res = utils.GetMessageResponse(res, 129, false, errors.New("Voucher gagal digunakan, silahkan coba beberapa saat lagi"))
 		return res
 	}
 
-	if useUV.ResponseCode == "" {
+	if useUV.ResponseCode == "14" {
 		// Use Voucher to Openloyalty
 		_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 0)
 		if err2 != nil {
 			res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
 			return res
 		}
-		res = utils.GetMessageResponse(res, 129, false, errors.New("Voucher gagal digunakan, silahkan coba beberapa saat lagi"))
+		res = utils.GetMessageResponse(res, 148, true, errors.New("Voucher sudah digunakan"))
+		return res
+	}
+
+	if useUV.ResponseCode == "10" {
+		// Use Voucher to Openloyalty
+		_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 0)
+		if err2 != nil {
+			res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
+			return res
+		}
+		res = utils.GetMessageResponse(res, 147, false, errors.New("Voucher tidak ditemukan"))
 		return res
 	}
 
@@ -91,3 +97,6 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 
 	return res
 }
+
+
+func 

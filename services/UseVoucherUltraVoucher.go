@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/hosts/opl/host"
 	uv "ottopoint-purchase/hosts/ultra_voucher/host"
@@ -71,7 +72,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 	// order to u
 	order, errOrder := uv.OrderVoucher(param, req.Jumlah, dataorder.Email, dataorder.Phone, dataorder.Nama)
-	if errOrder != nil || order.ResponseCode != "00" {
+	if errOrder != nil || order.ResponseCode == "" || order.ResponseCode == "01" {
 		logs.Info("Internal Server Error : ", errOrder)
 		logs.Info("ResponseCode : ", order.ResponseCode)
 		logs.Info("[UltraVoucherServices]-[OrderVoucher]")
@@ -82,15 +83,42 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		sugarLogger.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
 
 		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
-		point := strconv.Itoa(param.Point)
-		_, errReversal := host.TransferPoint(param.CustID, point, Text)
+		point := param.Point * req.Jumlah
+		totalPoint := strconv.Itoa(point)
+		_, errReversal := host.TransferPoint(param.CustID, totalPoint, Text)
 		if errReversal != nil {
 			logs.Info("Internal Server Error : ", errReversal)
 			logs.Info("[UltraVoucherServices]-[TransferPoint]")
 			logs.Info("[Failed Order Voucher]-[Gagal Reversal Point]")
 		}
 
-		res = utils.GetMessageResponse(res, 500, false, errors.New(order.ResponseDesc))
+		res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
+
+		return res
+	}
+
+	if order.ResponseCode == "02" {
+		logs.Info("Internal Server Error : ", errOrder)
+		logs.Info("ResponseCode : ", order.ResponseCode)
+		logs.Info("[UltraVoucherServices]-[OrderVoucher]")
+		logs.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
+
+		// sugarLogger.Info("Internal Server Error : ", errOrder)
+		sugarLogger.Info("[UltraVoucherServices]-[OrderVoucher]")
+		sugarLogger.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
+
+		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
+		point := param.Point * req.Jumlah
+		totalPoint := strconv.Itoa(point)
+		_, errReversal := host.TransferPoint(param.CustID, totalPoint, Text)
+		if errReversal != nil {
+			logs.Info("Internal Server Error : ", errReversal)
+			logs.Info("[UltraVoucherServices]-[TransferPoint]")
+			logs.Info("[Failed Order Voucher]-[Gagal Reversal Point]")
+		}
+
+		msg := fmt.Sprintf("Voucher yg tersedia %v", order.Data.VouchersAvailable)
+		res = utils.GetMessageResponse(res, 500, false, errors.New(msg))
 
 		return res
 	}
