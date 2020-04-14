@@ -90,15 +90,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			logs.Info("[Failed Order Voucher]-[Gagal Reversal Point]")
 		}
 
-		res = models.Response{
-			Meta: utils.ResponseMetaOK(),
-			Data: models.UltraVoucherResp{
-				Success: 0,
-				Failed:  req.Jumlah,
-				Total:   req.Jumlah,
-				Voucher: param.NamaVoucher,
-			},
-		}
+		res = utils.GetMessageResponse(res, 500, false, errors.New(order.ResponseDesc))
 
 		return res
 	}
