@@ -37,7 +37,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	// var err bool
 	// success := 0
 	// failed := 0
-	couponOPL := []models.CouponsRedeem{}
+	// couponOPL := []models.CouponsRedeem{}
 
 	// for i := req.Jumlah; i >= 1; i-- {
 
@@ -49,9 +49,40 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	total := strconv.Itoa(req.Jumlah)
 
 	// redeem to opl (potong point)
-	redeem, errredeem := host.RedeemVoucherCumulative(req.CampaignID, param.CustID, total)
+	redeem, errredeem := host.RedeemVoucherCumulative(req.CampaignID, param.AccountNumber, total)
+
+	if redeem.Error == "Not enough points" {
+		logs.Info("Error : ", errredeem)
+		logs.Info("[UltraVoucherServices]-[RedeemVoucher]")
+		logs.Info("[Not enough points]-[Gagal Redeem Voucher]")
+
+		// sugarLogger.Info("Internal Server Error : ", errredeem)
+		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
+		sugarLogger.Info("[Not enough points]-[Gagal Redeem Voucher]")
+
+		res = utils.GetMessageResponse(res, 500, false, errors.New("Point Tidak Cukup"))
+		res.Data = "Transaksi Gagal"
+
+		return res
+	}
+
+	if redeem.Error == "Limit exceeded" {
+		logs.Info("Error : ", errredeem)
+		logs.Info("[UltraVoucherServices]-[RedeemVoucher]")
+		logs.Info("[Limit exceeded]-[Gagal Redeem Voucher]")
+
+		// sugarLogger.Info("Internal Server Error : ", errredeem)
+		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
+		sugarLogger.Info("[Limit exceeded]-[Gagal Redeem Voucher]")
+
+		res = utils.GetMessageResponse(res, 500, false, errors.New("Voucher Sudah Limit"))
+		res.Data = "Transaksi Gagal"
+
+		return res
+	}
+
 	if errredeem != nil || redeem.Error != "" {
-		logs.Info("Internal Server Error : ", errredeem)
+		logs.Info("Error : ", errredeem)
 		logs.Info("[UltraVoucherServices]-[RedeemVoucher]")
 		logs.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
 
@@ -60,20 +91,15 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		sugarLogger.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
+		res.Data = "Transaksi Gagal"
+
 		return res
 	}
-
-	// if redeem.Error != "" {
-	// 	sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
-	// 	sugarLogger.Info(redeem.Error)
-
-	// 	logs.Info("[UltraVoucherServices]-[RedeemVoucher]-[Error : %v]", redeem.Error)
-	// }
 
 	// order to u
 	order, errOrder := uv.OrderVoucher(param, req.Jumlah, dataorder.Email, dataorder.Phone, dataorder.Nama)
 	if errOrder != nil || order.ResponseCode == "" || order.ResponseCode == "01" {
-		logs.Info("Internal Server Error : ", errOrder)
+		logs.Info("Error : ", errOrder)
 		logs.Info("ResponseCode : ", order.ResponseCode)
 		logs.Info("[UltraVoucherServices]-[OrderVoucher]")
 		logs.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
@@ -92,8 +118,8 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			logs.Info("[Failed Order Voucher]-[Gagal Reversal Point]")
 		}
 
-		// res.Data = "Transaksi Gagal"
 		res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
+		res.Data = "Transaksi Gagal"
 
 		return res
 	}
@@ -118,51 +144,23 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			logs.Info("[Failed Order Voucher]-[Gagal Reversal Point]")
 		}
 
-		res.Data = fmt.Sprintf("Voucher yg tersedia %v", order.Data.VouchersAvailable)
-		res = utils.GetMessageResponse(res, 145, false, errors.New("Stok Tidak Tersedia"))
+		res = utils.GetMessageResponse(res, 145, false, errors.New(fmt.Sprintf("Voucher yg tersedia %v", order.Data.VouchersAvailable)))
+		res.Data = "Stok Tidak Tersedia"
 
 		return res
 	}
 
-	// opl
-	var coupon, code string
-	for _, val := range redeem.Coupons {
-		coupon = val.Id
-		a := models.CouponsRedeem{
-			Code: val.Code,
-			ID:   val.Id,
-		}
-		// coupon = val.
+	for i := req.Jumlah; i > 0; i-- {
 
-		couponOPL = append(couponOPL, a)
+		logs.Info("[Line Save DB : %v]", i)
+
+		t := i - 1
+		coupon := redeem.Coupons[t].Id
+		code := order.Data.VouchersCode[t].Code
+
+		id := utils.GenerateTokenUUID()
+		go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber, param.CustID)
 	}
-
-	// uv
-	for _, value := range order.Data.VouchersCode {
-		code = value.Code
-	}
-
-	id := utils.GenerateTokenUUID()
-	go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber, param.CustID)
-	// success++
-	// }
-
-	// if err == true {
-	// 	res = models.Response{
-	// 		Meta: models.MetaData{
-	// 			Status:  true,
-	// 			Message: "Point Tidak Cukup",
-	// 			Code:    201,
-	// 		},
-	// 		Data: models.UltraVoucherResp{
-	// 			Success: success,
-	// 			Failed:  failed,
-	// 			Total:   req.Jumlah,
-	// 			Voucher: param.NamaVoucher,
-	// 		},
-	// 	}
-	// 	return res
-	// }
 
 	logs.Info("ResponseCode : ", order.ResponseCode)
 	res = models.Response{
@@ -179,6 +177,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 }
 
 func SaveDB(id, institution, coupon, vouchercode, phone, custIdOPL string) {
+	logs.Info("[SaveDB]-[UltraVoucherServices]")
 	save := dbmodels.UserMyVocuher{
 		ID:            id,
 		InstitutionID: institution,
