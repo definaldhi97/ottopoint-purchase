@@ -37,7 +37,8 @@ func init() {
 	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_OPL", "OPENLOYALTY")
 
 	endpointRedeemVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM", "/api/customer/campaign/")
-	endpointRedeemCumulativeVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM_CUMULATIVE", "/api/admin/customer/")
+	endpointRedeemCumulativeVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM_CUMULATIVE", "/api/customer/campaign/")
+	// endpointRedeemCumulativeVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM_CUMULATIVE", "/api/admin/customer/{custID}/campaign/{{campaignt}}/buy")
 	endpointVoucherDetail = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_DETAIL", "/api/campaign/")
 	endpointHistoryVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_HISTORY_VOUCHER", "/api/customer/campaign/bought")
 	endpointCouponVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_COUPONVOUCHER", "/api/admin/campaign/coupons/mark_as_used")
@@ -80,7 +81,7 @@ func RedeemVoucher(campaignID, phone string) (*models.BuyVocuherResp, error) {
 }
 
 // Redeem Voucher Cumulative
-func RedeemVoucherCumulative(campaignID, custIdOPL, total string) (*models.BuyVocuherResp, error) {
+func RedeemVoucherCumulative(campaignID, phone, total string) (*models.BuyVocuherResp, error) {
 	var resp models.BuyVocuherResp
 
 	logs.Info("[Package Host OPL]-[RedeemVoucherCumulative]")
@@ -89,10 +90,10 @@ func RedeemVoucherCumulative(campaignID, custIdOPL, total string) (*models.BuyVo
 		"quantity": total,
 	}
 
-	api := custIdOPL + "/campaign/" + campaignID + "/buy"
+	api := campaignID + "/buy"
 	urlSvr := host + endpointRedeemCumulativeVoucher + api
 
-	data, err := HTTPxFormPostAdmin2(urlSvr, jsonData)
+	data, err := HTTPxFormPostCustomer2(urlSvr, phone, jsonData)
 	if err != nil {
 		logs.Error("Check error", err.Error())
 

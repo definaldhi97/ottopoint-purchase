@@ -10,11 +10,13 @@ import (
 	"ottopoint-purchase/utils"
 	"time"
 
+	"ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
 	modelsopl "ottopoint-purchase/hosts/opl/models"
 	token "ottopoint-purchase/hosts/redis_token/host"
 
 	"github.com/astaxie/beego/logs"
+
 	"github.com/gin-gonic/gin"
 	zaplog "github.com/opentracing-contrib/go-zap/log"
 	"github.com/opentracing/opentracing-go"
@@ -52,6 +54,19 @@ func UseVouhcerController(ctx *gin.Context) {
 	}
 
 	dataToken, _ := token.CheckToken(header)
+
+	dataUser, errUser := db.CheckUser(dataToken.Data)
+	if errUser != nil || dataUser.CustID == "" {
+		logs.Info("Internal Server Error : ", errUser)
+		logs.Info("[UltraVoucherServices]-[CheckUser]")
+		logs.Info("[Failed Redeem Voucher]-[Get Data User]")
+
+		// sugarLogger.Info("Internal Server Error : ", errredeem)
+		sugarLogger.Info("[UltraVoucherServices]-[CheckUser]")
+		sugarLogger.Info("[Failed Redeem Voucher]-[Get Data User]")
+
+		res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
+	}
 
 	spanid := utilsgo.GetSpanId(span)
 	sugarLogger.Info("REQUEST:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
@@ -97,6 +112,7 @@ func UseVouhcerController(ctx *gin.Context) {
 		MerchantID:    dataToken.MerchantID,
 		InstitutionID: header.InstitutionID,
 		SupplierID:    data.SupplierID,
+		CustID:        dataUser.CustID,
 		ProductType:   data.ProductType,
 		ProductCode:   data.ProductCode,
 		NamaVoucher:   data.NamaVoucher,

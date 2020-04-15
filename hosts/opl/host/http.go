@@ -74,6 +74,36 @@ func HTTPxFormPostCustomer1(url, phone string) ([]byte, error) {
 	return []byte(body), nil
 }
 
+// Post (Request), Token Customer
+func HTTPxFormPostCustomer2(url, phone string, jsondata interface{}) ([]byte, error) {
+	logs.Info("PhoneNumber :", phone)
+	token, _ := redishost.GetToken(fmt.Sprintf("Ottopoint-Token-Customer-%s :", phone))
+	data := strings.Replace(token.Data, `"`, "", 2)
+	dataToken := "Bearer" + " " + data
+	logs.Info("Token :", dataToken)
+	request := gorequest.New()
+	request.SetDebug(debugClientHTTP)
+	timeout, _ := time.ParseDuration(timeout)
+	//_ := errors.New("Connection Problem")
+	if strings.HasPrefix(url, "https") {
+		request.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	}
+	reqagent := request.Post(url)
+	reqagent.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	reqagent.Header.Set("Authorization", dataToken)
+	_, body, errs := reqagent.
+		Send(jsondata).
+		Timeout(timeout).
+		Retry(retrybad, time.Second, http.StatusInternalServerError).
+		End()
+
+	if errs != nil {
+		logs.Error("Error Sending ", errs)
+		return nil, errs[0]
+	}
+	return []byte(body), nil
+}
+
 // GET, Token Admin
 func HTTPxFormGETAdmin(url string) ([]byte, error) {
 	token, _ := redishost.GetToken(utils.RedisKeyAuth)

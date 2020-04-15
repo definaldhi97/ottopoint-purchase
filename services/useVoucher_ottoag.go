@@ -3,7 +3,6 @@ package services
 import (
 	"errors"
 	"ottopoint-purchase/constants"
-	"ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
 	"ottopoint-purchase/models"
 	redeem "ottopoint-purchase/services/voucher"
@@ -32,15 +31,8 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[RedeemVoucher]")
 	defer span.Finish()
 
-	// get CustID
-	dataUser, errUser := db.CheckUser(param.AccountNumber)
-	if errUser != nil {
-		res = utils.GetMessageResponse(res, 422, false, errors.New("User belum Eligible"))
-		return res
-	}
-
 	// Use Voucher to Openloyalty
-	_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, dataUser.CustID, 1)
+	_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 1)
 	if err2 != nil {
 		res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
 		return res
@@ -79,7 +71,7 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 		logs.Info("[Services-Voucher-UserVoucher]")
 
 		logs.Info("[Reversal Voucher")
-		_, erv := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, dataUser.CustID, 0)
+		_, erv := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 0)
 		if erv != nil {
 			res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Reversal Voucher"))
 			return res
@@ -94,7 +86,7 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 		logs.Info("[Services-Voucher-UserVoucher]")
 
 		logs.Info("[Reversal Voucher")
-		_, erv := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, dataUser.CustID, 0)
+		_, erv := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 0)
 		if erv != nil {
 			res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Reversal Voucher"))
 			return res
