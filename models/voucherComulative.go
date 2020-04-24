@@ -1,15 +1,10 @@
 package models
 
 type VoucherComultaiveReq struct {
-	// NameVoucher string `json:"nameVoucher"`
 	Jumlah     int    `json:"total"`
 	CampaignID string `json:"campaignId"`
-	Category   string `json:"category"`
 	CustID     string `json:"custId"`
 	CustID2    string `json:"custId2"`
-	// ProductCode string `json:"productCode"`
-	// Point int `json:"point"`
-	// Date        string `json:"date"`
 }
 
 type CommulativeResp struct {

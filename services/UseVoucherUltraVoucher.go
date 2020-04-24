@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/hosts/opl/host"
+	opl "ottopoint-purchase/hosts/opl/host"
 	uv "ottopoint-purchase/hosts/ultra_voucher/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
@@ -50,6 +51,21 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 	// redeem to opl (potong point)
 	redeem, errredeem := host.RedeemVoucherCumulative(req.CampaignID, param.AccountNumber, total)
+
+	if redeem.Message == "Invalid JWT Token" {
+		logs.Info("Error : ", errredeem)
+		logs.Info("[UltraVoucherServices]-[RedeemVoucher]")
+		logs.Info("[Internal Server Error]-[Gagal Redeem Voucher]")
+
+		// sugarLogger.Info("Internal Server Error : ", errredeem)
+		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
+		sugarLogger.Info("[Internal Server Error]-[Gagal Redeem Voucher]")
+
+		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
+		res.Data = "Transaksi Gagal"
+
+		return res
+	}
 
 	if redeem.Error == "Not enough points" {
 		logs.Info("Error : ", errredeem)
@@ -108,6 +124,25 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		sugarLogger.Info("[UltraVoucherServices]-[OrderVoucher]")
 		sugarLogger.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
 
+		for i := req.Jumlah; i > 0; i-- {
+
+			logs.Info("[Line : %v]", i)
+
+			t := i - 1
+			CouponID := redeem.Coupons[t].Id
+			couponCode := redeem.Coupons[t].Code
+
+			_, err2 := opl.CouponVoucherCustomer(req.CampaignID, CouponID, couponCode, param.CustID, 1)
+			if err2 != nil {
+				// res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
+				// return res
+
+				logs.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
+				logs.Info("[UltraVoucherServices]-[Error : %v]", err2)
+				sugarLogger.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
+			}
+		}
+
 		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		point := param.Point * req.Jumlah
 		totalPoint := strconv.Itoa(point)
@@ -133,6 +168,24 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		// sugarLogger.Info("Internal Server Error : ", errOrder)
 		sugarLogger.Info("[UltraVoucherServices]-[OrderVoucher]")
 		sugarLogger.Info("[Stock not Available]-[Gagal Order Voucher]")
+
+		for i := req.Jumlah; i > 0; i-- {
+			logs.Info("[Line : %v]", i)
+
+			t := i - 1
+			CouponID := redeem.Coupons[t].Id
+			couponCode := redeem.Coupons[t].Code
+
+			_, err2 := opl.CouponVoucherCustomer(req.CampaignID, CouponID, couponCode, param.CustID, 1)
+			if err2 != nil {
+				// res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
+				// return res
+
+				logs.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
+				logs.Info("[UltraVoucherServices]-[Error : %v]", err2)
+				sugarLogger.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
+			}
+		}
 
 		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		point := param.Point * req.Jumlah

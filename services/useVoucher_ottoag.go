@@ -24,7 +24,7 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[UseVoucher-Services]",
 		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID),
-		zap.String("category : ", req.Category), zap.String("campaignId : ", req.CampaignID),
+		zap.String("category : ", param.Category), zap.String("campaignId : ", req.CampaignID),
 		zap.String("cust_id : ", req.CustID), zap.String("cust_id2 : ", req.CustID2),
 		zap.String("product_code : ", param.ProductCode))
 
@@ -38,7 +38,7 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 		return res
 	}
 
-	category := strings.ToLower(req.Category)
+	category := strings.ToLower(param.Category)
 
 	resRedeem := models.UseRedeemResponse{}
 
@@ -50,9 +50,9 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 	}
 
 	switch category {
-	case constants.CategoryPulsa, constants.CategoryPaketData:
+	case constants.CategoryPulsa:
 		resRedeem = redeem.RedeemPulsa(reqRedeem, req, param)
-	case constants.CategoryToken:
+	case constants.CategoryPLN:
 		resRedeem = redeem.RedeemPLN(reqRedeem, req, param)
 	case constants.CategoryMobileLegend, constants.CategoryFreeFire:
 		resRedeem = redeem.RedeemGame(reqRedeem, req, param)

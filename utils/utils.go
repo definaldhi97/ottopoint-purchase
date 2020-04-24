@@ -277,3 +277,12 @@ func Random(min, max int) int {
 	rand.Seed(time.Now().Unix())
 	return rand.Intn(max-min) + min
 }
+
+func GetMessageFailedErrorNew(res models.Response, resCode int, resDesc string) models.Response {
+	res = models.Response{}
+	res.Meta.Status = false
+	res.Meta.Code = resCode
+	res.Meta.Message = resDesc
+
+	return res
+}

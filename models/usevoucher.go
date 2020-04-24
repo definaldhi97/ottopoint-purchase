@@ -5,12 +5,9 @@ import (
 )
 
 type UseVoucherReq struct {
-	Category   string `json:"category"`
 	CampaignID string `json:"campaignId"`
 	CustID     string `json:"custId"`
 	CustID2    string `json:"custId2"`
-	// ProductCode string `json:"product_code"`
-	// Date string `json:"date"`
 }
 
 type UseVoucherResp struct {
@@ -28,6 +25,7 @@ type UseRedeemRequest struct {
 	CustID        string `json:"custId"`
 	CustID2       string `json:"custId2"`
 	ProductCode   string `json:"product_code"`
+	Jumlah        int
 }
 
 type UseRedeemResponse struct {

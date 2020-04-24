@@ -9,6 +9,7 @@ import (
 	opl "ottopoint-purchase/hosts/opl/host"
 	modelsopl "ottopoint-purchase/hosts/opl/models"
 	token "ottopoint-purchase/hosts/redis_token/host"
+	signature "ottopoint-purchase/hosts/signature/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/services"
 	"ottopoint-purchase/utils"
@@ -44,14 +45,44 @@ func VoucherComulativeController(ctx *gin.Context) {
 	c := ctx.Request.Context()
 	context := opentracing.ContextWithSpan(c, span)
 
-	//validate request
-	header, resultValidate := ValidateRequest(ctx, true, req)
-	if !resultValidate.Meta.Status {
-		ctx.JSON(http.StatusOK, resultValidate)
+	header := models.RequestHeader{
+		DeviceID:      ctx.Request.Header.Get("DeviceId"),
+		InstitutionID: ctx.Request.Header.Get("InstitutionId"),
+		Geolocation:   ctx.Request.Header.Get("Geolocation"),
+		ChannelID:     ctx.Request.Header.Get("ChannelId"),
+		AppsID:        ctx.Request.Header.Get("AppsId"),
+		Timestamp:     ctx.Request.Header.Get("Timestamp"),
+		Authorization: ctx.Request.Header.Get("Authorization"),
+		Signature:     ctx.Request.Header.Get("Signature"),
+	}
+
+	// jsonSignature, _ := json.Marshal(req)
+
+	ValidateSignature, errSignature := signature.Signature(req, header)
+	if errSignature != nil || ValidateSignature.ResponseCode == "" {
+		sugarLogger.Info("[ValidateSignature]-[DeductSplitBillController]")
+		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
+
+		logs.Info("[ValidateSignature]-[DeductSplitBillController]")
+		logs.Info(fmt.Sprintf("Error when validation request header"))
+
+		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
+		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
 
-	dataToken, _ := token.CheckToken(header)
+	dataToken, errToken := token.CheckToken(header)
+	if errToken != nil || dataToken.ResponseCode != "00" {
+		sugarLogger.Info("[ValidateToken]-[DeductSplitBillController]")
+		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
+
+		logs.Info("[ValidateToken]-[DeductSplitBillController]")
+		logs.Info(fmt.Sprintf("Error when validation request header"))
+
+		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
 
 	spanid := utilsgo.GetSpanId(span)
 	sugarLogger.Info("REQUEST : ", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
@@ -102,7 +133,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 		res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
 	}
 
-	data := switchCheckData(cekVoucher, req.Category)
+	data := switchCheckData(cekVoucher)
 
 	logs.Info("SupplierID : ", data.SupplierID)
 	logs.Info("producrType : ", data.ProductType)
@@ -120,7 +151,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 		ProductCode:   data.ProductCode,
 		NamaVoucher:   data.NamaVoucher,
 		Point:         data.Point,
-		Category:      req.Category,
+		Category:      data.Category,
 	}
 
 	switch data.SupplierID {
@@ -143,7 +174,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 
 }
 
-func switchCheckData(data modelsopl.VoucherDetailResp, product string) models.Params {
+func switchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 	res := models.Params{}
 
 	coupon := data.Coupons[0]
@@ -158,12 +189,12 @@ func switchCheckData(data modelsopl.VoucherDetailResp, product string) models.Pa
 	}
 
 	var producrType string
-	switch product {
+	switch data.BrandName {
 	case constants.CategoryPulsa:
 		producrType = "Pulsa"
 	case constants.CategoryFreeFire, constants.CategoryMobileLegend:
 		producrType = "Game"
-	case constants.CategoryToken:
+	case constants.CategoryPLN:
 		producrType = "PLN"
 	}
 
@@ -173,6 +204,7 @@ func switchCheckData(data modelsopl.VoucherDetailResp, product string) models.Pa
 		SupplierID:  supplierID,
 		NamaVoucher: data.Name,
 		Point:       data.CostInPoints,
+		Category:    data.BrandName,
 		// ExpDate:     data.CampaignActivity.ActiveTo,
 	}
 

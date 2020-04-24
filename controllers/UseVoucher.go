@@ -14,6 +14,7 @@ import (
 	opl "ottopoint-purchase/hosts/opl/host"
 	modelsopl "ottopoint-purchase/hosts/opl/models"
 	token "ottopoint-purchase/hosts/redis_token/host"
+	signature "ottopoint-purchase/hosts/signature/host"
 
 	"github.com/astaxie/beego/logs"
 
@@ -46,14 +47,44 @@ func UseVouhcerController(ctx *gin.Context) {
 	c := ctx.Request.Context()
 	context := opentracing.ContextWithSpan(c, span)
 
-	//validate request
-	header, resultValidate := ValidateRequest(ctx, true, req)
-	if !resultValidate.Meta.Status {
-		ctx.JSON(http.StatusOK, resultValidate)
+	header := models.RequestHeader{
+		DeviceID:      ctx.Request.Header.Get("DeviceId"),
+		InstitutionID: ctx.Request.Header.Get("InstitutionId"),
+		Geolocation:   ctx.Request.Header.Get("Geolocation"),
+		ChannelID:     ctx.Request.Header.Get("ChannelId"),
+		AppsID:        ctx.Request.Header.Get("AppsId"),
+		Timestamp:     ctx.Request.Header.Get("Timestamp"),
+		Authorization: ctx.Request.Header.Get("Authorization"),
+		Signature:     ctx.Request.Header.Get("Signature"),
+	}
+
+	// jsonSignature, _ := json.Marshal(req)
+
+	ValidateSignature, errSignature := signature.Signature(req, header)
+	if errSignature != nil || ValidateSignature.ResponseCode == "" {
+		sugarLogger.Info("[ValidateSignature]-[DeductSplitBillController]")
+		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
+
+		logs.Info("[ValidateSignature]-[DeductSplitBillController]")
+		logs.Info(fmt.Sprintf("Error when validation request header"))
+
+		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
+		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
 
-	dataToken, _ := token.CheckToken(header)
+	dataToken, errToken := token.CheckToken(header)
+	if errToken != nil || dataToken.ResponseCode != "00" {
+		sugarLogger.Info("[ValidateToken]-[DeductSplitBillController]")
+		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
+
+		logs.Info("[ValidateToken]-[DeductSplitBillController]")
+		logs.Info(fmt.Sprintf("Error when validation request header"))
+
+		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
 
 	dataUser, errUser := db.CheckUser(dataToken.Data)
 	if errUser != nil || dataUser.CustID == "" {
@@ -84,7 +115,7 @@ func UseVouhcerController(ctx *gin.Context) {
 
 	cekVoucher, errVoucher := opl.HistoryVoucherCustomer(dataToken.Data, "")
 
-	data := switchData(cekVoucher.Campaigns, req.CampaignID, req.Category)
+	data := switchData(cekVoucher.Campaigns, req.CampaignID)
 
 	if errVoucher != nil || data.NamaVoucher == "" {
 		sugarLogger.Info("[HistoryVoucherCustomer]-[UseVouhcerController]")
@@ -116,7 +147,7 @@ func UseVouhcerController(ctx *gin.Context) {
 		ProductType:   data.ProductType,
 		ProductCode:   data.ProductCode,
 		NamaVoucher:   data.NamaVoucher,
-		Category:      req.Category,
+		Category:      data.Category,
 		CouponID:      data.CouponID,
 		Point:         data.Point,
 	}
@@ -141,7 +172,7 @@ func UseVouhcerController(ctx *gin.Context) {
 
 }
 
-func switchData(data []modelsopl.CampaignsDetail, CampaignID, product string) models.Params {
+func switchData(data []modelsopl.CampaignsDetail, CampaignID string) models.Params {
 	res := models.Params{}
 
 	resp := []models.CampaignsDetail{}
@@ -161,7 +192,7 @@ func switchData(data []modelsopl.CampaignsDetail, CampaignID, product string) mo
 		}
 	}
 
-	var couponId, couponCode, nama, expDate string
+	var couponId, couponCode, nama, expDate, category string
 	var point int
 	for _, valco := range resp {
 		nama = valco.Name
@@ -169,6 +200,7 @@ func switchData(data []modelsopl.CampaignsDetail, CampaignID, product string) mo
 		couponId = valco.Coupon.ID
 		couponCode = valco.Coupon.Code
 		expDate = valco.ActiveTo
+		category = valco.BrandName
 	}
 
 	supplierid := couponCode[:2]
@@ -179,24 +211,25 @@ func switchData(data []modelsopl.CampaignsDetail, CampaignID, product string) mo
 		supplierID = "OttoAG"
 	}
 
-	var producrType string
-	switch product {
-	case constants.CategoryPulsa:
-		producrType = "Pulsa"
-	case constants.CategoryFreeFire, constants.CategoryMobileLegend:
-		producrType = "Game"
-	case constants.CategoryToken:
-		producrType = "PLN"
-	}
+	// var producrType string
+	// switch category {
+	// case constants.CategoryPulsa:
+	// 	producrType = "Pulsa"
+	// case constants.CategoryFreeFire, constants.CategoryMobileLegend:
+	// 	producrType = "Game"
+	// case constants.CategoryToken:
+	// 	producrType = "PLN"
+	// }
 
 	res = models.Params{
-		ProductType: producrType,
+		ProductType: category,
 		ProductCode: couponCode,
 		SupplierID:  supplierID,
 		CouponID:    couponId,
 		NamaVoucher: nama,
 		ExpDate:     expDate,
 		Point:       point,
+		Category:    category,
 	}
 
 	return res
