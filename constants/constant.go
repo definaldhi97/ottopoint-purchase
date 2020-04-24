@@ -40,11 +40,12 @@ const (
 )
 
 const (
-	CategoryPulsa        = "pulsa"
+	CategoryPulsa        = "Pulsa"
 	CategoryPaketData    = "paket_data"
-	CategoryFreeFire     = "free_fire"
-	CategoryMobileLegend = "mobile_legend"
-	CategoryToken        = "token"
+	CategoryFreeFire     = "Free Fire"
+	CategoryMobileLegend = "Mobile Legend"
+	CategoryPLN          = "PLN"
+	CategoryGame         = "Game"
 )
 
 const (

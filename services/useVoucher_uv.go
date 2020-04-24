@@ -19,7 +19,7 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[UseVoucher-Services]",
 		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID),
-		zap.String("category : ", req.Category), zap.String("campaignId : ", req.CampaignID),
+		zap.String("category : ", param.Category), zap.String("campaignId : ", req.CampaignID),
 		zap.String("cust_id : ", req.CustID), zap.String("cust_id2 : ", req.CustID2),
 		zap.String("product_code : ", param.ProductCode))
 
@@ -29,7 +29,7 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 	// Use Voucher to Openloyalty
 	_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 1)
 	if err2 != nil {
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
+		res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Use Voucher, Harap coba lagi"))
 		return res
 	}
 
@@ -43,13 +43,17 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 		sugarLogger.Info("[UseVoucherUV-Servcies]-[GetVoucherUV]")
 		sugarLogger.Info("[Failed get data from DB]")
 
-		_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 1)
+		_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 0)
 		if err2 != nil {
-			res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
-			return res
+			// res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
+			// return res
+
+			logs.Info("[UseVoucherUV-Servcies]-[CouponVoucherCustomer]")
+			logs.Info("[UseVoucherUV-Servcies]-[Error : %v]", err2)
+			sugarLogger.Info("[UseVoucherUV-Servcies]-[CouponVoucherCustomer]")
 		}
 
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
+		res = utils.GetMessageResponse(res, 422, false, errors.New("Voucher Tidak Ditemukan"))
 		return res
 	}
 
@@ -64,10 +68,14 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 		sugarLogger.Info("[UseVoucherUV-Servcies]-[UseVoucherUV]")
 		sugarLogger.Info("[Failed Use Voucher UV]-[Gagal Use Voucher UV]")
 
-		_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 1)
+		_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 0)
 		if err2 != nil {
-			res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
-			return res
+			// res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Use Voucher, Harap coba lagi"))
+			// return res
+
+			logs.Info("[UseVoucherUV-Servcies]-[CouponVoucherCustomer]")
+			logs.Info("[UseVoucherUV-Servcies]-[Error : %v]", err2)
+			sugarLogger.Info("[UseVoucherUV-Servcies]-[CouponVoucherCustomer]")
 		}
 
 		res = utils.GetMessageResponse(res, 129, false, errors.New("Voucher Gagal Digunakan, Silahkan Coba Beberapa Saat Lagi"))

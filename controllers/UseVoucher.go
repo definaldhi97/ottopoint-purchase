@@ -84,7 +84,7 @@ func UseVouhcerController(ctx *gin.Context) {
 
 	cekVoucher, errVoucher := opl.HistoryVoucherCustomer(dataToken.Data, "")
 
-	data := switchData(cekVoucher.Campaigns, req.CampaignID, req.Category)
+	data := switchData(cekVoucher.Campaigns, req.CampaignID)
 
 	if errVoucher != nil || data.NamaVoucher == "" {
 		sugarLogger.Info("[HistoryVoucherCustomer]-[UseVouhcerController]")
@@ -116,7 +116,7 @@ func UseVouhcerController(ctx *gin.Context) {
 		ProductType:   data.ProductType,
 		ProductCode:   data.ProductCode,
 		NamaVoucher:   data.NamaVoucher,
-		Category:      req.Category,
+		Category:      data.Category,
 		CouponID:      data.CouponID,
 		Point:         data.Point,
 	}
@@ -141,7 +141,7 @@ func UseVouhcerController(ctx *gin.Context) {
 
 }
 
-func switchData(data []modelsopl.CampaignsDetail, CampaignID, product string) models.Params {
+func switchData(data []modelsopl.CampaignsDetail, CampaignID string) models.Params {
 	res := models.Params{}
 
 	resp := []models.CampaignsDetail{}
@@ -161,7 +161,7 @@ func switchData(data []modelsopl.CampaignsDetail, CampaignID, product string) mo
 		}
 	}
 
-	var couponId, couponCode, nama, expDate string
+	var couponId, couponCode, nama, expDate, category string
 	var point int
 	for _, valco := range resp {
 		nama = valco.Name
@@ -169,6 +169,7 @@ func switchData(data []modelsopl.CampaignsDetail, CampaignID, product string) mo
 		couponId = valco.Coupon.ID
 		couponCode = valco.Coupon.Code
 		expDate = valco.ActiveTo
+		category = valco.BrandName
 	}
 
 	supplierid := couponCode[:2]
@@ -179,24 +180,25 @@ func switchData(data []modelsopl.CampaignsDetail, CampaignID, product string) mo
 		supplierID = "OttoAG"
 	}
 
-	var producrType string
-	switch product {
-	case constants.CategoryPulsa:
-		producrType = "Pulsa"
-	case constants.CategoryFreeFire, constants.CategoryMobileLegend:
-		producrType = "Game"
-	case constants.CategoryToken:
-		producrType = "PLN"
-	}
+	// var producrType string
+	// switch category {
+	// case constants.CategoryPulsa:
+	// 	producrType = "Pulsa"
+	// case constants.CategoryFreeFire, constants.CategoryMobileLegend:
+	// 	producrType = "Game"
+	// case constants.CategoryToken:
+	// 	producrType = "PLN"
+	// }
 
 	res = models.Params{
-		ProductType: producrType,
+		ProductType: category,
 		ProductCode: couponCode,
 		SupplierID:  supplierID,
 		CouponID:    couponId,
 		NamaVoucher: nama,
 		ExpDate:     expDate,
 		Point:       point,
+		Category:    category,
 	}
 
 	return res

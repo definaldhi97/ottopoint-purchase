@@ -42,7 +42,7 @@ func init() {
 	healthcheck = utils.GetEnv("healthcheck", "/transaction/v2/healthcheck")
 	redeem = utils.GetEnv("redeem", "/transaction/v2/redeem")
 	use_voucher = utils.GetEnv("use_voucher", "/transaction/v2/usevoucher")
-	comulative = utils.GetEnv("comulative", "/transaction/v2/comulative")
+	comulative = utils.GetEnv("comulative", "/transaction/v2/redeempoint")
 	deductPoint = utils.GetEnv("deduct_point", "/transaction/v2/deduct")
 	reversePoint = utils.GetEnv("reverse_point", "/transaction/v2/reversal")
 	earningPoint = utils.GetEnv("earning_point", "/transaction/v2/earningpoint")

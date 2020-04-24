@@ -102,7 +102,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 		res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
 	}
 
-	data := switchCheckData(cekVoucher, req.Category)
+	data := switchCheckData(cekVoucher)
 
 	logs.Info("SupplierID : ", data.SupplierID)
 	logs.Info("producrType : ", data.ProductType)
@@ -120,7 +120,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 		ProductCode:   data.ProductCode,
 		NamaVoucher:   data.NamaVoucher,
 		Point:         data.Point,
-		Category:      req.Category,
+		Category:      data.Category,
 	}
 
 	switch data.SupplierID {
@@ -143,7 +143,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 
 }
 
-func switchCheckData(data modelsopl.VoucherDetailResp, product string) models.Params {
+func switchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 	res := models.Params{}
 
 	coupon := data.Coupons[0]
@@ -158,12 +158,12 @@ func switchCheckData(data modelsopl.VoucherDetailResp, product string) models.Pa
 	}
 
 	var producrType string
-	switch product {
+	switch data.BrandName {
 	case constants.CategoryPulsa:
 		producrType = "Pulsa"
 	case constants.CategoryFreeFire, constants.CategoryMobileLegend:
 		producrType = "Game"
-	case constants.CategoryToken:
+	case constants.CategoryPLN:
 		producrType = "PLN"
 	}
 
@@ -173,6 +173,7 @@ func switchCheckData(data modelsopl.VoucherDetailResp, product string) models.Pa
 		SupplierID:  supplierID,
 		NamaVoucher: data.Name,
 		Point:       data.CostInPoints,
+		Category:    data.BrandName,
 		// ExpDate:     data.CampaignActivity.ActiveTo,
 	}
 

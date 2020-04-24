@@ -26,7 +26,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 	logs.Info("[Start][Inquiry]-[Package-Services]-[RedeemComulativeVoucher]")
 
-	if req.Category == constants.CategoryPulsa {
+	if param.Category == constants.CategoryPulsa {
 		// validate prefix
 		validate, errValidate := ValidatePrefixComulative(req.CustID, param.ProductCode)
 		if validate == false {

@@ -50,7 +50,7 @@ func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Pa
 
 	logs.Info("[RedeemUseVoucherComulative]-[Package-Services]")
 
-	category := strings.ToLower(req.Category)
+	category := strings.ToLower(param.Category)
 
 	reqRedeem := models.UseRedeemRequest{
 		AccountNumber: param.AccountNumber,
@@ -63,9 +63,9 @@ func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Pa
 	resRedeem := models.UseRedeemResponse{}
 
 	switch category {
-	case constants.CategoryPulsa, constants.CategoryPaketData:
+	case constants.CategoryPulsa:
 		resRedeem = voucher.RedeemPulsaComulative(reqRedeem, req, param)
-	case constants.CategoryToken:
+	case constants.CategoryPLN:
 		resRedeem = voucher.RedeemPLNComulative(reqRedeem, req, param)
 	case constants.CategoryMobileLegend, constants.CategoryFreeFire:
 		resRedeem = voucher.RedeemGameComulative(reqRedeem, req, param)
