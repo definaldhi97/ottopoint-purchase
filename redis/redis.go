@@ -38,10 +38,10 @@ func init() {
 	fmt.Println("Redis Ping ", pong)
 	fmt.Println("Redis Ping ", err)
 
-	addres = ODU.GetEnv("REDIS_HOST", "13.228.23.160")
-	port = ODU.GetEnv("REDIS_PORT", "6077")
+	addres = ODU.GetEnv("REDIS_HOST_OTTOPOINT_PURCHASE", "13.228.23.160")
+	port = ODU.GetEnv("REDIS_PORT_OTTOPOINT_PURCHASE", "6077")
 	// dbtype = 0
-	queuename = ODU.GetEnv("REDIS_QUEUE", "ottomart")
+	queuename = ODU.GetEnv("REDIS_QUEUE", "ottopoint-purchase")
 
 	// ClientRed = redis.NewClient(&redis.Options{
 	// 	Addr:     addres + ":" + port,

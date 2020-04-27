@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"ottopoint-purchase/hosts/opl/models"
-	"ottopoint-purchase/redis"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 	hcmodels "ottodigital.id/library/healthcheck/models"
-	hcutils "ottodigital.id/library/healthcheck/utils"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -329,11 +329,34 @@ func GetBalance(customer string) (*models.BalanceResponse, error) {
 }
 
 // GetServiceHealthCheck ..
-func GetServiceHealthCheck() hcmodels.ServiceHealthCheck {
-	redisClient := redis.GetRedisConnection()
-	return hcutils.GetServiceHealthCheck(&redisClient, &hcmodels.ServiceEnv{
-		Name:    name,
-		Address: host,
-		// HealthCheckKey: HealthCheckKey,
-	})
+func GetServiceHealthCheckOPL() hcmodels.ServiceHealthCheck {
+	res := hcmodels.ServiceHealthCheck{}
+	var erorr interface{}
+	// sugarLogger := service.General.OttoZapLog
+
+	PublicAddress := host + endpointListRulePoint
+	log.Print("url : ", PublicAddress)
+	res.Name = name
+	res.Address = PublicAddress
+	res.UpdatedAt = time.Now().UTC()
+
+	d, err := http.Get(PublicAddress)
+
+	erorr = err
+	if err != nil {
+		log.Print("masuk error")
+		res.Status = "Not OK"
+		res.Description = fmt.Sprintf("%v", erorr)
+		return res
+	}
+	if d.StatusCode != 200 {
+		res.Status = "Not OK"
+		res.Description = d.Status
+		return res
+	}
+
+	res.Status = "OK"
+	res.Description = ""
+
+	return res
 }

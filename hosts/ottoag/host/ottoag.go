@@ -2,19 +2,18 @@ package host
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
 	//"fmt"
 	"net/http"
-	"ottopoint-purchase/redis"
 	"ottopoint-purchase/utils"
 
 	"github.com/astaxie/beego/logs"
 	jsoniter "github.com/json-iterator/go"
 
 	hcmodels "ottodigital.id/library/healthcheck/models"
-	hcutils "ottodigital.id/library/healthcheck/utils"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -97,11 +96,34 @@ func Send(msgreq interface{}, head HeaderHTTP, typetrans string) ([]byte, error)
 }
 
 // GetServiceHealthCheck ..
-func GetServiceHealthCheck() hcmodels.ServiceHealthCheck {
-	redisClient := redis.GetRedisConnection()
-	return hcutils.GetServiceHealthCheck(&redisClient, &hcmodels.ServiceEnv{
-		Name:           Name,
-		Address:        host,
-		HealthCheckKey: HealthCheckKey,
-	})
+func GetServiceHealthCheckOttoAG() hcmodels.ServiceHealthCheck {
+	res := hcmodels.ServiceHealthCheck{}
+	var erorr interface{}
+	// sugarLogger := service.General.OttoZapLog
+
+	PublicAddress := host + endpointInquiry
+	log.Print("url : ", PublicAddress)
+	res.Name = Name
+	res.Address = PublicAddress
+	res.UpdatedAt = time.Now().UTC()
+
+	d, err := http.Get(PublicAddress)
+
+	erorr = err
+	if err != nil {
+		log.Print("masuk error")
+		res.Status = "Not OK"
+		res.Description = fmt.Sprintf("%v", erorr)
+		return res
+	}
+	if d.StatusCode != 200 {
+		res.Status = "Not OK"
+		res.Description = d.Status
+		return res
+	}
+
+	res.Status = "OK"
+	res.Description = ""
+
+	return res
 }
