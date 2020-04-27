@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -36,7 +35,7 @@ func init() {
 	rrnkey = ODU.GetEnv("REDISKEY.OTTOFIN.RRN", "OTTOFIN:KEYRRN")
 	RedisKeyAuth = ODU.GetEnv("redis.key.auth", "Ottopoint-Token-Admin :")
 	LimitTRXPoint = ODU.GetEnv("limit.trx.point", "999999999999999")
-	MemberID = ODU.GetEnv("ottoag.memberid", "OTPOINT")
+	MemberID = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_MEMBERID", "OTPOINT")
 
 }
 
@@ -233,7 +232,22 @@ func GetFormattedToken(token string) string {
 	return formattedToken
 }
 
-// generate token using UUID and base64
+// // generate token using UUID and base64
+// func GenerateTokenUUID() string {
+// 	out, err := exec.Command("uuidgen").Output()
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	fmt.Printf("%s", out)
+// 	tokenString := string(out)
+
+// 	tokenString = strings.ReplaceAll(tokenString, "\n", "")
+
+// 	encode64Token := base64.StdEncoding.EncodeToString([]byte(tokenString))
+// 	log.Print(encode64Token)
+// 	return encode64Token
+// }
+
 func GenerateTokenUUID() string {
 	out, err := exec.Command("uuidgen").Output()
 	if err != nil {
@@ -243,12 +257,11 @@ func GenerateTokenUUID() string {
 	tokenString := string(out)
 
 	tokenString = strings.ReplaceAll(tokenString, "\n", "")
-
-	encode64Token := base64.StdEncoding.EncodeToString([]byte(tokenString))
-	log.Print(encode64Token)
-	return encode64Token
+	tokenString = strings.ToLower(tokenString)
+	return tokenString
 }
 
+// ReffNumb
 func GenTransactionId() string {
 
 	currentTime := fmt.Sprintf(time.Now().Format("060102"))
@@ -263,4 +276,13 @@ func GenTransactionId() string {
 func Random(min, max int) int {
 	rand.Seed(time.Now().Unix())
 	return rand.Intn(max-min) + min
+}
+
+func GetMessageFailedErrorNew(res models.Response, resCode int, resDesc string) models.Response {
+	res = models.Response{}
+	res.Meta.Status = false
+	res.Meta.Code = resCode
+	res.Meta.Message = resDesc
+
+	return res
 }

@@ -1,16 +1,12 @@
 package host
 
 import (
-	"encoding/json"
 	"net/http"
-	"ottopoint-purchase/redis"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/parnurzeal/gorequest"
-
-	hcredismodels "ottodigital.id/library/healthcheck/models/redismodels"
 
 	ODU "ottodigital.id/library/utils"
 )
@@ -37,7 +33,7 @@ func init() {
 }
 
 // HTTPPostWithHeader func
-func HTTPPostWithHeader(url string, jsondata interface{}, header http.Header, key string) ([]byte, error) {
+func HTTPPostWithHeader(url string, jsondata interface{}, header http.Header) ([]byte, error) {
 	request := gorequest.New()
 	request.SetDebug(debugClientHTTP)
 	timeout, _ := time.ParseDuration(timeout)
@@ -47,18 +43,11 @@ func HTTPPostWithHeader(url string, jsondata interface{}, header http.Header, ke
 	// }
 	reqagent := request.Post(url)
 	reqagent.Header = header
-	resp, body, errs := reqagent.
+	_, body, errs := reqagent.
 		Send(jsondata).
 		Timeout(timeout).
 		Retry(retrybad, time.Second, http.StatusInternalServerError).
 		End()
-
-	healthCheckData, _ := json.Marshal(hcredismodels.ServiceHealthCheckRedis{
-		StatusCode: resp.StatusCode,
-		UpdatedAt:  time.Now().UTC(),
-	})
-
-	go redis.SaveRedis(key, healthCheckData)
 	if errs != nil {
 		return []byte(body), errs[0]
 	}

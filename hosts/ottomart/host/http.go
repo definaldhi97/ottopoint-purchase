@@ -2,16 +2,13 @@ package host
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"net/http"
-	"ottopoint-purchase/redis"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/parnurzeal/gorequest"
-	hcredismodels "ottodigital.id/library/healthcheck/models/redismodels"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -36,7 +33,7 @@ func init() {
 
 }
 
-func HTTPxFormOTTOMART(url string, jsondata interface{}, key string) ([]byte, error) {
+func HTTPxFormOTTOMART(url string, jsondata interface{}) ([]byte, error) {
 	request := gorequest.New()
 	request.SetDebug(debugClientHTTP)
 	timeout, _ := time.ParseDuration(timeout)
@@ -47,18 +44,12 @@ func HTTPxFormOTTOMART(url string, jsondata interface{}, key string) ([]byte, er
 	reqagent := request.Post(url)
 	reqagent.Header.Set("Content-Type", "application/json")
 	// reqagent.Header.Set("Authorization", dataToken)
-	resp, body, errs := reqagent.
+	_, body, errs := reqagent.
 		Send(jsondata).
 		Timeout(timeout).
 		Retry(retrybad, time.Second, http.StatusInternalServerError).
 		End()
 
-	healthCheckData, _ := json.Marshal(hcredismodels.ServiceHealthCheckRedis{
-		StatusCode: resp.StatusCode,
-		UpdatedAt:  time.Now().UTC(),
-	})
-
-	go redis.SaveRedis(key, healthCheckData)
 	if errs != nil {
 		logs.Error("Error Sending ", errs)
 		return nil, errs[0]

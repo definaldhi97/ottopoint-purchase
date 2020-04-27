@@ -40,3 +40,35 @@ func GetData(trxID, InstitutionID string) (dbmodels.DeductTransaction, error) {
 
 	return res, nil
 }
+
+func GetVoucherUV(phone, couponID string) (dbmodels.UserMyVocuher, error) {
+	res := dbmodels.UserMyVocuher{}
+
+	err := DbCon.Where("phone = ? and coupon_id = ?", phone, couponID).First(&res).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetVoucherUV]")
+		fmt.Println(fmt.Sprintf("Failed to connect database Voucher UV %v", err))
+
+		return res, err
+	}
+
+	return res, nil
+}
+
+func ParamData(code string) (dbmodels.MParameters, error) {
+	res := dbmodels.MParameters{}
+
+	err := DbCon.Where("code = ?", code).First(&res).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetVoucherUV]")
+		fmt.Println(fmt.Sprintf("Failed to connect database Voucher UV %v", err))
+
+		return res, err
+	}
+
+	return res, nil
+}

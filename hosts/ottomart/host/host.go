@@ -14,7 +14,7 @@ var (
 
 	endpointNotifAndInbox string
 
-	healthCheckKey string
+	// healthCheckKey string
 )
 
 func init() {
@@ -23,7 +23,7 @@ func init() {
 
 	endpointNotifAndInbox = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_NOTIF_INBOX", "/notifications")
 
-	healthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_OTTOMART", "OTTOPOINT-PURCHASE:OTTOPOINT-OTTOMART")
+	// healthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_OTTOMART", "OTTOPOINT-PURCHASE:OTTOPOINT-OTTOMART")
 }
 
 // Send Notif & Inbox
@@ -34,7 +34,7 @@ func NotifAndInbox(req models.NotifRequest) (*models.NotifResp, error) {
 
 	urlSvr := host + endpointNotifAndInbox
 
-	data, err := HTTPxFormOTTOMART(urlSvr, req, healthCheckKey)
+	data, err := HTTPxFormOTTOMART(urlSvr, req)
 	if err != nil {
 		logs.Error("Check error", err.Error())
 

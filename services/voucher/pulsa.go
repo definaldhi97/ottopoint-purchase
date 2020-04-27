@@ -1,6 +1,7 @@
 package voucher
 
 import (
+	"encoding/json"
 	"fmt"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
@@ -98,7 +99,7 @@ func RedeemPulsa(req models.UseRedeemRequest, reqOP interface{}, param models.Pa
 		logs.Info("[Error-InquiryResponse]-[RedeemPulsa]")
 		logs.Info("[Error : %v]", errinqRespOttoag)
 
-		go SaveTransactionPulsa(paramInq, "Inquiry", "01")
+		go SaveTransactionPulsa(paramInq, inqRespOttoag, inqBiller, reqOP, "Inquiry", "01", inqRespOttoag.Rc)
 
 		res = models.UseRedeemResponse{
 			Rc:  "01",
@@ -110,7 +111,7 @@ func RedeemPulsa(req models.UseRedeemRequest, reqOP interface{}, param models.Pa
 
 	// Save DB if RC == 00
 	logs.Info("[Response Inquiry %v]", inqRespOttoag.Rc)
-	go SaveTransactionPulsa(paramInq, "Inquiry", "00")
+	go SaveTransactionPulsa(paramInq, inqRespOttoag, inqBiller, reqOP, "Inquiry", "00", inqRespOttoag.Rc)
 
 	// ===== Payment OttoAG =====
 	logs.Info("[PAYMENT-BILLER][START]")
@@ -133,22 +134,22 @@ func RedeemPulsa(req models.UseRedeemRequest, reqOP interface{}, param models.Pa
 		MerchantID:    param.MerchantID,
 		InstitutionID: param.InstitutionID,
 		CustID:        req.CustID,
-		// Reffnum
-		RRN:         billerRes.Rrn,
-		Amount:      int64(billerRes.Amount),
-		NamaVoucher: param.NamaVoucher,
-		ProductType: "Pulsa",
-		ProductCode: req.ProductCode,
-		Category:    "Pulsa",
-		Point:       param.Point,
-		ExpDate:     param.ExpDate,
-		SupplierID:  param.SupplierID,
+		Reffnum:       param.Reffnum,
+		RRN:           billerRes.Rrn,
+		Amount:        int64(billerRes.Amount),
+		NamaVoucher:   param.NamaVoucher,
+		ProductType:   "Pulsa",
+		ProductCode:   req.ProductCode,
+		Category:      "Pulsa",
+		Point:         param.Point,
+		ExpDate:       param.ExpDate,
+		SupplierID:    param.SupplierID,
 	}
 
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
 		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-		go SaveTransactionPulsa(paramPay, "Payment", "09")
+		go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
 
 		res = models.UseRedeemResponse{
 			Rc:  "09",
@@ -160,7 +161,7 @@ func RedeemPulsa(req models.UseRedeemRequest, reqOP interface{}, param models.Pa
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
 		logs.Info("[Response Payment %v]", billerRes.Rc)
 
-		go SaveTransactionPulsa(paramPay, "Payment", "01")
+		go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
 
 		res = models.UseRedeemResponse{
 			Rc:  "01",
@@ -171,7 +172,7 @@ func RedeemPulsa(req models.UseRedeemRequest, reqOP interface{}, param models.Pa
 	}
 
 	logs.Info("[Response Payment %v]", billerRes.Rc)
-	go SaveTransactionPulsa(paramPay, "Payment", "00")
+	go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
 
 	res = models.UseRedeemResponse{
 		Rc:          billerRes.Rc,
@@ -232,7 +233,7 @@ func ValidatePrefix(OperatorCode int, custID, productCode string) bool {
 }
 
 // func SaveTransactionPulsa(AccountNumber, voucher, CustID, RRN, ProductCode, trasnType, status, instituion string, amount int64) {
-func SaveTransactionPulsa(param models.Params, trasnType, status string) {
+func SaveTransactionPulsa(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
 
 	logs.Info("[Start-SaveDB]-[Pulsa]")
 
@@ -245,20 +246,33 @@ func SaveTransactionPulsa(param models.Params, trasnType, status string) {
 	case "01":
 		saveStatus = constants.Failed
 	}
+
+	reqOttoag, _ := json.Marshal(&reqdata)  // Req Ottoag
+	responseOttoag, _ := json.Marshal(&res) // Response Ottoag
+	reqdataOP, _ := json.Marshal(&reqOP)    // Req Service
+
 	save := dbmodels.TransaksiRedeem{
-		AccountNumber: param.AccountNumber,
-		Voucher:       param.NamaVoucher,
-		CustID:        param.CustID,
-		MerchantID:    param.MerchantID,
-		RRN:           param.RRN,
-		ProductCode:   param.ProductCode,
-		Amount:        param.Amount,
-		TransType:     trasnType,
-		Status:        saveStatus,
-		ExpDate:       param.ExpDate,
-		Institution:   param.InstitutionID,
-		ProductType:   param.ProductType,
-		DateTime:      utils.GetTimeFormatYYMMDDHHMMSS(),
+		AccountNumber:   param.AccountNumber,
+		Voucher:         param.NamaVoucher,
+		MerchantID:      param.MerchantID,
+		CustID:          param.CustID,
+		RRN:             param.RRN,
+		ProductCode:     param.ProductCode,
+		Amount:          int64(param.Amount),
+		TransType:       trasnType,
+		ProductType:     "Pulsa",
+		Status:          saveStatus,
+		ExpDate:         param.ExpDate,
+		Institution:     param.InstitutionID,
+		CummulativeRef:  param.Reffnum,
+		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
+		ResponderData:   status,
+		Point:           param.Point,
+		ResponderRc:     rc,
+		RequestorData:   string(reqOttoag),
+		ResponderData2:  string(responseOttoag),
+		RequestorOPData: string(reqdataOP),
+		SupplierID:      param.SupplierID,
 	}
 
 	err := db.DbCon.Create(&save).Error

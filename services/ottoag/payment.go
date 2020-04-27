@@ -2,12 +2,9 @@ package ottoag
 
 import (
 	"encoding/json"
-	"ottopoint-purchase/db"
 	ottoag "ottopoint-purchase/hosts/ottoag/host"
 	"ottopoint-purchase/models"
-	"ottopoint-purchase/models/dbmodels"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
-	"ottopoint-purchase/utils"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -42,58 +39,40 @@ func PaymentBiller(reqdata interface{}, reqOP interface{}, req models.UseRedeemR
 			Rc:  "01",
 			Msg: "Payment Failed",
 		}
+		// logs.Info("[SAVE-DB-PAYMENT-Transaksi_Redeem]")
 
-		logs.Info("[SAVE-DB-PAYMENT-Transaksi_Redeem]")
+		// reqOttoag, _ := json.Marshal(&reqdata)
+		// responseOttoag, _ := json.Marshal(&res)
+		// reqdataOP, _ := json.Marshal(&reqOP)
 
-		// labelPyment1 := dbmodels.TransaksiRedeem{
-		// 	AccountNumber: req.AccountNumber,
-		// 	Voucher:       param.NamaVoucher,
-		// 	CustID:        req.CustID,
-		// 	// MerchantID:    AccountNumber.MerchantID,
-		// 	RRN:         param.RRN,
-		// 	ProductCode: req.ProductCode,
-		// 	Amount:      param.Amount,
-		// 	TransType:   "Payment",
-		// 	Status:      "01 (Gagal)",
-		// 	ExpDate:     param.ExpDate,
-		// 	Institution: "Ottopay",
-		// 	ProductType: "Pulsa",
-		// 	DateTime:    utils.GetTimeFormatYYMMDDHHMMSS(),
+		// savePay := dbmodels.TransaksiRedeem{
+		// 	AccountNumber:   param.AccountNumber,
+		// 	Voucher:         param.NamaVoucher,
+		// 	MerchantID:      param.MerchantID,
+		// 	CustID:          req.CustID,
+		// 	RRN:             res.Rrn,
+		// 	ProductCode:     res.Productcode,
+		// 	Amount:          int64(res.Amount),
+		// 	TransType:       "Payment",
+		// 	ProductType:     "Pulsa",
+		// 	Status:          "01 (Gagal)",
+		// 	ExpDate:         param.ExpDate,
+		// 	Institution:     param.InstitutionID,
+		// 	CummulativeRef:  param.Reffnum,
+		// 	DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
+		// 	ResponderData:   "01",
+		// 	Point:           param.Point,
+		// 	ResponderRc:     res.Rc,
+		// 	RequestorData:   string(reqOttoag),
+		// 	ResponderData2:  string(responseOttoag),
+		// 	RequestorOPData: string(reqdataOP),
+		// 	SupplierID:      param.SupplierID,
 		// }
-
-		reqOttoag, _ := json.Marshal(&reqdata)
-		responseOttoag, _ := json.Marshal(&res)
-		reqdataOP, _ := json.Marshal(&reqOP)
-
-		savePay := dbmodels.TransaksiRedeem{
-			AccountNumber:   param.AccountNumber,
-			Voucher:         param.NamaVoucher,
-			MerchantID:      param.MerchantID,
-			CustID:          req.CustID,
-			RRN:             res.Rrn,
-			ProductCode:     res.Productcode,
-			Amount:          int64(res.Amount),
-			TransType:       "Payment",
-			ProductType:     "Pulsa",
-			Status:          "01 (Gagal)",
-			ExpDate:         param.ExpDate,
-			Institution:     param.InstitutionID,
-			CummulativeRef:  param.Reffnum,
-			DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
-			ComulativeReff:  param.Reffnum,
-			ResponderData:   "01",
-			Point:           param.Point,
-			ResponderRc:     res.Rc,
-			RequestorData:   string(reqOttoag),
-			ResponderData2:  string(responseOttoag),
-			RequestorOPData: string(reqdataOP),
-			SupplierID:      param.SupplierID,
-		}
-		err1 := db.DbCon.Create(&savePay).Error
-		if err1 != nil {
-			logs.Info("Failed Save to database", err1)
-			// return err1
-		}
+		// err1 := db.DbCon.Create(&savePay).Error
+		// if err1 != nil {
+		// 	logs.Info("Failed Save to database", err1)
+		// 	// return err1
+		// }
 
 		return res
 	}
