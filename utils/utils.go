@@ -35,7 +35,7 @@ func init() {
 	rrnkey = ODU.GetEnv("REDISKEY.OTTOFIN.RRN", "OTTOFIN:KEYRRN")
 	RedisKeyAuth = ODU.GetEnv("redis.key.auth", "Ottopoint-Token-Admin :")
 	LimitTRXPoint = ODU.GetEnv("limit.trx.point", "999999999999999")
-	MemberID = ODU.GetEnv("ottoag.memberid", "OTPOINT")
+	MemberID = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_MEMBERID", "OTPOINT")
 
 }
 

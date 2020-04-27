@@ -22,6 +22,7 @@ var (
 	host            string
 	endpointInquiry string
 	endpointPayment string
+	authorization   string
 
 	HealthCheckKey string
 	Name           string
@@ -37,9 +38,12 @@ type HeaderHTTP struct {
 }
 
 func init() {
+	// http://13.228.25.85:8089/ottoaggo/biller/v1.0.0/inquiry
+
 	host = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_HOST", "http://13.228.25.85:8089/")
 	endpointInquiry = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_ENDPOINT_INQUIRY", "v1/inquiry")
 	endpointPayment = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_ENDPOINT_PAYMENT", "v1/payment")
+	authorization = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_AUTHORIZATION", "T1RQT0lOVA==")
 	serverkey = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_SESSIONKEY", "052CFD8A04F99AC48E4656BBDF19FE60")
 	HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_HEALTHCHECK_OTTOAG", "OTTOPOINT_HEALTH_CHECK:OTTOAG")
 	Name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_OTTOAG", "OTTOAG")
@@ -67,7 +71,7 @@ func Send(msgreq interface{}, head HeaderHTTP, typetrans string) ([]byte, error)
 	header := make(http.Header)
 	header.Add("Accept", "*/*")
 	header.Add("Content-Type", "application/json")
-	header.Add("Authorization", "Basic T1RQT0lOVA==")
+	header.Add("Authorization", fmt.Sprintf("Basic %v", authorization))
 	// header.Add("Authorization", "Basic Q0xBUEFQRQ==")
 	header.Add("Signature", head.Signature)
 	header.Add("Timestamp", head.Timestamp)

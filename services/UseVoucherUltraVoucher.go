@@ -7,6 +7,7 @@ import (
 	"ottopoint-purchase/hosts/opl/host"
 	opl "ottopoint-purchase/hosts/opl/host"
 	uv "ottopoint-purchase/hosts/ultra_voucher/host"
+	uvmodels "ottopoint-purchase/hosts/ultra_voucher/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	"ottopoint-purchase/utils"
@@ -49,6 +50,8 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 	total := strconv.Itoa(req.Jumlah)
 
+	param.Amount = int64(param.Point)
+
 	// redeem to opl (potong point)
 	redeem, errredeem := host.RedeemVoucherCumulative(req.CampaignID, param.AccountNumber, total)
 
@@ -62,7 +65,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		sugarLogger.Info("[Internal Server Error]-[Gagal Redeem Voucher]")
 
 		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
-		res.Data = "Transaksi Gagal"
+		// res.Data = "Transaksi Gagal"
 
 		return res
 	}
@@ -77,7 +80,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		sugarLogger.Info("[Not enough points]-[Gagal Redeem Voucher]")
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("Point Tidak Cukup"))
-		res.Data = "Transaksi Gagal"
+		// res.Data = "Transaksi Gagal"
 
 		return res
 	}
@@ -92,7 +95,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		sugarLogger.Info("[Limit exceeded]-[Gagal Redeem Voucher]")
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("Voucher Sudah Limit"))
-		res.Data = "Transaksi Gagal"
+		// res.Data = "Transaksi Gagal"
 
 		return res
 	}
@@ -107,13 +110,26 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		sugarLogger.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
-		res.Data = "Transaksi Gagal"
+		// res.Data = "Transaksi Gagal"
 
 		return res
 	}
 
+	nama := "OTTOPOINT"
+	expired, _ := strconv.Atoi(param.ExpDate)
+	reqOrder := uvmodels.OrderVoucherReq{
+		Sku:               param.ProductCode,
+		Qty:               req.Jumlah,
+		AccountID:         param.CustID,
+		InstitutionRefno:  param.Reffnum,
+		ExpireDateVoucher: expired,
+		ReceiverName:      nama,
+		ReceiverEmail:     dataorder.Email,
+		ReceiverPhone:     dataorder.Phone,
+	}
+
 	// order to u
-	order, errOrder := uv.OrderVoucher(param, req.Jumlah, dataorder.Email, dataorder.Phone, dataorder.Nama)
+	order, errOrder := uv.OrderVoucher(reqOrder, param.InstitutionID)
 	if errOrder != nil || order.ResponseCode == "" || order.ResponseCode == "01" {
 		logs.Info("Error : ", errOrder)
 		logs.Info("ResponseCode : ", order.ResponseCode)
@@ -154,7 +170,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		}
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
-		res.Data = "Transaksi Gagal"
+		// res.Data = "Transaksi Gagal"
 
 		return res
 	}
@@ -198,7 +214,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		}
 
 		res = utils.GetMessageResponse(res, 145, false, errors.New(fmt.Sprintf("Voucher yg tersedia %v", order.Data.VouchersAvailable)))
-		res.Data = "Stok Tidak Tersedia"
+		// res.Data = "Stok Tidak Tersedia"
 
 		return res
 	}
@@ -214,6 +230,8 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		id := utils.GenerateTokenUUID()
 		go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber, param.CustID)
 	}
+
+	// go SaveTransactionUV(param, order, reqOrder, req, "Payment", "00", order.ResponseCode)
 
 	logs.Info("ResponseCode : ", order.ResponseCode)
 	res = models.Response{

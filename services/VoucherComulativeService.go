@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/astaxie/beego/logs"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
@@ -60,15 +59,18 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 
 		if getErr := <-getErrChan; getErr != nil {
 			getResp = <-getRespChan
-			logs.Info("Gagal Redeem or Inquiry")
-			logs.Info("Error Message : ", getResp.Message)
+			fmt.Println("Gagal Redeem or Inquiry")
+			fmt.Println("Error Message : ", getResp.Message)
 			inqGagal++
 			continue
 		} else {
+			fmt.Println("Berhasil Redeem or Inquiry")
 			getResp = <-getRespChan
 		}
 
-		getResp = <-getRespChan
+		fmt.Println("test Redeem or Inquiry")
+
+		fmt.Println("Code : ", getResp.Code)
 		if getResp.Code == "00" {
 			wg.Add(1)
 			// req.Jumlah = i
@@ -79,7 +81,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	}
 	wg.Wait()
 
-	logs.Info("Response OttoAG Payment : ", getResRedeem)
+	fmt.Println("Response OttoAG Payment 2 : ", getResRedeem)
 	total := req.Jumlah * 2
 	countPayment, _ := db.GetCountPyenment(comulative_ref)
 	if countPayment.Count != total {
@@ -103,31 +105,22 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 
 	pyenmentFail := req.Jumlah - countSuccess.Count
 
-	// if inqGagal != 0 {
-
-	// }
-	// countInqFailed, _ := db.GetCountInquiryGagal(comulative_ref)
-
-	// if countSuccess.Count == 0 && countFailed.Count == 0 && countPending.Count == 0 {
-	// 	countFailed.Count = countInqFailed.Count
-	// }
-
 	/* ------ Reversal to Point ----- */
 	rcUseVoucher, _ := db.GetPyenmentFailed(comulative_ref)
-	logs.Info("get RC use voucher : ", rcUseVoucher)
+	fmt.Println("get RC use voucher : ", rcUseVoucher)
 	if rcUseVoucher.AccountNumber != "" {
-		logs.Info("============= Reversal to Point ===========")
+		fmt.Println("============= Reversal to Point ===========")
 		// get Custid from user where acount nomor
 		dataUser, _ := db.CheckUser(rcUseVoucher.AccountNumber)
-		logs.Info("CustId user OPL from tb user : ", dataUser.CustID)
+		fmt.Println("CustId user OPL from tb user : ", dataUser.CustID)
 		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		_, errReversal := host.TransferPoint(dataUser.CustID, strconv.Itoa(rcUseVoucher.Count), Text)
 		if errReversal != nil {
-			logs.Info("[ERROR DB]")
-			logs.Info("[transfer point] : ", errReversal)
+			fmt.Println("[ERROR DB]")
+			fmt.Println("[transfer point] : ", errReversal)
 		}
 
-		logs.Info("========== Send Notif ==========")
+		fmt.Println("========== Send Notif ==========")
 		notifReq := ottomartmodels.NotifRequest{
 			AccountNumber:    rcUseVoucher.AccountNumber,
 			Title:            "Reversal Point",
@@ -138,13 +131,13 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		// send notif & inbox
 		dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
 		if errNotif != nil {
-			logs.Info("Error to send Notif & Inbox")
+			fmt.Println("Error to send Notif & Inbox")
 		}
 
 		if dataNotif.RC != "00" {
-			logs.Info("[Response Notif PLN]")
-			logs.Info("Gagal Send Notif & Inbox")
-			logs.Info("Error : ", errNotif)
+			fmt.Println("[Response Notif PLN]")
+			fmt.Println("Gagal Send Notif & Inbox")
+			fmt.Println("Error : ", errNotif)
 		}
 
 	}
@@ -154,11 +147,13 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	* Sukses sebagian (success != jumlah request)
 	* Gagal (success == 0)
 	 */
-	logs.Info(" jumlah transaction payment : ", countPayment.Count)
-	logs.Info(" jumlah success transaction success : ", countSuccess.Count)
-	logs.Info(" jumlah success transaction Pending : ", countPending.Count)
-	logs.Info(" jumlah success transaction failed : ", pyenmentFail)
-	logs.Info(" jumlah request : ", req.Jumlah)
+
+	fmt.Println(" jumlah transaction payment : ", countPayment.Count)
+	fmt.Println(" jumlah success transaction success : ", countSuccess.Count)
+	fmt.Println(" jumlah success transaction Pending : ", countPending.Count)
+	fmt.Println(" jumlah success transaction failed : ", pyenmentFail)
+	fmt.Println(" jumlah request : ", req.Jumlah)
+	fmt.Println(" categiry : ", param.Category)
 
 	respMessage := models.CommulativeResp{
 		Success: countSuccess.Count,
@@ -195,10 +190,10 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	// pyenmentPending := req.Jumlah - countPending.Count
 
 	/* ------ Response UseVoucher Comulative */
-	logs.Info("========== Mesage from Inquiry OTTOAG and OPL ===============")
-	logs.Info("Code : ", getResp.Code)
-	logs.Info("Message : ", getResp.Message)
-	logs.Info("=============================================================")
+	fmt.Println("========== Mesage from Inquiry OTTOAG and OPL ===============")
+	fmt.Println("Code : ", getResp.Code)
+	fmt.Println("Message : ", getResp.Message)
+	fmt.Println("=============================================================")
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
 		Data: models.CommulativeResp{

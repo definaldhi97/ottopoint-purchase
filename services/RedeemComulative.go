@@ -11,8 +11,6 @@ import (
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/services/voucher"
 	"ottopoint-purchase/utils"
-
-	"github.com/astaxie/beego/logs"
 )
 
 func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Params, getResp chan models.RedeemComuResp, ErrRespRedeem chan error) {
@@ -24,7 +22,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		Code: "00",
 	}
 
-	logs.Info("[Start][Inquiry]-[Package-Services]-[RedeemComulativeVoucher]")
+	fmt.Println("[Start][Inquiry]-[Package-Services]-[RedeemComulativeVoucher]")
 
 	if param.Category == constants.CategoryPulsa {
 		// validate prefix
@@ -69,8 +67,8 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 	}
 
 	if !ottoag.ValidateDataInq(inqReq) {
-		logs.Info("[Error-DataInquiry]-[RedeemComulativeVoucher]")
-		logs.Info("[Error ValidateDataInq]")
+		fmt.Println("[Error-DataInquiry]-[RedeemComulativeVoucher]")
+		fmt.Println("[Error ValidateDataInq]")
 		var err error
 		redeemRes = models.RedeemComuResp{
 			Code:    "01",
@@ -87,7 +85,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		return
 	}
 
-	logs.Info("[INQUIRY-BILLER][START]")
+	fmt.Println("[INQUIRY-BILLER][START]")
 	dataInquery, errInquiry := biller.InquiryBiller(inqReq.Data, req, reqInq, param)
 
 	paramInq := models.Params{
@@ -108,8 +106,8 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 	}
 
 	if dataInquery.Rc != "00" {
-		logs.Info("[Error-DataInquiry]-[RedeemComulativeVoucher]")
-		logs.Info("[Error : %v]", errInquiry)
+		fmt.Println("[Error-DataInquiry]-[RedeemComulativeVoucher]")
+		fmt.Println("[Error : %v]", errInquiry)
 		redeemRes = models.RedeemComuResp{
 			Code:    "01",
 			Message: "Invalid Prefix",
@@ -130,13 +128,13 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 	coupon := []models.CouponsRedeem{}
 
-	logs.Info("[Start][Redeem]-[Package-Services]-[RedeemComulativeVoucher]")
+	fmt.Println("[Start][Redeem]-[Package-Services]-[RedeemComulativeVoucher]")
 	data, errx := host.RedeemVoucher(req.CampaignID, param.AccountNumber)
 
 	if errx != nil {
 
-		logs.Info("[ErrorRedeemVoucher]-[RedeemComulativeVoucher]")
-		logs.Info(fmt.Sprintf("Error : %v", errx))
+		fmt.Println("[ErrorRedeemVoucher]-[RedeemComulativeVoucher]")
+		fmt.Println(fmt.Sprintf("Error : %v", errx))
 
 		redeemRes = models.RedeemComuResp{
 			Code:    "01",
@@ -151,14 +149,14 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		return
 
 	} else {
-		logs.Info("Response Redeem 1 : ", data)
-		logs.Info("Response LEN Coupons 1 : ", len(data.Coupons))
+		fmt.Println("Response Redeem 1 : ", data)
+		fmt.Println("Response LEN Coupons 1 : ", len(data.Coupons))
 		fmt.Println("check data ", data == nil)
 
-		//logs.Info("Response check Coupons : ", len(coupon))
+		//fmt.Println("Response check Coupons : ", len(coupon))
 		// check if no data founded
 		if len(data.Coupons) == 0 {
-			logs.Info("========== check coupon ", coupon)
+			fmt.Println("========== check coupon ", coupon)
 			redeemRes = models.RedeemComuResp{
 				Code:    "01",
 				Message: "Anda mencapai batas maksimal pembelian voucher",
@@ -198,9 +196,9 @@ func ValidatePrefixComulative(custID, productCode string) (bool, error) {
 	dataPrefix, errPrefix := db.GetOperatorCodebyPrefix(custID)
 	if errPrefix != nil {
 
-		logs.Info("[ErrorPrefix]-[RedeemComulativeVoucher]")
-		logs.Info(fmt.Sprintf("dataPrefix = %v", dataPrefix))
-		logs.Info(fmt.Sprintf("Prefix tidak ditemukan %v", errPrefix))
+		fmt.Println("[ErrorPrefix]-[RedeemComulativeVoucher]")
+		fmt.Println(fmt.Sprintf("dataPrefix = %v", dataPrefix))
+		fmt.Println(fmt.Sprintf("Prefix tidak ditemukan %v", errPrefix))
 
 		return false, err
 	}
@@ -213,8 +211,8 @@ func ValidatePrefixComulative(custID, productCode string) (bool, error) {
 	// validate panjang nomor, Jika nomor kurang dari 4
 	if len(custID) < 4 {
 
-		logs.Info("[FAILED]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
-		logs.Info(fmt.Sprintf("invalid Prefix %v", custID))
+		fmt.Println("[FAILED]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
+		fmt.Println(fmt.Sprintf("invalid Prefix %v", custID))
 
 		return false, err
 	}
@@ -222,8 +220,8 @@ func ValidatePrefixComulative(custID, productCode string) (bool, error) {
 	// validate panjang nomor, Jika nomor kurang dari 11 & lebih dari 15
 	if len(custID) <= 10 || len(custID) > 15 {
 
-		logs.Info("[FAILED]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
-		logs.Info(fmt.Sprintf("invalid Prefix %v", custID))
+		fmt.Println("[FAILED]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
+		fmt.Println(fmt.Sprintf("invalid Prefix %v", custID))
 
 		return false, err
 
@@ -232,8 +230,8 @@ func ValidatePrefixComulative(custID, productCode string) (bool, error) {
 	// Jika Nomor tidak sesuai dengan operator
 	if prefix != product {
 
-		logs.Info("[FAILED]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
-		logs.Info(fmt.Sprintf("invalid Prefix %v", prefix))
+		fmt.Println("[FAILED]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
+		fmt.Println(fmt.Sprintf("invalid Prefix %v", prefix))
 
 		return false, err
 

@@ -1,22 +1,21 @@
 package voucher
 
 import (
+	"fmt"
 	"ottopoint-purchase/models"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/utils"
-
-	"github.com/astaxie/beego/logs"
 )
 
 func RedeemPulsaComulative(req models.UseRedeemRequest, reqOP interface{}, param models.Params) models.UseRedeemResponse {
 	res := models.UseRedeemResponse{}
 
-	logs.Info("[Start]-[Package-Voucher]-[RedeemPulsaComulative]")
+	fmt.Println("[Start]-[Package-Voucher]-[RedeemPulsaComulative]")
 
 	// ===== Payment OttoAG =====
-	logs.Info("[PAYMENT-BILLER][START]")
-	logs.Info("Param : ", param)
+	fmt.Println("[PAYMENT-BILLER][START]")
+	// fmt.Println("Param : ", param)
 	// refnum := utils.GetRrn()
 
 	// payment to ottoag
@@ -31,9 +30,9 @@ func RedeemPulsaComulative(req models.UseRedeemRequest, reqOP interface{}, param
 
 	billerRes := biller.PaymentBiller(billerReq, reqOP, req, param)
 
-	logs.Info("Jumlah Voucher : ", param.Total)
-	logs.Info("Response OttoAG Payment : ", billerRes)
-	logs.Info("[Response Payment %v]", billerRes.Rc)
+	// fmt.Println("Jumlah Voucher : ", param.Total)
+	fmt.Println("Response OttoAG Payment : ", billerRes)
+	// fmt.Println("[Response Payment %v]", billerRes.Rc)
 	paramPay := models.Params{
 		AccountNumber: param.AccountNumber,
 		MerchantID:    param.MerchantID,
@@ -51,9 +50,9 @@ func RedeemPulsaComulative(req models.UseRedeemRequest, reqOP interface{}, param
 		SupplierID:    param.SupplierID,
 	}
 
-	logs.Info("[Payment Response : %v]", billerRes)
+	fmt.Println("[Payment Response : %v]", billerRes)
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
-		logs.Info("[Payment Pending]")
+		fmt.Println("[Payment Pending]")
 
 		go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
 
@@ -65,7 +64,7 @@ func RedeemPulsaComulative(req models.UseRedeemRequest, reqOP interface{}, param
 	}
 
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
-		logs.Info("[Payment Failed]")
+		fmt.Println("[Payment Failed]")
 
 		go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
 
@@ -77,8 +76,8 @@ func RedeemPulsaComulative(req models.UseRedeemRequest, reqOP interface{}, param
 		return res
 	}
 
-	logs.Info("[Payment Success]", billerRes.Rc)
-	// logs.Info("[Response Payment %v]", billerRes.Rc)
+	fmt.Println("[Payment Success]", billerRes.Rc)
+	// fmt.Println("[Response Payment %v]", billerRes.Rc)
 	go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
 
 	res = models.UseRedeemResponse{

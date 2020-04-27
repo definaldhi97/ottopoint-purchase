@@ -3,9 +3,7 @@ package host
 import (
 	"encoding/json"
 	"ottopoint-purchase/hosts/ultra_voucher/models"
-	m "ottopoint-purchase/models"
 	"ottopoint-purchase/redis"
-	"strconv"
 
 	"github.com/astaxie/beego/logs"
 	hcmodels "ottodigital.id/library/healthcheck/models"
@@ -34,28 +32,28 @@ func init() {
 }
 
 // OrderVoucher
-func OrderVoucher(param m.Params, total int, email, phone, nama string) (*models.OrderVoucherResp, error) {
+func OrderVoucher(req models.OrderVoucherReq, InstitutionID string) (*models.OrderVoucherResp, error) {
 	var resp models.OrderVoucherResp
 
 	logs.Info("[PackageHostUV]-[OrderVoucher]")
 
-	nama = "OTTOPOINT"
-	expired, _ := strconv.Atoi(param.ExpDate)
+	// nama = "OTTOPOINT"
+	// expired, _ := strconv.Atoi(param.ExpDate)
 
-	req := models.OrderVoucherReq{
-		Sku:               param.ProductCode,
-		Qty:               total,
-		AccountID:         param.CustID,
-		InstitutionRefno:  param.Reffnum,
-		ExpireDateVoucher: expired,
-		ReceiverName:      nama,
-		ReceiverEmail:     email,
-		ReceiverPhone:     phone,
-	}
+	// req := models.OrderVoucherReq{
+	// 	Sku:               param.ProductCode,
+	// 	Qty:               total,
+	// 	AccountID:         param.CustID,
+	// 	InstitutionRefno:  param.Reffnum,
+	// 	ExpireDateVoucher: expired,
+	// 	ReceiverName:      nama,
+	// 	ReceiverEmail:     email,
+	// 	ReceiverPhone:     phone,
+	// }
 
 	urlSvr := host + endpointOrderVoucher
 
-	data, err := HTTPxFormPostUV(urlSvr, param.InstitutionID, req)
+	data, err := HTTPxFormPostUV(urlSvr, InstitutionID, req)
 	if err != nil {
 		logs.Error("Check error : ", err.Error())
 
@@ -73,15 +71,15 @@ func OrderVoucher(param m.Params, total int, email, phone, nama string) (*models
 }
 
 // UseVoucher
-func UseVoucherUV(accountNumber, code string) (*models.UseVoucherUVResp, error) {
+func UseVoucherUV(req models.UseVoucherUVReq) (*models.UseVoucherUVResp, error) {
 	var resp models.UseVoucherUVResp
 
 	logs.Info("[Package Host UV]-[UseVoucher]")
 
-	req := models.UseVoucherUVReq{
-		Account:     accountNumber,
-		VoucherCode: code,
-	}
+	// req := models.UseVoucherUVReq{
+	// 	Account:     accountNumber,
+	// 	VoucherCode: code,
+	// }
 
 	urlSvr := host + endpointUseVoucher
 

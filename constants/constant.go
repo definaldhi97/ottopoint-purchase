@@ -40,18 +40,18 @@ const (
 )
 
 const (
-	CategoryPulsa        = "Pulsa"
+	CategoryPulsa        = "pulsa"
 	CategoryPaketData    = "paket_data"
-	CategoryFreeFire     = "Free Fire"
-	CategoryMobileLegend = "Mobile Legend"
-	CategoryPLN          = "PLN"
-	CategoryGame         = "Game"
+	CategoryFreeFire     = "free fire"
+	CategoryMobileLegend = "mobile legend"
+	CategoryPLN          = "pln"
+	CategoryGame         = "game"
 )
 
 const (
-	Success = "(00 Success)"
-	Pending = "(09 Pending)"
-	Failed  = "(01 Failed)"
+	Success = "00 (Success)"
+	Pending = "09 (Pending)"
+	Failed  = "01 (Failed)"
 )
 
 const (

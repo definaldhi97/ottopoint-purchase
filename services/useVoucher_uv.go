@@ -1,11 +1,15 @@
 package services
 
 import (
+	"encoding/json"
 	"errors"
+	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
 	uv "ottopoint-purchase/hosts/ultra_voucher/host"
+	uvmodels "ottopoint-purchase/hosts/ultra_voucher/models"
 	"ottopoint-purchase/models"
+	"ottopoint-purchase/models/dbmodels"
 	"ottopoint-purchase/utils"
 
 	"github.com/astaxie/beego/logs"
@@ -57,8 +61,17 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 		return res
 	}
 
+	comulative_ref := utils.GenTransactionId()
+	param.Reffnum = comulative_ref
+	param.Amount = int64(param.Point)
+
+	reqUV := uvmodels.UseVoucherUVReq{
+		Account:     get.AccountId,
+		VoucherCode: get.VoucherCode,
+	}
+
 	// get to UV
-	useUV, errUV := uv.UseVoucherUV(get.AccountId, get.VoucherCode)
+	useUV, errUV := uv.UseVoucherUV(reqUV)
 	if errUV != nil || useUV.ResponseCode == "" {
 		logs.Info("Internal Server Error : ", errUV)
 		logs.Info("[UseVoucherUV-Servcies]-[UseVoucherUV]")
@@ -79,27 +92,33 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 		}
 
 		res = utils.GetMessageResponse(res, 129, false, errors.New("Voucher Gagal Digunakan, Silahkan Coba Beberapa Saat Lagi"))
-		res.Data = "Transaksi Gagal"
+		// res.Data = "Transaksi Gagal"
 		return res
 	}
 
 	if useUV.ResponseCode == "14" {
 
+		go SaveTransactionUV(param, useUV, reqUV, req, "Payment", "01", useUV.ResponseCode)
+
 		res = utils.GetMessageResponse(res, 148, false, errors.New("Voucher Sudah Digunakan"))
-		res.Data = "Transaksi Gagal"
+		// res.Data = "Transaksi Gagal"
 
 		return res
 	}
 
 	if useUV.ResponseCode == "10" {
 
+		go SaveTransactionUV(param, useUV, reqUV, req, "Payment", "01", useUV.ResponseCode)
+
 		res = utils.GetMessageResponse(res, 147, false, errors.New("Voucher Tidak Ditemukan"))
-		res.Data = "Transaksi Gagal"
+		// res.Data = "Transaksi Gagal"
 
 		return res
 	}
 
 	if useUV.ResponseCode == "00" {
+		go SaveTransactionUV(param, useUV, reqUV, req, "Payment", "01", useUV.ResponseCode)
+
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
 			Data: models.UseVoucherUVResp{
@@ -112,4 +131,55 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 	}
 
 	return res
+}
+
+func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
+
+	logs.Info("[Start-SaveDB]-[Pulsa]")
+
+	var saveStatus string
+	switch status {
+	case "00":
+		saveStatus = constants.Success
+	case "09":
+		saveStatus = constants.Pending
+	case "01":
+		saveStatus = constants.Failed
+	}
+
+	reqUV, _ := json.Marshal(&reqdata)   // Req Ottoag
+	responseUV, _ := json.Marshal(&res)  // Response Ottoag
+	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
+
+	save := dbmodels.TransaksiRedeem{
+		AccountNumber:   param.AccountNumber,
+		Voucher:         param.NamaVoucher,
+		MerchantID:      param.MerchantID,
+		CustID:          param.CustID,
+		RRN:             param.RRN,
+		ProductCode:     param.ProductCode,
+		Amount:          int64(param.Amount),
+		TransType:       trasnType,
+		ProductType:     "Pulsa",
+		Status:          saveStatus,
+		ExpDate:         param.ExpDate,
+		Institution:     param.InstitutionID,
+		CummulativeRef:  param.Reffnum,
+		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
+		ResponderData:   status,
+		Point:           param.Point,
+		ResponderRc:     rc,
+		RequestorData:   string(reqUV),
+		ResponderData2:  string(responseUV),
+		RequestorOPData: string(reqdataOP),
+		SupplierID:      param.SupplierID,
+	}
+
+	err := db.DbCon.Create(&save).Error
+	if err != nil {
+		logs.Info("[Failed Save to DB ]", err)
+		logs.Info("[Package-Voucher]-[Service-RedeemPulsa]")
+		// return err
+
+	}
 }

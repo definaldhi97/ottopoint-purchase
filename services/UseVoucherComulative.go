@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"ottopoint-purchase/constants"
 	db "ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
@@ -8,8 +9,6 @@ import (
 	"ottopoint-purchase/services/voucher"
 	"strings"
 	"sync"
-
-	"github.com/astaxie/beego/logs"
 )
 
 // func UseVoucherService1(header models.RequestHeader, req models.VoucherComultaiveReq, dataToken ottomartmodels.ResponseToken, amount int64, rrn string) models.Response {
@@ -18,18 +17,18 @@ func UseVoucherComulative(req models.VoucherComultaiveReq, redeemComu models.Red
 	defer close(getRespChan)
 	defer close(ErrRespUseVouc)
 	// resRedeemComu := models.RedeemComuResp{}
-	logs.Info("[UseVoucherComulative]-[Package-Services]")
+	fmt.Println("[UseVoucherComulative]-[Package-Services]")
 
 	// get CustID
 	dataUser, errUser := db.CheckUser(param.AccountNumber)
 	if errUser != nil {
-		logs.Info("User Belum Eligible, Error : ", errUser)
+		fmt.Println("User Belum Eligible, Error : ", errUser)
 	} else {
 		// Use Voucher to Openloyalty
 		_, err2 := opl.CouponVoucherCustomer(req.CampaignID, redeemComu.CouponID, redeemComu.CouponCode, dataUser.CustID, 1)
-		logs.Info("================ doing use voucher couponId : ", redeemComu.CouponID)
+		fmt.Println("================ doing use voucher couponId : ", redeemComu.CouponID)
 		if err2 != nil {
-			logs.Info("================ doing use voucher couponId Error: ", redeemComu.CouponID)
+			fmt.Println("================ doing use voucher couponId Error: ", redeemComu.CouponID)
 
 		} else {
 
@@ -48,7 +47,7 @@ func UseVoucherComulative(req models.VoucherComultaiveReq, redeemComu models.Red
 func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Params) models.RedeemResponse {
 	res := models.RedeemResponse{}
 
-	logs.Info("[RedeemUseVoucherComulative]-[Package-Services]")
+	fmt.Println("[RedeemUseVoucherComulative]-[Package-Services]")
 
 	category := strings.ToLower(param.Category)
 

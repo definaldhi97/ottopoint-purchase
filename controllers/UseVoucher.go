@@ -119,6 +119,7 @@ func UseVouhcerController(ctx *gin.Context) {
 		Category:      data.Category,
 		CouponID:      data.CouponID,
 		Point:         data.Point,
+		ExpDate:       data.ExpDate,
 	}
 
 	switch data.SupplierID {
