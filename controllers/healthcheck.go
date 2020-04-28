@@ -5,10 +5,6 @@ import (
 	"net/http"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
-	opl "ottopoint-purchase/hosts/opl/host"
-	ottoag "ottopoint-purchase/hosts/ottoag/host"
-	redisToken "ottopoint-purchase/hosts/redis_token/host"
-	signature "ottopoint-purchase/hosts/signature/host"
 	"time"
 
 	"ottopoint-purchase/models"
@@ -71,11 +67,11 @@ func getHealthCheckStatus() hcmodels.HealthCheckResponse {
 	// TODO more database health check
 
 	// service
-	serviceHc := make([]hcmodels.ServiceHealthCheck, 0)
-	serviceHc = append(serviceHc, opl.GetServiceHealthCheckOPL())
-	serviceHc = append(serviceHc, ottoag.GetServiceHealthCheckOttoAG())
-	serviceHc = append(serviceHc, redisToken.GetServiceHealthCheckRedisService())
-	serviceHc = append(serviceHc, signature.GetServiceHealthCheckSignature())
+	// serviceHc := make([]hcmodels.ServiceHealthCheck, 0)
+	// serviceHc = append(serviceHc, opl.GetServiceHealthCheckOPL())
+	// serviceHc = append(serviceHc, ottoag.GetServiceHealthCheckOttoAG())
+	// serviceHc = append(serviceHc, redisToken.GetServiceHealthCheckRedisService())
+	// serviceHc = append(serviceHc, signature.GetServiceHealthCheckSignature())
 	// TODO more service health check
 
 	return hcmodels.HealthCheckResponse{
