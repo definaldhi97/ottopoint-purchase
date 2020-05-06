@@ -66,6 +66,8 @@ func UseVouhcerController(ctx *gin.Context) {
 		sugarLogger.Info("[Failed Redeem Voucher]-[Get Data User]")
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
 	}
 
 	spanid := utilsgo.GetSpanId(span)

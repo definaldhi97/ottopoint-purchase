@@ -117,7 +117,7 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 	}
 
 	if useUV.ResponseCode == "00" {
-		go SaveTransactionUV(param, useUV, reqUV, req, "Payment", "01", useUV.ResponseCode)
+		go SaveTransactionUV(param, useUV, reqUV, req, "Payment", "00", useUV.ResponseCode)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -160,7 +160,7 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		ProductCode:     param.ProductCode,
 		Amount:          int64(param.Amount),
 		TransType:       trasnType,
-		ProductType:     "Pulsa",
+		ProductType:     "UltraVoucher",
 		Status:          saveStatus,
 		ExpDate:         param.ExpDate,
 		Institution:     param.InstitutionID,
