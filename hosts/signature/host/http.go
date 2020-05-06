@@ -2,16 +2,12 @@ package host
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"net/http"
-	"ottopoint-purchase/redis"
 	"strconv"
 	"strings"
 	"time"
 
 	headermodels "ottopoint-purchase/models"
-
-	hcredismodels "ottodigital.id/library/healthcheck/models/redismodels"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/parnurzeal/gorequest"
@@ -59,18 +55,18 @@ func HTTPxFormPostWithHeader(url, key string, data interface{}, header headermod
 	reqagent.Header.Set("Timestamp", header.Timestamp)
 	reqagent.Header.Set("Signature", header.Signature)
 
-	resp, body, errs := reqagent.
+	_, body, errs := reqagent.
 		Send(data).
 		Timeout(timeout).
 		Retry(retrybad, time.Second, http.StatusInternalServerError).
 		End()
 
-	healthCheckData, _ := json.Marshal(hcredismodels.ServiceHealthCheckRedis{
-		StatusCode: resp.StatusCode,
-		UpdatedAt:  time.Now().UTC(),
-	})
+	// healthCheckData, _ := json.Marshal(hcredismodels.ServiceHealthCheckRedis{
+	// 	StatusCode: resp.StatusCode,
+	// 	UpdatedAt:  time.Now().UTC(),
+	// })
 
-	go redis.SaveRedis(key, healthCheckData)
+	// go redis.SaveRedis(key, healthCheckData)
 	if errs != nil {
 		logs.Error("Error Sending ", errs)
 		return nil, errs[0]

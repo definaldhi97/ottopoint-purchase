@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"ottopoint-purchase/constants"
 	db "ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
 	redismodels "ottopoint-purchase/hosts/redis_token/models"
@@ -14,11 +15,11 @@ import (
 	"go.uber.org/zap"
 )
 
-type TransferPointServices struct {
+type SpendPointServices struct {
 	General models.GeneralModel
 }
 
-func (t TransferPointServices) NewTransferPointServices(req models.PointReq, dataToken redismodels.TokenResp, header models.RequestHeader) models.Response {
+func (t SpendPointServices) NewSpendPointServices(req models.PointReq, dataToken redismodels.TokenResp, header models.RequestHeader) models.Response {
 	var res models.Response
 
 	resMeta := models.MetaData{
@@ -28,22 +29,22 @@ func (t TransferPointServices) NewTransferPointServices(req models.PointReq, dat
 	}
 
 	sugarLogger := t.General.OttoZaplog
-	sugarLogger.Info("[TransferPoint-Services]",
-		zap.String("AccountNumber : ", req.AccountNumber), zap.Int("Point : ", req.Point),
+	sugarLogger.Info("[SpendPoint-Services]",
+		zap.String("AccountNumber : ", dataToken.Data), zap.Int("Point : ", req.Point),
 		zap.String("Text : ", req.Text), zap.String("Type : ", req.Type))
 
-	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[TransferPoint-Service]")
+	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[SpendPoint-Service]")
 	defer span.Finish()
 
 	// Get CustID OPL from DB
-	dataDB, errDB := db.CheckUser(req.AccountNumber)
+	dataDB, errDB := db.CheckUser(dataToken.Data)
 	if errDB != nil || dataDB.CustID == "" {
 		logs.Info("Internal Server Error : ", errDB)
-		logs.Info("[TransferPoint-Services]")
+		logs.Info("[SpendPoint-Services]")
 		logs.Info("[Get CustId OPL to DB]")
 
-		sugarLogger.Info("Internal Server Error : ", errDB)
-		sugarLogger.Info("[TransferPoint-Services]")
+		sugarLogger.Info("Internal Server Error : ")
+		sugarLogger.Info("[SpendPoint-Services]")
 		sugarLogger.Info("[Get CustId OPL to DB]")
 
 		utils.GetMessageResponse(res, 422, false, errors.New("Nomor belum eligible"))
@@ -51,21 +52,21 @@ func (t TransferPointServices) NewTransferPointServices(req models.PointReq, dat
 	}
 
 	logs.Info("CustID OPL : ", dataDB.CustID)
-	sugarLogger.Info("CustID OPL : ", dataDB.CustID)
+	sugarLogger.Info("CustID OPL : ")
 
 	// Hit to Openloyalty
-	data, err := opl.TransferPoint(dataDB.CustID, strconv.Itoa(req.Point), req.Text)
+	data, err := opl.SpendPoint(dataDB.CustID, strconv.Itoa(req.Point), req.Text)
 	if err != nil || data.PointsTransferId == "" {
 
 		logs.Info("Internal Server Error : ", err)
-		logs.Info("[TransferPoint-Services]")
+		logs.Info("[SpendPoint-Services]")
 		logs.Info("[Hit Transfer API to OPL]")
 
-		sugarLogger.Info("Internal Server Error : ", err)
-		sugarLogger.Info("[TransferPoint-Services]")
+		sugarLogger.Info("Internal Server Error : ")
+		sugarLogger.Info("[SpendPoint-Services]")
 		sugarLogger.Info("[Hit Transfer API to OPL]")
-
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Transfer Point"))
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_FAILED_TRANS_POINT, constants.RD_ERROR_FAILED_TRANS_POINT)
+		//res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Transfer Point"))
 		return res
 	}
 

@@ -4,10 +4,21 @@ package models
 type RulePointReq struct {
 	Amount    int    `json:"amount"`
 	EventName string `json:"rule"`
-	RC        string `json:"rc"`
 }
 
 type RulePointResp struct {
-	Point       string `json:"point"`
+	Point       int    `json:"point"`
+	Product     string `json:"product"`
 	Institution string `json:"institution"`
+}
+
+type LisrRulePointResp struct {
+	EarningRules []GetEarningRulesResp `json:"earningRules"`
+	Currency     string                `json:"currency"`
+}
+
+type GetEarningRulesResp struct {
+	Name         string `json:"name"`
+	EventName    string `json:"eventName"`
+	PointsAmount int    `json:"pointsAmount"`
 }

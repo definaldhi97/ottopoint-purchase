@@ -22,9 +22,11 @@ var (
 	use_voucher  string
 	deductPoint  string
 	paymentQR    string
+	reversePoint string
+	healthcheck  string
 	earningPoint string
-
-	healthcheck string
+	splitbill    string
+	comulative   string
 
 	nameservice     string
 	agentracinghost string
@@ -37,11 +39,14 @@ var (
 func init() {
 	//TODO pls change UPERCASE & _ Not using dot
 
-	healthcheck = utils.GetEnv("healthcheck", "/v2/ottopoint/healthcheck")
-	redeem = utils.GetEnv("redeem", "/v2/ottopoint/redeem")
-	use_voucher = utils.GetEnv("use_voucher", "/v2/ottopoint/use_voucher")
-	deductPoint = utils.GetEnv("deduct_point", "/v2/ottopoint/deduct")
-	earningPoint = utils.GetEnv("earning_point", "/v2/ottopoint/earningpoint")
+	healthcheck = utils.GetEnv("healthcheck", "/transaction/v2/healthcheck")
+	redeem = utils.GetEnv("redeem", "/transaction/v2/redeem")
+	use_voucher = utils.GetEnv("use_voucher", "/transaction/v2/usevoucher")
+	comulative = utils.GetEnv("comulative", "/transaction/v2/redeempoint")
+	deductPoint = utils.GetEnv("deduct_point", "/transaction/v2/deduct")
+	reversePoint = utils.GetEnv("reverse_point", "/transaction/v2/reversal")
+	earningPoint = utils.GetEnv("earning_point", "/transaction/v2/earningpoint")
+	splitbill = utils.GetEnv("splitbill", "/transaction/v2/splitbill")
 
 	debugmode = utils.GetEnv("apps.debug", "debug")
 
@@ -102,11 +107,14 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.Use(gin.Recovery())
 
 	// router.GET(cashbackbyproduct, controllers.InquiryController)
-	// router.POST(healthcheck, controllers.HealthCheck)
-	router.POST(redeem, controllers.VoucherRedeem)
-	router.POST(use_voucher, controllers.UseVouhcer)
-	router.POST(deductPoint, controllers.DeductPoint)
-	router.POST(earningPoint, controllers.Earning)
+	router.POST(healthcheck, controllers.HealthCheckService)
+	router.POST(redeem, controllers.VoucherRedeemController)
+	router.POST(comulative, controllers.VoucherComulativeController)
+	router.POST(use_voucher, controllers.UseVouhcerController)
+	router.POST(deductPoint, controllers.PointController)
+	router.POST(reversePoint, controllers.ReversePointController)
+	router.POST(earningPoint, controllers.EarningController)
+	router.POST(splitbill, controllers.DeductSplitBillController)
 
 	ottoRouter.Router = router
 

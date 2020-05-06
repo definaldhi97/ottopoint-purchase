@@ -46,8 +46,8 @@ type DataGabungan struct {
 	Serialnumber string `json:"serialnumber"`
 	Billref      string `json:"billref"`
 	// Game
-	// CustName string `json:"custname"`
-	// BillRef  string `json:"billref"`
+	CustName string `json:"custname"`
+	BillRef  string `json:"billref"`
 }
 
 // Data Payment PLN Token

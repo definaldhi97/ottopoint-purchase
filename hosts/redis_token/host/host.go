@@ -15,17 +15,17 @@ import (
 )
 
 var (
-	host           string
-	name           string
-	endpointToken  string
-	HealthCheckKey string
+	host          string
+	name          string
+	endpointToken string
+	// HealthCheckKey string
 )
 
 func init() {
 	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_REIDS_TOKEN", "http://13.228.25.85:8703")
 	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_REDIS_TOKEN", "REDIS-TOKEN-OTTOPOINT")
 	endpointToken = ODU.GetEnv("OTTOPOINT_PURCHASE_ENDPOINT_REDIS_TOKEN", "/ottopoint/v0.1.0/redis/service")
-	HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_REDIS_TOKEN", "OTTOPOINT-PURCHASE:REDIS_TOKEN_OTTOPOINT")
+	// HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_REDIS_TOKEN", "OTTOPOINT-PURCHASE:REDIS_TOKEN_OTTOPOINT")
 }
 
 func CheckToken(header models.RequestHeader) (redismodels.TokenResp, error) {
@@ -37,7 +37,7 @@ func CheckToken(header models.RequestHeader) (redismodels.TokenResp, error) {
 	token := header.InstitutionID + "-" + t
 	logs.Info("Token : ", token)
 
-	data, err := HTTPxFormWithHeader(urlSvr, token, HealthCheckKey)
+	data, err := HTTPxFormWithHeader(urlSvr, token)
 	if err != nil {
 		logs.Error("Check error", err.Error())
 
@@ -80,8 +80,8 @@ func GetToken(Key string) (*redismodels.TokenResp, error) {
 func GetServiceHealthCheck() hcmodels.ServiceHealthCheck {
 	redisClient := redis.GetRedisConnection()
 	return hcutils.GetServiceHealthCheck(&redisClient, &hcmodels.ServiceEnv{
-		Name:           name,
-		Address:        host,
-		HealthCheckKey: HealthCheckKey,
+		Name:    name,
+		Address: host,
+		// HealthCheckKey: HealthCheckKey,
 	})
 }

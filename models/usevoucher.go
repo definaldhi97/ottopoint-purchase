@@ -5,12 +5,9 @@ import (
 )
 
 type UseVoucherReq struct {
-	Category    string `json:"category"`
-	CampaignID  string `json:"campaignId"`
-	CustID      string `json:"cust_id"`
-	CustID2     string `json:"cust_id2"`
-	ProductCode string `json:"product_code"`
-	Date        string `json:"date"`
+	CampaignID string `json:"campaignId"`
+	CustID     string `json:"custId"`
+	CustID2    string `json:"custId2"`
 }
 
 type UseVoucherResp struct {
@@ -18,23 +15,25 @@ type UseVoucherResp struct {
 	Code          string `json:"code"`
 	CampaignID    string `json:"campaignId"`
 	CouponID      string `json:"couponId"`
-	AccountNumber string `json:"account_number"`
-	CustID        string `json:"cust_id"`
+	AccountNumber string `json:"accountNumber"`
+	CustID        string `json:"custId"`
 	Date          string `json:"date"`
 }
 
 type UseRedeemRequest struct {
 	AccountNumber string `json:"account_number"`
-	CustID        string `json:"cust_id"`
-	CustID2       string `json:"cust_id2"`
+	CustID        string `json:"custId"`
+	CustID2       string `json:"custId2"`
 	ProductCode   string `json:"product_code"`
+	Jumlah        int
 }
 
 type UseRedeemResponse struct {
 	Rc          string                    `json:"rc"`
 	Rrn         string                    `json:"rrn"`
-	CustID      string                    `json:"cust_id"`
-	CustID2     string                    `json:"cust_id2"`
+	Category    string                    `json:"category"`
+	CustID      string                    `json:"custId"`
+	CustID2     string                    `json:"custId2"`
 	ProductCode string                    `json:"product_code"`
 	Amount      int64                     `json:"amount"`
 	Msg         string                    `json:"msg"`
@@ -45,8 +44,16 @@ type UseRedeemResponse struct {
 
 type ResponseUseVoucher struct {
 	Voucher     string `json:"voucher"`
-	CustID      string `json:"cust_id"`
-	CustID2     string `json:"cust_id2"`
+	CustID      string `json:"custId"`
+	CustID2     string `json:"custId2"`
+	ProductCode string `json:"product_code"`
+	Amount      int64  `json:"amount"`
+}
+
+type ResponseUseVoucherPLN struct {
+	Voucher     string `json:"voucher"`
+	CustID      string `json:"custId"`
+	CustID2     string `json:"custId2"`
 	ProductCode string `json:"product_code"`
 	Amount      int64  `json:"amount"`
 	Token       string `json:"token"`

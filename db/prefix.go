@@ -9,7 +9,7 @@ import (
 func GetOperatorCodebyPrefix(prefix string) (dbmodels.OperatorPrefixes, error) {
 	res := dbmodels.OperatorPrefixes{}
 
-	data := prefix[0:4]
+	data := prefix[:4]
 
 	err := DbCon.Where("prefix = ?", data).First(&res).Error
 	if err != nil {

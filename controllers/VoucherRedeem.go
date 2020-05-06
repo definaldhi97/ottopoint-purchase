@@ -1,14 +1,9 @@
 package controllers
 
 import (
-	"errors"
-	"fmt"
-
+	token "ottopoint-purchase/hosts/redis_token/host"
 	"ottopoint-purchase/utils"
 	"time"
-
-	token "ottopoint-purchase/hosts/redis_token/host"
-	signature "ottopoint-purchase/hosts/signature/host"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/gin-gonic/gin"
@@ -24,12 +19,12 @@ import (
 	"ottopoint-purchase/services"
 )
 
-func VoucherRedeem(ctx *gin.Context) {
+func VoucherRedeemController(ctx *gin.Context) {
 	req := models.RedeemReq{}
 	res := models.Response{}
 
 	sugarLogger := ottologer.GetLogger()
-	namectrl := "[Voucher-Voucher]"
+	namectrl := "[VoucherRedeemController]"
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
@@ -43,44 +38,14 @@ func VoucherRedeem(ctx *gin.Context) {
 	c := ctx.Request.Context()
 	context := opentracing.ContextWithSpan(c, span)
 
-	header := models.RequestHeader{
-		DeviceID:      ctx.Request.Header.Get("DeviceId"),
-		InstitutionID: ctx.Request.Header.Get("InstitutionId"),
-		Geolocation:   ctx.Request.Header.Get("Geolocation"),
-		ChannelID:     ctx.Request.Header.Get("ChannelId"),
-		AppsID:        ctx.Request.Header.Get("AppsId"),
-		Timestamp:     ctx.Request.Header.Get("Timestamp"),
-		Authorization: ctx.Request.Header.Get("Authorization"),
-		Signature:     ctx.Request.Header.Get("Signature"),
-	}
-
-	// jsonSignature, _ := json.Marshal(req)
-
-	ValidateSignature, errSignature := signature.Signature(req, header)
-	if errSignature != nil || ValidateSignature.ResponseCode != "00" {
-		sugarLogger.Info("[ValidateSignature]-[controllers-UseVouhcer]")
-		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
-
-		logs.Info("[ValidateSignature]-[controllers-UseVouhcer]")
-		logs.Info(fmt.Sprintf("Error when validation request header"))
-
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Signature salah"))
-		ctx.JSON(http.StatusBadRequest, res)
+	//validate request
+	header, resultValidate := ValidateRequest(ctx, true, req)
+	if !resultValidate.Meta.Status {
+		ctx.JSON(http.StatusOK, resultValidate)
 		return
 	}
 
-	dataToken, errToken := token.CheckToken(header)
-	if errToken != nil || dataToken.ResponseCode != "00" {
-		sugarLogger.Info("[ValidateToken]-[controllers-VoucherController]")
-		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
-
-		logs.Info("[ValidateToken]-[controllers-VoucherController]")
-		logs.Info(fmt.Sprintf("Error when validation request header"))
-
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
-		ctx.JSON(http.StatusBadRequest, res)
-		return
-	}
+	dataToken, _ := token.CheckToken(header)
 
 	logs.Info("Response Token :", dataToken)
 
