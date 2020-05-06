@@ -57,6 +57,22 @@ func GetVoucherUV(phone, couponID string) (dbmodels.UserMyVocuher, error) {
 	return res, nil
 }
 
+func GetUltraVoucher(voucherCode, phone string) (dbmodels.UserMyVocuher, error) {
+	res := dbmodels.UserMyVocuher{}
+
+	err := DbCon.Where("voucher_code = ? and phone = ?", voucherCode, phone).First(&res).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetUltraVoucher]")
+		fmt.Println(fmt.Sprintf("Failed to connect database GetUltraVoucher %v", err))
+
+		return res, err
+	}
+
+	return res, nil
+}
+
 func ParamData(code string) (dbmodels.MParameters, error) {
 	res := dbmodels.MParameters{}
 

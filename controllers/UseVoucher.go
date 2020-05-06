@@ -154,7 +154,7 @@ func UseVouhcerController(ctx *gin.Context) {
 
 	switch data.SupplierID {
 	case constants.UV:
-		res = usevoucher.UseVoucherUV(req, param)
+		res = usevoucher.GetVoucherUV(req, param)
 	case constants.OttoAG:
 		res = usevoucher.UseVoucherOttoAG(req, param)
 	}

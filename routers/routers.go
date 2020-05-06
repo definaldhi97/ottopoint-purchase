@@ -18,15 +18,16 @@ import (
 )
 
 var (
-	redeem       string
-	use_voucher  string
-	deductPoint  string
-	paymentQR    string
-	reversePoint string
-	healthcheck  string
-	earningPoint string
-	splitbill    string
-	comulative   string
+	redeem        string
+	use_voucher   string
+	deductPoint   string
+	paymentQR     string
+	reversePoint  string
+	healthcheck   string
+	earningPoint  string
+	splitbill     string
+	comulative    string
+	usevoucher_uv string
 
 	nameservice     string
 	agentracinghost string
@@ -47,6 +48,7 @@ func init() {
 	reversePoint = utils.GetEnv("reverse_point", "/transaction/v2/reversal")
 	earningPoint = utils.GetEnv("earning_point", "/transaction/v2/earningpoint")
 	splitbill = utils.GetEnv("splitbill", "/transaction/v2/splitbill")
+	usevoucher_uv = utils.GetEnv("usevoucher_uv", "/transaction/v2/usevoucher_uv")
 
 	debugmode = utils.GetEnv("apps.debug", "debug")
 
@@ -115,6 +117,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(reversePoint, controllers.ReversePointController)
 	router.POST(earningPoint, controllers.EarningController)
 	router.POST(splitbill, controllers.DeductSplitBillController)
+	router.POST(usevoucher_uv, controllers.UseVouhcerUVController)
 
 	ottoRouter.Router = router
 

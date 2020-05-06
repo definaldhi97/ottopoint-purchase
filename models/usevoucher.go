@@ -4,8 +4,16 @@ import (
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 )
 
+// UV
+type UseVoucherUVReq struct {
+	AccountNumber string `json:"accountNumber"`
+	VoucherCode   string `json:"voucherCode`
+}
+
+// use voucher
 type UseVoucherReq struct {
 	CampaignID string `json:"campaignId"`
+	CouponID   string `json:"couponId"`
 	CustID     string `json:"custId"`
 	CustID2    string `json:"custId2"`
 }

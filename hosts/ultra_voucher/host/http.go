@@ -2,16 +2,13 @@ package host
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"net/http"
-	"ottopoint-purchase/redis"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/parnurzeal/gorequest"
-	hcredismodels "ottodigital.id/library/healthcheck/models/redismodels"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -36,7 +33,7 @@ func init() {
 
 }
 
-func HTTPxFormPostUV(url, key string, jsonReq interface{}) ([]byte, error) {
+func HTTPxFormPostUV(url, InstitutionID string, jsonReq interface{}) ([]byte, error) {
 	request := gorequest.New()
 	request.SetDebug(debugClientHTTP)
 	timeout, _ := time.ParseDuration(timeout)
@@ -45,19 +42,17 @@ func HTTPxFormPostUV(url, key string, jsonReq interface{}) ([]byte, error) {
 		request.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	}
 	reqagent := request.Post(url)
-	reqagent.Header.Set("Content-Type", "application/json")
-	resp, body, errs := reqagent.
+	if InstitutionID == "" {
+		reqagent.Header.Set("Content-Type", "application/json")
+	} else {
+		reqagent.Header.Set("Content-Type", "application/json")
+		reqagent.Header.Set("InstitutionId", InstitutionID)
+	}
+	_, body, errs := reqagent.
 		Send(jsonReq).
 		Timeout(timeout).
 		Retry(retrybad, time.Second, http.StatusInternalServerError).
 		End()
-
-	healthCheckData, _ := json.Marshal(hcredismodels.ServiceHealthCheckRedis{
-		StatusCode: resp.StatusCode,
-		UpdatedAt:  time.Now().UTC(),
-	})
-
-	go redis.SaveRedis(key, healthCheckData)
 	if errs != nil {
 		logs.Error("Error Sending ", errs)
 		return nil, errs[0]
