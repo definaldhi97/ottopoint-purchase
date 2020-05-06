@@ -2,7 +2,7 @@ package db
 
 import (
 	"fmt"
-	"ottopoint-product/models"
+	"ottopoint-purchase/models"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
