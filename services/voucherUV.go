@@ -6,6 +6,7 @@ import (
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
 
+	"github.com/astaxie/beego/logs"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
@@ -29,8 +30,13 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[GetVoucherUV]")
 	defer span.Finish()
 
+	logs.Info("Campaign : ", campaignID)
+	logs.Info("CouponID : ", param.CouponID)
+	logs.Info("ProductCode : ", param.ProductCode)
+	logs.Info("CustID : ", param.CustID)
+
 	// Use Voucher to Openloyalty
-	_, err2 := opl.CouponVoucherCustomer(campaignID, param.CouponID, param.ProductCode, param.CustID, 1)
+	_, err2 := opl.CouponVoucherCustomer(campaignID, param.CouponID, param.CouponCode, param.CustID, 1)
 	if err2 != nil {
 
 		go SaveTransactionUV(param, useUV, reqUV, req, "Payment", "01", "")

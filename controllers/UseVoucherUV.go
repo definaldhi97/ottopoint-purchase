@@ -11,9 +11,6 @@ import (
 
 	"ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
-	modelsopl "ottopoint-purchase/hosts/opl/models"
-	token "ottopoint-purchase/hosts/redis_token/host"
-	signature "ottopoint-purchase/hosts/signature/host"
 
 	"github.com/astaxie/beego/logs"
 
@@ -46,46 +43,33 @@ func UseVouhcerUVController(ctx *gin.Context) {
 	c := ctx.Request.Context()
 	context := opentracing.ContextWithSpan(c, span)
 
-	header := models.RequestHeader{
-		DeviceID:      ctx.Request.Header.Get("DeviceId"),
-		InstitutionID: ctx.Request.Header.Get("InstitutionId"),
-		Geolocation:   ctx.Request.Header.Get("Geolocation"),
-		ChannelID:     ctx.Request.Header.Get("ChannelId"),
-		AppsID:        ctx.Request.Header.Get("AppsId"),
-		Timestamp:     ctx.Request.Header.Get("Timestamp"),
-		Authorization: ctx.Request.Header.Get("Authorization"),
-		Signature:     ctx.Request.Header.Get("Signature"),
-	}
+	// header := models.RequestHeader{
+	// 	// DeviceID:      ctx.Request.Header.Get("DeviceId"),
+	// 	InstitutionID: ctx.Request.Header.Get("InstitutionId"),
+	// 	// Geolocation:   ctx.Request.Header.Get("Geolocation"),
+	// 	// ChannelID:     ctx.Request.Header.Get("ChannelId"),
+	// 	// AppsID:        ctx.Request.Header.Get("AppsId"),
+	// 	Timestamp: ctx.Request.Header.Get("Timestamp"),
+	// 	// Authorization: ctx.Request.Header.Get("Authorization"),
+	// 	Signature: ctx.Request.Header.Get("Signature"),
+	// }
 
 	// jsonSignature, _ := json.Marshal(req)
 
-	ValidateSignature, errSignature := signature.Signature(req, header)
-	if errSignature != nil || ValidateSignature.ResponseCode == "" {
-		sugarLogger.Info("[ValidateSignature]-[UseVouhcerUVController]")
-		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
+	// ValidateSignature, errSignature := signature.Signature(req, header)
+	// if errSignature != nil || ValidateSignature.ResponseCode == "" {
+	// 	sugarLogger.Info("[ValidateSignature]-[UseVouhcerUVController]")
+	// 	sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
 
-		logs.Info("[ValidateSignature]-[UseVouhcerUVController]")
-		logs.Info(fmt.Sprintf("Error when validation request header"))
+	// 	logs.Info("[ValidateSignature]-[UseVouhcerUVController]")
+	// 	logs.Info(fmt.Sprintf("Error when validation request header"))
 
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
-		ctx.JSON(http.StatusBadRequest, res)
-		return
-	}
+	// 	res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
+	// 	ctx.JSON(http.StatusBadRequest, res)
+	// 	return
+	// }
 
-	dataToken, errToken := token.CheckToken(header)
-	if errToken != nil || dataToken.ResponseCode != "00" {
-		sugarLogger.Info("[ValidateToken]-[UseVouhcerUVController]")
-		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
-
-		logs.Info("[ValidateToken]-[UseVouhcerUVController]")
-		logs.Info(fmt.Sprintf("Error when validation request header"))
-
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
-		ctx.JSON(http.StatusBadRequest, res)
-		return
-	}
-
-	getData, errData := db.GetUltraVoucher(req.VoucherCode, req.AccountNumber)
+	getData, errData := db.GetUltraVoucher(req.VoucherCode, req.AccountId)
 	if errData != nil || getData.CampaignID == "" {
 		logs.Info("Internal Server Error : ", errData)
 		logs.Info("[UseVouhcerUVController]-[GetUltraVoucher]")
@@ -127,29 +111,18 @@ func UseVouhcerUVController(ctx *gin.Context) {
 		return
 	}
 
-	data := switchDataUV(cekVoucher)
-
-	logs.Info("SupplierID : ", data.SupplierID)
-	logs.Info("producrType : ", data.ProductType)
-
-	sugarLogger.Info("=== SupplierID ===")
-	sugarLogger.Info(data.SupplierID)
-
-	sugarLogger.Info("=== producrType ===")
-	sugarLogger.Info(data.ProductType)
-
 	param := models.Params{
-		AccountNumber: req.AccountNumber,
-		MerchantID:    dataToken.MerchantID,
-		InstitutionID: header.InstitutionID,
-		SupplierID:    data.SupplierID,
-		ProductType:   data.ProductType,
-		ProductCode:   data.ProductCode,
-		NamaVoucher:   data.NamaVoucher,
-		Category:      data.Category,
-		CouponID:      getData.CouponID,
-		Point:         data.Point,
-		CustID:        getData.AccountId,
+		AccountNumber: getData.Phone,
+		// MerchantID:    dataToken.MerchantID,
+		// InstitutionID: header.InstitutionID,
+		SupplierID:  "UltraVoucher",
+		ProductType: cekVoucher.BrandName,
+		NamaVoucher: cekVoucher.Name,
+		CouponCode:  cekVoucher.Coupons[0],
+		Category:    cekVoucher.BrandName,
+		CouponID:    getData.CouponID,
+		Point:       cekVoucher.CostInPoints,
+		CustID:      req.AccountId,
 	}
 
 	res = usevoucher.UseVoucherUV(req, param, getData.CampaignID)
@@ -165,33 +138,4 @@ func UseVouhcerUVController(ctx *gin.Context) {
 	defer span.Finish()
 	ctx.JSON(http.StatusOK, res)
 
-}
-
-func switchDataUV(data modelsopl.VoucherDetailResp) models.Params {
-
-	res := models.Params{}
-
-	coupon := data.Coupons[0]
-
-	supplierid := coupon[:2]
-	var supplierID string
-	if supplierid == "UV" {
-		supplierID = "Ultra Voucher"
-		coupon = coupon[3:]
-	} else {
-		supplierID = "OttoAG"
-	}
-
-	res = models.Params{
-		ProductType: data.BrandName,
-		ProductCode: coupon,
-		SupplierID:  supplierID,
-		// CouponID:    couponId,
-		NamaVoucher: data.Name,
-		ExpDate:     data.CampaignActivity.ActiveTo,
-		Point:       data.CostInPoints,
-		Category:    data.BrandName,
-	}
-
-	return res
 }
