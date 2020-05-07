@@ -15,6 +15,7 @@ type Params struct {
 	Point         int
 	ExpDate       string
 	CouponID      string
+	CouponCode    string
 	SupplierID    string
 	Total         int
 }

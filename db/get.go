@@ -57,10 +57,10 @@ func GetVoucherUV(phone, couponID string) (dbmodels.UserMyVocuher, error) {
 	return res, nil
 }
 
-func GetUltraVoucher(voucherCode, phone string) (dbmodels.UserMyVocuher, error) {
+func GetUltraVoucher(voucherCode, accountId string) (dbmodels.UserMyVocuher, error) {
 	res := dbmodels.UserMyVocuher{}
 
-	err := DbCon.Where("voucher_code = ? and phone = ?", voucherCode, phone).First(&res).Error
+	err := DbCon.Where("voucher_code = ? and account_id = ?", voucherCode, accountId).First(&res).Error
 	if err != nil {
 
 		fmt.Println("[EEROR-DATABASE]")

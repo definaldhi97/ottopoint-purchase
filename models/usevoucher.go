@@ -6,8 +6,8 @@ import (
 
 // UV
 type UseVoucherUVReq struct {
-	AccountNumber string `json:"accountNumber"`
-	VoucherCode   string `json:"voucherCode`
+	AccountId   string `json:"accountId"`
+	VoucherCode string `json:"voucherCode`
 }
 
 // use voucher

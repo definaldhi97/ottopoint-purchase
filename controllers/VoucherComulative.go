@@ -56,8 +56,6 @@ func VoucherComulativeController(ctx *gin.Context) {
 		Signature:     ctx.Request.Header.Get("Signature"),
 	}
 
-	// jsonSignature, _ := json.Marshal(req)
-
 	ValidateSignature, errSignature := signature.Signature(req, header)
 	if errSignature != nil || ValidateSignature.ResponseCode == "" {
 		sugarLogger.Info("[ValidateSignature]-[DeductSplitBillController]")
@@ -133,7 +131,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 		res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
 	}
 
-	data := switchCheckData(cekVoucher)
+	data := SwitchCheckData(cekVoucher)
 
 	logs.Info("SupplierID : ", data.SupplierID)
 	logs.Info("producrType : ", data.ProductType)
@@ -174,7 +172,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 
 }
 
-func switchCheckData(data modelsopl.VoucherDetailResp) models.Params {
+func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 	res := models.Params{}
 
 	coupon := data.Coupons[0]
@@ -196,6 +194,8 @@ func switchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 		producrType = "Game"
 	case constants.CategoryPLN:
 		producrType = "PLN"
+	default:
+		producrType = data.BrandName
 	}
 
 	res = models.Params{

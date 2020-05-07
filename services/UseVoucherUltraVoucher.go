@@ -228,7 +228,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		code := order.Data.VouchersCode[t].Code
 
 		id := utils.GenerateTokenUUID()
-		go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber, param.CustID)
+		go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber, param.CustID, req.CampaignID)
 	}
 
 	// go SaveTransactionUV(param, order, reqOrder, req, "Payment", "00", order.ResponseCode)
@@ -247,7 +247,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	return res
 }
 
-func SaveDB(id, institution, coupon, vouchercode, phone, custIdOPL string) {
+func SaveDB(id, institution, coupon, vouchercode, phone, custIdOPL, campaignID string) {
 	logs.Info("[SaveDB]-[UltraVoucherServices]")
 	save := dbmodels.UserMyVocuher{
 		ID:            id,
@@ -256,6 +256,7 @@ func SaveDB(id, institution, coupon, vouchercode, phone, custIdOPL string) {
 		VoucherCode:   vouchercode,
 		Phone:         phone,
 		AccountId:     custIdOPL,
+		CampaignID:    campaignID,
 	}
 
 	err := db.DbCon.Create(&save).Error
