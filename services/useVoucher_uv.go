@@ -135,7 +135,7 @@ func (t UseVoucherServices) UseVoucherUV(req models.UseVoucherReq, param models.
 
 func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
 
-	logs.Info("[Start-SaveDB]-[Pulsa]")
+	logs.Info("[Start-SaveDB]-[UltraVoucher]")
 
 	var saveStatus string
 	switch status {

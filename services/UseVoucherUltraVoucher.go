@@ -130,7 +130,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 	// order to u
 	order, errOrder := uv.OrderVoucher(reqOrder, param.InstitutionID)
-	if errOrder != nil || order.ResponseCode == "" || order.ResponseCode == "01" {
+	if errOrder != nil || order.ResponseCode == "" {
 		logs.Info("Error : ", errOrder)
 		logs.Info("ResponseCode : ", order.ResponseCode)
 		logs.Info("[UltraVoucherServices]-[OrderVoucher]")
@@ -142,7 +142,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 		for i := req.Jumlah; i > 0; i-- {
 
-			logs.Info("[Line : %v]", i)
+			logs.Info(fmt.Sprintf("[Line : %v]", i))
 
 			t := i - 1
 			CouponID := redeem.Coupons[t].Id
@@ -154,7 +154,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 				// return res
 
 				logs.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
-				logs.Info("[UltraVoucherServices]-[Error : %v]", err2)
+				logs.Info(fmt.Sprintf("[UltraVoucherServices]-[Error : %v]", err2))
 				sugarLogger.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
 			}
 		}
@@ -186,7 +186,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		sugarLogger.Info("[Stock not Available]-[Gagal Order Voucher]")
 
 		for i := req.Jumlah; i > 0; i-- {
-			logs.Info("[Line : %v]", i)
+			fmt.Sprintf("[Line : %v]", i)
 
 			t := i - 1
 			CouponID := redeem.Coupons[t].Id
@@ -198,7 +198,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 				// return res
 
 				logs.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
-				logs.Info("[UltraVoucherServices]-[Error : %v]", err2)
+				fmt.Sprintf("[UltraVoucherServices]-[Error : %v]", err2)
 				sugarLogger.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
 			}
 		}
@@ -219,9 +219,53 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		return res
 	}
 
+	if order.ResponseCode != "00" {
+		logs.Info("Internal Server Error : ", errOrder)
+		logs.Info("ResponseCode : ", order.ResponseCode)
+		logs.Info("[UltraVoucherServices]-[OrderVoucher]")
+		fmt.Sprintf("[Response %v]", order.ResponseCode)
+
+		// sugarLogger.Info("Internal Server Error : ", errOrder)
+		sugarLogger.Info("[UltraVoucherServices]-[OrderVoucher]")
+		sugarLogger.Info("[Stock not Available]-[Gagal Order Voucher]")
+
+		for i := req.Jumlah; i > 0; i-- {
+			fmt.Sprintf("[Line : %v]", i)
+
+			t := i - 1
+			CouponID := redeem.Coupons[t].Id
+			couponCode := redeem.Coupons[t].Code
+
+			_, err2 := opl.CouponVoucherCustomer(req.CampaignID, CouponID, couponCode, param.CustID, 1)
+			if err2 != nil {
+				// res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
+				// return res
+
+				logs.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
+				fmt.Sprintf("[UltraVoucherServices]-[Error : %v]", err2)
+				sugarLogger.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
+			}
+		}
+
+		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
+		point := param.Point * req.Jumlah
+		totalPoint := strconv.Itoa(point)
+		_, errReversal := host.TransferPoint(param.CustID, totalPoint, Text)
+		if errReversal != nil {
+			logs.Info("Internal Server Error : ", errReversal)
+			logs.Info("[UltraVoucherServices]-[TransferPoint]")
+			logs.Info("[Failed Order Voucher]-[Gagal Reversal Point]")
+		}
+
+		res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
+		// res.Data = "Stok Tidak Tersedia"
+
+		return res
+	}
+
 	for i := req.Jumlah; i > 0; i-- {
 
-		logs.Info("[Line Save DB : %v]", i)
+		fmt.Sprintf("[Line Save DB : %v]", i)
 
 		t := i - 1
 		coupon := redeem.Coupons[t].Id
