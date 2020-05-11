@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"ottopoint-purchase/constants"
 	token "ottopoint-purchase/hosts/redis_token/host"
 	"ottopoint-purchase/services"
 	"ottopoint-purchase/utils"
@@ -61,12 +60,14 @@ func EarningController(ctx *gin.Context) {
 		},
 	}
 
-	switch header.InstitutionID {
-	case constants.INDOMARCO, constants.BOGASARI:
-		res = earningPoint.EarningPointSupplyChen(req, dataToken, header)
-	case constants.OTTOPAY, constants.PEDE:
-		res = earningPoint.EarningPoint(req, dataToken, header)
-	}
+	// switch header.InstitutionID {
+	// case constants.INDOMARCO, constants.BOGASARI:
+	// 	res = earningPoint.EarningPointSupplyChen(req, dataToken, header)
+	// case "PSM0001", "PSM0002":
+	// 	res = earningPoint.EarningPoint(req, dataToken, header)
+	// }
+
+	res = earningPoint.EarningPoint(req, dataToken, header)
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", res))

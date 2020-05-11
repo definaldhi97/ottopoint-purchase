@@ -12,7 +12,6 @@ import (
 
 	"ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
-	modelsopl "ottopoint-purchase/hosts/opl/models"
 	token "ottopoint-purchase/hosts/redis_token/host"
 
 	"github.com/astaxie/beego/logs"
@@ -84,21 +83,20 @@ func UseVouhcerController(ctx *gin.Context) {
 		},
 	}
 
-	cekVoucher, errVoucher := opl.HistoryVoucherCustomer(dataToken.Data, "")
-
-	data := switchData(cekVoucher.Campaigns, req.CampaignID)
-
-	if errVoucher != nil || data.NamaVoucher == "" {
-		sugarLogger.Info("[HistoryVoucherCustomer]-[UseVouhcerController]")
+	cekVoucher, errVoucher := opl.VoucherDetail(req.CampaignID)
+	if errVoucher != nil || cekVoucher.CampaignID == "" {
+		sugarLogger.Info("[HistoryVoucherCustomer]-[VoucherComulative-Controller]")
 		sugarLogger.Info(fmt.Sprintf("Error : ", errVoucher))
 
-		logs.Info("[HistoryVoucherCustomer]-[UseVouhcerController]")
+		logs.Info("[HistoryVoucherCustomer]-[VoucherComulative-Controller]")
 		logs.Info(fmt.Sprintf("Error : ", errVoucher))
 
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal Get History Voucher Customer"))
+		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
+
+	data := SwitchCheckData(cekVoucher)
 
 	logs.Info("SupplierID : ", data.SupplierID)
 	logs.Info("producrType : ", data.ProductType)
@@ -119,14 +117,14 @@ func UseVouhcerController(ctx *gin.Context) {
 		ProductCode:   data.ProductCode,
 		NamaVoucher:   data.NamaVoucher,
 		Category:      data.Category,
-		CouponID:      data.CouponID,
+		CouponID:      req.CouponID,
 		Point:         data.Point,
 		ExpDate:       data.ExpDate,
 	}
 
 	switch data.SupplierID {
 	case constants.UV:
-		res = usevoucher.UseVoucherUV(req, param)
+		res = usevoucher.GetVoucherUV(req, param)
 	case constants.OttoAG:
 		res = usevoucher.UseVoucherOttoAG(req, param)
 	}
@@ -142,67 +140,4 @@ func UseVouhcerController(ctx *gin.Context) {
 	defer span.Finish()
 	ctx.JSON(http.StatusOK, res)
 
-}
-
-func switchData(data []modelsopl.CampaignsDetail, CampaignID string) models.Params {
-	res := models.Params{}
-
-	resp := []models.CampaignsDetail{}
-	for _, val := range data {
-		if val.CampaignID == CampaignID && val.CanBeUsed == true {
-			a := models.CampaignsDetail{
-				Name:       val.Campaign.Name,
-				CampaignID: val.CampaignID,
-				ActiveTo:   val.ActiveTo,
-				Coupon: models.CouponDetail{
-					Code: val.Coupon.Code,
-					ID:   val.Coupon.ID,
-				},
-			}
-
-			resp = append(resp, a)
-		}
-	}
-
-	var couponId, couponCode, nama, expDate, category string
-	var point int
-	for _, valco := range resp {
-		nama = valco.Name
-		point = valco.CostInPoints
-		couponId = valco.Coupon.ID
-		couponCode = valco.Coupon.Code
-		expDate = valco.ActiveTo
-		category = valco.BrandName
-	}
-
-	supplierid := couponCode[:2]
-	var supplierID string
-	if supplierid == "UV" {
-		supplierID = "Ultra Voucher"
-	} else {
-		supplierID = "OttoAG"
-	}
-
-	// var producrType string
-	// switch category {
-	// case constants.CategoryPulsa:
-	// 	producrType = "Pulsa"
-	// case constants.CategoryFreeFire, constants.CategoryMobileLegend:
-	// 	producrType = "Game"
-	// case constants.CategoryToken:
-	// 	producrType = "PLN"
-	// }
-
-	res = models.Params{
-		ProductType: category,
-		ProductCode: couponCode,
-		SupplierID:  supplierID,
-		CouponID:    couponId,
-		NamaVoucher: nama,
-		ExpDate:     expDate,
-		Point:       point,
-		Category:    category,
-	}
-
-	return res
 }
