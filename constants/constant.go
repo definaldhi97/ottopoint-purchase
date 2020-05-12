@@ -43,7 +43,7 @@ const (
 	CategoryPulsa        = "pulsa"
 	CategoryPaketData    = "paket_data"
 	CategoryFreeFire     = "free fire"
-	CategoryMobileLegend = "mobile legend"
+	CategoryMobileLegend = "mobile legends"
 	CategoryPLN          = "pln"
 	CategoryGame         = "game"
 )

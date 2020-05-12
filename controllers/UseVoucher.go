@@ -54,21 +54,6 @@ func UseVouhcerController(ctx *gin.Context) {
 
 	dataToken, _ := token.CheckToken(header)
 
-	dataUser, errUser := db.CheckUser(dataToken.Data)
-	if errUser != nil || dataUser.CustID == "" {
-		logs.Info("Internal Server Error : ", errUser)
-		logs.Info("[UltraVoucherServices]-[CheckUser]")
-		logs.Info("[Failed Redeem Voucher]-[Get Data User]")
-
-		// sugarLogger.Info("Internal Server Error : ", errredeem)
-		sugarLogger.Info("[UltraVoucherServices]-[CheckUser]")
-		sugarLogger.Info("[Failed Redeem Voucher]-[Get Data User]")
-
-		res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
-		ctx.JSON(http.StatusBadRequest, res)
-		return
-	}
-
 	spanid := utilsgo.GetSpanId(span)
 	sugarLogger.Info("REQUEST:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", req),
@@ -85,10 +70,10 @@ func UseVouhcerController(ctx *gin.Context) {
 
 	cekVoucher, errVoucher := opl.VoucherDetail(req.CampaignID)
 	if errVoucher != nil || cekVoucher.CampaignID == "" {
-		sugarLogger.Info("[HistoryVoucherCustomer]-[VoucherComulative-Controller]")
+		sugarLogger.Info("[VoucherDetail]-[UseVoucherController]")
 		sugarLogger.Info(fmt.Sprintf("Error : ", errVoucher))
 
-		logs.Info("[HistoryVoucherCustomer]-[VoucherComulative-Controller]")
+		logs.Info("[VoucherDetail]-[UseVoucherController]")
 		logs.Info(fmt.Sprintf("Error : ", errVoucher))
 
 		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
@@ -97,6 +82,41 @@ func UseVouhcerController(ctx *gin.Context) {
 	}
 
 	data := SwitchCheckData(cekVoucher)
+
+	var custIdOPL string
+	if data.SupplierID == "Ultra Voucher" {
+		logs.Info("[Voucher Ultra Voucher]")
+		getData, errData := db.CheckCouponUV(dataToken.Data, req.CampaignID, req.CouponID)
+		if errData != nil || getData.AccountId == "" {
+			logs.Info("Internal Server Error : ", errData)
+			logs.Info("[UseVoucherController]-[CheckCouponUV]")
+			logs.Info("[Failed Redeem Voucher]-[Get Data User]")
+
+			// sugarLogger.Info("Internal Server Error : ", errredeem)
+			sugarLogger.Info("[UseVoucherController]-[CheckCouponUV]")
+			sugarLogger.Info("[Failed Redeem Voucher]-[Get Data User]")
+
+			res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
+			ctx.JSON(http.StatusBadRequest, res)
+			return
+		}
+
+		custIdOPL = getData.AccountId
+	} else {
+		dataUser, errUser := db.CheckUser(dataToken.Data)
+		if errUser != nil || dataUser.CustID == "" {
+			logs.Info("Internal Server Error : ", errUser)
+			logs.Info("[UltraVoucherServices]-[CheckUser]")
+			logs.Info("[Failed Redeem Voucher]-[Get Data User]")
+
+			// sugarLogger.Info("Internal Server Error : ", errredeem)
+			sugarLogger.Info("[UltraVoucherServices]-[CheckUser]")
+			sugarLogger.Info("[Failed Redeem Voucher]-[Get Data User]")
+
+			res = utils.GetMessageResponse(res, 404, false, errors.New("User belum Eligible"))
+		}
+		custIdOPL = dataUser.CustID
+	}
 
 	logs.Info("SupplierID : ", data.SupplierID)
 	logs.Info("producrType : ", data.ProductType)
@@ -112,7 +132,7 @@ func UseVouhcerController(ctx *gin.Context) {
 		MerchantID:    dataToken.MerchantID,
 		InstitutionID: header.InstitutionID,
 		SupplierID:    data.SupplierID,
-		CustID:        dataUser.CustID,
+		CustID:        custIdOPL,
 		ProductType:   data.ProductType,
 		ProductCode:   data.ProductCode,
 		NamaVoucher:   data.NamaVoucher,

@@ -36,8 +36,8 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 	logs.Info("CustID : ", param.CustID)
 
 	// Use Voucher to Openloyalty
-	_, err2 := opl.CouponVoucherCustomer(campaignID, param.CouponID, param.CouponCode, param.CustID, 1)
-	if err2 != nil {
+	use, err2 := opl.CouponVoucherCustomer(campaignID, param.CouponID, param.CouponCode, param.CustID, 1)
+	if err2 != nil || use.Coupons[0].CouponID == "" {
 
 		go SaveTransactionUV(param, useUV, reqUV, req, "Payment", "01", "")
 
