@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	opl "ottopoint-purchase/hosts/opl/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
@@ -18,16 +19,18 @@ type UseVoucherUVServices struct {
 func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param models.Params, campaignID string) models.Response {
 	var res models.Response
 
+	logs.Info("[START]-[UseVoucherUV]")
+
 	var useUV interface{}
 	var reqUV interface{}
 
 	sugarLogger := t.General.OttoZaplog
-	sugarLogger.Info("[GetVoucherUV-Services]",
+	sugarLogger.Info("[UseVoucherUV]",
 		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID),
 		zap.String("category : ", param.Category), zap.String("campaignId : ", campaignID),
 		zap.String("VoucherCode : ", req.VoucherCode))
 
-	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[GetVoucherUV]")
+	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[UseVoucherUV]")
 	defer span.Finish()
 
 	logs.Info("Campaign : ", campaignID)
@@ -38,6 +41,10 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 	// Use Voucher to Openloyalty
 	use, err2 := opl.CouponVoucherCustomer(campaignID, param.CouponID, param.CouponCode, param.CustID, 1)
 	if err2 != nil || use.Coupons[0].CouponID == "" {
+
+		fmt.Sprintf("[Error : %v]", err2)
+		fmt.Sprintf("[Response : %v]", use)
+		logs.Info("[Error from OPL]-[CouponVoucherCustomer]")
 
 		go SaveTransactionUV(param, useUV, reqUV, req, "Payment", "01", "")
 

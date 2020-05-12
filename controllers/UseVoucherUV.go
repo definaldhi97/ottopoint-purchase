@@ -73,11 +73,11 @@ func UseVouhcerUVController(ctx *gin.Context) {
 	if errData != nil || getData.CampaignID == "" {
 		logs.Info("Internal Server Error : ", errData)
 		logs.Info("[UseVouhcerUVController]-[GetUltraVoucher]")
-		logs.Info("[Failed Redeem Voucher]-[Get Data User]")
+		logs.Info("[Failed from DB]-[Get Data Voucher-UV]")
 
 		// sugarLogger.Info("Internal Server Error : ", errredeem)
 		sugarLogger.Info("[UseVouhcerUVController]-[GetUltraVoucher]")
-		sugarLogger.Info("[Failed Redeem Voucher]-[Get Data User]")
+		sugarLogger.Info("[Failed from DB]-[Get Data Voucher-UV]")
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
 		ctx.JSON(http.StatusBadRequest, res)
@@ -106,7 +106,7 @@ func UseVouhcerUVController(ctx *gin.Context) {
 		logs.Info("[VoucherDetail]-[UseVouhcerUVController]")
 		logs.Info(fmt.Sprintf("Error : ", errVoucher))
 
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
+		res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}

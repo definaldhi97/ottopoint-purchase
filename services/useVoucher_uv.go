@@ -164,8 +164,8 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
-		logs.Info("[Failed Save to DB ]", err)
-		logs.Info("[Package-Voucher]-[Service-RedeemPulsa]")
+		fmt.Sprintf("[Error : %v]", err)
+		logs.Info("[Failed Save to DB]")
 		// return err
 
 	}

@@ -22,13 +22,13 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 	var res models.Response
 
 	sugarLogger := t.General.OttoZaplog
-	sugarLogger.Info("[UseVoucher-Services]",
+	sugarLogger.Info("[UseVoucherOttoAG-Services]",
 		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID),
 		zap.String("category : ", param.Category), zap.String("campaignId : ", req.CampaignID),
 		zap.String("cust_id : ", req.CustID), zap.String("cust_id2 : ", req.CustID2),
 		zap.String("product_code : ", param.ProductCode))
 
-	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[RedeemVoucher]")
+	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[UseVoucherOttoAG]")
 	defer span.Finish()
 
 	// Use Voucher to Openloyalty
@@ -60,7 +60,7 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 
 	if resRedeem.Msg == "Prefix Failed" {
 		logs.Info("[Prefix Failed]")
-		logs.Info("[Services-Voucher-UserVoucher]")
+		logs.Info("[UseVoucherOttoAG]")
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Gagal"))
 		return res
@@ -68,7 +68,7 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 
 	if resRedeem.Msg == "Inquiry Failed" {
 		logs.Info("[Inquiry Failed]")
-		logs.Info("[Services-Voucher-UserVoucher]")
+		logs.Info("[UseVoucherOttoAG]")
 
 		logs.Info("[Reversal Voucher")
 		_, erv := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 0)
@@ -83,7 +83,7 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 
 	if resRedeem.Msg == "Payment Failed" {
 		logs.Info("[Payment Failed]")
-		logs.Info("[Services-Voucher-UserVoucher]")
+		logs.Info("[UseVoucherOttoAG]")
 
 		logs.Info("[Reversal Voucher")
 		_, erv := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 0)
@@ -98,7 +98,7 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 
 	if resRedeem.Msg == "Request in progress" {
 		logs.Info("[Prefix Failed]")
-		logs.Info("[Services-Voucher-UserVoucher]")
+		logs.Info("[UseVoucherOttoAG]")
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Pending"))
 		return res

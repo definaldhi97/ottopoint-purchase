@@ -31,7 +31,7 @@ func UseVouhcerController(ctx *gin.Context) {
 	res := models.Response{}
 
 	sugarLogger := ottologer.GetLogger()
-	namectrl := "[UseVouhcerController]"
+	namectrl := "[UseVoucherController]"
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
@@ -70,13 +70,13 @@ func UseVouhcerController(ctx *gin.Context) {
 
 	cekVoucher, errVoucher := opl.VoucherDetail(req.CampaignID)
 	if errVoucher != nil || cekVoucher.CampaignID == "" {
-		sugarLogger.Info("[VoucherDetail]-[UseVoucherController]")
+		sugarLogger.Info("[UseVoucherController]-[VoucherDetail]")
 		sugarLogger.Info(fmt.Sprintf("Error : ", errVoucher))
 
-		logs.Info("[VoucherDetail]-[UseVoucherController]")
+		logs.Info("[UseVoucherController]-[VoucherDetail]")
 		logs.Info(fmt.Sprintf("Error : ", errVoucher))
 
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
+		res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
@@ -90,11 +90,11 @@ func UseVouhcerController(ctx *gin.Context) {
 		if errData != nil || getData.AccountId == "" {
 			logs.Info("Internal Server Error : ", errData)
 			logs.Info("[UseVoucherController]-[CheckCouponUV]")
-			logs.Info("[Failed Redeem Voucher]-[Get Data User]")
+			logs.Info("[Failed Failed from DB]-[Get Data Voucher-UV]")
 
 			// sugarLogger.Info("Internal Server Error : ", errredeem)
 			sugarLogger.Info("[UseVoucherController]-[CheckCouponUV]")
-			sugarLogger.Info("[Failed Redeem Voucher]-[Get Data User]")
+			sugarLogger.Info("[Failed Failed from DB]-[Get Data Voucher-UV]")
 
 			res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
 			ctx.JSON(http.StatusBadRequest, res)
@@ -103,17 +103,18 @@ func UseVouhcerController(ctx *gin.Context) {
 
 		custIdOPL = getData.AccountId
 	} else {
+		logs.Info("[Voucher OttoAG]")
 		dataUser, errUser := db.CheckUser(dataToken.Data)
 		if errUser != nil || dataUser.CustID == "" {
 			logs.Info("Internal Server Error : ", errUser)
-			logs.Info("[UltraVoucherServices]-[CheckUser]")
-			logs.Info("[Failed Redeem Voucher]-[Get Data User]")
+			logs.Info("[UseVoucherController]-[CheckUser]")
+			logs.Info("[Failed from DB]-[Get Data User]")
 
 			// sugarLogger.Info("Internal Server Error : ", errredeem)
-			sugarLogger.Info("[UltraVoucherServices]-[CheckUser]")
-			sugarLogger.Info("[Failed Redeem Voucher]-[Get Data User]")
+			sugarLogger.Info("[UseVoucherController]-[CheckUser]")
+			sugarLogger.Info("[Failed from DB]-[Get Data User]")
 
-			res = utils.GetMessageResponse(res, 404, false, errors.New("User belum Eligible"))
+			res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
 		}
 		custIdOPL = dataUser.CustID
 	}

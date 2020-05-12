@@ -30,7 +30,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 	res := models.Response{}
 
 	sugarLogger := ottologer.GetLogger()
-	namectrl := "[VoucherComulative-Controller]"
+	namectrl := "[VoucherComulativeController]"
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
@@ -78,13 +78,13 @@ func VoucherComulativeController(ctx *gin.Context) {
 
 	cekVoucher, errVoucher := opl.VoucherDetail(req.CampaignID)
 	if errVoucher != nil || cekVoucher.CampaignID == "" {
-		sugarLogger.Info("[HistoryVoucherCustomer]-[VoucherComulative-Controller]")
+		sugarLogger.Info("[VoucherComulativeController]-[VoucherDetail]")
 		sugarLogger.Info(fmt.Sprintf("Error : ", errVoucher))
 
-		logs.Info("[HistoryVoucherCustomer]-[VoucherComulative-Controller]")
+		logs.Info("[VoucherComulativeController]-[VoucherDetail]")
 		logs.Info(fmt.Sprintf("Error : ", errVoucher))
 
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
+		res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
@@ -92,14 +92,16 @@ func VoucherComulativeController(ctx *gin.Context) {
 	dataUser, errUser := db.CheckUser(dataToken.Data)
 	if errUser != nil || dataUser.CustID == "" {
 		logs.Info("Internal Server Error : ", errUser)
-		logs.Info("[UltraVoucherServices]-[CheckUser]")
-		logs.Info("[Failed Redeem Voucher]-[Get Data User]")
+		logs.Info("[VoucherComulativeController]-[CheckUser]")
+		logs.Info("[Failed from DB]-[Get Data User]")
 
 		// sugarLogger.Info("Internal Server Error : ", errredeem)
-		sugarLogger.Info("[UltraVoucherServices]-[CheckUser]")
-		sugarLogger.Info("[Failed Redeem Voucher]-[Get Data User]")
+		sugarLogger.Info("[VoucherComulativeController]-[CheckUser]")
+		sugarLogger.Info("[Failed from DB]-[Get Data User]")
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
 	}
 
 	data := SwitchCheckData(cekVoucher)
