@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
@@ -112,6 +113,22 @@ func VoucherComulativeController(ctx *gin.Context) {
 	// sugarLogger.Info("SupplierID : ", data.SupplierID)
 	// sugarLogger.Info("producrType : ", data.ProductType)
 
+	if data.SupplierID == "OttoAG" {
+		switch data.Category {
+		case constants.CategoryPulsa:
+			fmt.Println("Category Pulsa")
+		case constants.CategoryFreeFire, constants.CategoryMobileLegend:
+			fmt.Println("Category Game")
+		case constants.CategoryPLN:
+			fmt.Println("Category PLN")
+		default:
+			fmt.Println("Invalid Category")
+			res = utils.GetMessageResponse(res, 500, false, errors.New("Invalid Category"))
+			ctx.JSON(http.StatusBadRequest, res)
+			return
+		}
+	}
+
 	param := models.Params{
 		AccountNumber: dataToken.Data,
 		MerchantID:    dataToken.MerchantID,
@@ -160,7 +177,8 @@ func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 	}
 
 	var producrType string
-	switch data.BrandName {
+	t := strings.ToLower(data.BrandName)
+	switch t {
 	case constants.CategoryPulsa:
 		producrType = "Pulsa"
 	case constants.CategoryFreeFire, constants.CategoryMobileLegend:
@@ -177,7 +195,7 @@ func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 		SupplierID:  supplierID,
 		NamaVoucher: data.Name,
 		Point:       data.CostInPoints,
-		Category:    data.BrandName,
+		Category:    t,
 		// ExpDate:     data.CampaignActivity.ActiveTo,
 	}
 

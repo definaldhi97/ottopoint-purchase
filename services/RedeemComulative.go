@@ -11,6 +11,7 @@ import (
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/services/voucher"
 	"ottopoint-purchase/utils"
+	"strings"
 )
 
 func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Params, getResp chan models.RedeemComuResp, ErrRespRedeem chan error) {
@@ -22,12 +23,16 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		Code: "00",
 	}
 
+	category := strings.ToLower(param.Category)
+
 	fmt.Println("[Start][Inquiry]-[Package-Services]-[RedeemComulativeVoucher]")
 
-	if param.Category == constants.CategoryPulsa {
+	if category == constants.CategoryPulsa {
 		// validate prefix
 		validate, errValidate := ValidatePrefixComulative(req.CustID, param.ProductCode)
 		if validate == false {
+
+			fmt.Println("Invalid Prefix")
 
 			redeemRes = models.RedeemComuResp{
 				Code:    "01",
@@ -49,6 +54,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		ProductCode: param.ProductCode,
 		MemberID:    utils.MemberID,
 		CustID:      req.CustID,
+		Period:      req.CustID2,
 	}
 
 	inqReq := ottoagmodels.OttoAGInquiryRequest{
@@ -126,19 +132,19 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 	go voucher.SaveTransactionPulsa(paramInq, dataInquery, req, inqBiller, "Inquiry", "00", dataInquery.Rc)
 
-	coupon := []models.CouponsRedeem{}
+	// coupon := []models.CouponsRedeem{}
 
 	fmt.Println("[Start][Redeem]-[Package-Services]-[RedeemComulativeVoucher]")
 	data, errx := host.RedeemVoucher(req.CampaignID, param.AccountNumber)
 
-	if errx != nil {
+	if errx != nil || data.Message != "" || len(data.Coupons) == 0 {
 
 		fmt.Println("[ErrorRedeemVoucher]-[RedeemComulativeVoucher]")
 		fmt.Println(fmt.Sprintf("Error : %v", errx))
 
 		redeemRes = models.RedeemComuResp{
 			Code:    "01",
-			Message: "Internal Server Error",
+			Message: "Gagal Redeem",
 		}
 
 		resRedeemComu.Code = redeemRes.Code
@@ -148,24 +154,28 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 		return
 
-	} else {
-		fmt.Println("Response Redeem 1 : ", data)
-		fmt.Println("Response LEN Coupons 1 : ", len(data.Coupons))
-		fmt.Println("check data ", data == nil)
-
-		//fmt.Println("Response check Coupons : ", len(coupon))
-		// check if no data founded
-		if len(data.Coupons) == 0 {
-			fmt.Println("========== check coupon ", coupon)
-			redeemRes = models.RedeemComuResp{
-				Code:    "01",
-				Message: "Anda mencapai batas maksimal pembelian voucher",
-			}
-		} else {
-			resRedeemComu.CouponID = data.Coupons[0].Id
-			resRedeemComu.CouponCode = data.Coupons[0].Code
-		}
 	}
+	// else {
+	// 	fmt.Println("Response Redeem 1 : ", data)
+	// 	fmt.Println("Response LEN Coupons 1 : ", len(data.Coupons))
+	// 	fmt.Println("check data ", data == nil)
+
+	// 	//fmt.Println("Response check Coupons : ", len(coupon))
+	// 	// check if no data founded
+	// 	if len(data.Coupons) == 0 {
+	// 		fmt.Println("========== check coupon ", coupon)
+	// 		redeemRes = models.RedeemComuResp{
+	// 			Code:    "01",
+	// 			Message: "Anda mencapai batas maksimal pembelian voucher",
+	// 		}
+	// 	} else {
+	// resRedeemComu.CouponID = data.Coupons[0].Id
+	// resRedeemComu.CouponCode = data.Coupons[0].Code
+	// 	}
+	// }
+
+	resRedeemComu.CouponID = data.Coupons[0].Id
+	resRedeemComu.CouponCode = data.Coupons[0].Code
 
 	ErrRespRedeem <- nil
 

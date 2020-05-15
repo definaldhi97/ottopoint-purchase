@@ -20,6 +20,9 @@ import (
 func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.Params) models.Response {
 	var res models.Response
 
+	logs.Info("=== GetVoucherUV ===")
+	fmt.Sprintf("=== GetVoucherUV ===")
+
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[GetVoucherUV-Services]",
 		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID),
@@ -164,7 +167,7 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
-		fmt.Sprintf("[Error : %v]", err)
+		logs.Info(fmt.Sprintf("[Error : %v]", err))
 		logs.Info("[Failed Save to DB]")
 		// return err
 

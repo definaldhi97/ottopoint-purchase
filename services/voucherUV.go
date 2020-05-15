@@ -19,7 +19,8 @@ type UseVoucherUVServices struct {
 func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param models.Params, campaignID string) models.Response {
 	var res models.Response
 
-	logs.Info("[START]-[UseVoucherUV]")
+	logs.Info("=== UseVoucherUV ===")
+	fmt.Sprintf("=== UseVoucherUV ===")
 
 	var useUV interface{}
 	var reqUV interface{}
@@ -35,15 +36,21 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 
 	logs.Info("Campaign : ", campaignID)
 	logs.Info("CouponID : ", param.CouponID)
-	logs.Info("ProductCode : ", param.ProductCode)
+	logs.Info("ProductCode : ", param.CouponCode)
 	logs.Info("CustID : ", param.CustID)
 
 	// Use Voucher to Openloyalty
 	use, err2 := opl.CouponVoucherCustomer(campaignID, param.CouponID, param.CouponCode, param.CustID, 1)
-	if err2 != nil || use.Coupons[0].CouponID == "" {
 
-		fmt.Sprintf("[Error : %v]", err2)
-		fmt.Sprintf("[Response : %v]", use)
+	var useErr string
+	for _, value := range use.Coupons {
+		useErr = value.CouponID
+	}
+
+	if err2 != nil || useErr == "" {
+
+		logs.Info(fmt.Sprintf("[Error : %v]", err2))
+		logs.Info(fmt.Sprintf("[Response : %v]", use))
 		logs.Info("[Error from OPL]-[CouponVoucherCustomer]")
 
 		go SaveTransactionUV(param, useUV, reqUV, req, "Payment", "01", "")

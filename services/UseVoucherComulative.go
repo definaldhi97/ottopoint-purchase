@@ -25,6 +25,12 @@ func UseVoucherComulative(req models.VoucherComultaiveReq, redeemComu models.Red
 		fmt.Println("User Belum Eligible, Error : ", errUser)
 	} else {
 		// Use Voucher to Openloyalty
+		fmt.Println("campaignId : ", req.CampaignID)
+		fmt.Println("couponId : ", redeemComu.CouponID)
+		fmt.Println("code : ", redeemComu.CouponCode)
+		fmt.Println("used : ", 1)
+		fmt.Println("customerId : ", dataUser.CustID)
+
 		_, err2 := opl.CouponVoucherCustomer(req.CampaignID, redeemComu.CouponID, redeemComu.CouponCode, dataUser.CustID, 1)
 		fmt.Println("================ doing use voucher couponId : ", redeemComu.CouponID)
 		if err2 != nil {

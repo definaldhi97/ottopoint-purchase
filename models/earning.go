@@ -22,3 +22,7 @@ type GetEarningRulesResp struct {
 	EventName    string `json:"eventName"`
 	PointsAmount int    `json:"pointsAmount"`
 }
+
+type EarningRuleReq struct {
+	Code string `json:"code"`
+}
