@@ -13,7 +13,6 @@ import (
 	"ottopoint-purchase/utils"
 	"strconv"
 
-	"github.com/astaxie/beego/logs"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
@@ -56,9 +55,9 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	redeem, errredeem := host.RedeemVoucherCumulative(req.CampaignID, param.AccountNumber, total)
 
 	if redeem.Message == "Invalid JWT Token" {
-		logs.Info("Error : ", errredeem)
-		logs.Info("[UltraVoucherServices]-[RedeemVoucher]")
-		logs.Info("[Internal Server Error]-[Gagal Redeem Voucher]")
+		fmt.Println("Error : ", errredeem)
+		fmt.Println("[UltraVoucherServices]-[RedeemVoucher]")
+		fmt.Println("[Internal Server Error]-[Gagal Redeem Voucher]")
 
 		// sugarLogger.Info("Internal Server Error : ", errredeem)
 		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
@@ -71,9 +70,9 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	}
 
 	if redeem.Error == "Not enough points" {
-		logs.Info("Error : ", errredeem)
-		logs.Info("[UltraVoucherServices]-[RedeemVoucher]")
-		logs.Info("[Not enough points]-[Gagal Redeem Voucher]")
+		fmt.Println("Error : ", errredeem)
+		fmt.Println("[UltraVoucherServices]-[RedeemVoucher]")
+		fmt.Println("[Not enough points]-[Gagal Redeem Voucher]")
 
 		// sugarLogger.Info("Internal Server Error : ", errredeem)
 		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
@@ -86,9 +85,9 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	}
 
 	if redeem.Error == "Limit exceeded" {
-		logs.Info("Error : ", errredeem)
-		logs.Info("[UltraVoucherServices]-[RedeemVoucher]")
-		logs.Info("[Limit exceeded]-[Gagal Redeem Voucher]")
+		fmt.Println("Error : ", errredeem)
+		fmt.Println("[UltraVoucherServices]-[RedeemVoucher]")
+		fmt.Println("[Limit exceeded]-[Gagal Redeem Voucher]")
 
 		// sugarLogger.Info("Internal Server Error : ", errredeem)
 		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
@@ -101,9 +100,9 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	}
 
 	if errredeem != nil || redeem.Error != "" {
-		logs.Info("Error : ", errredeem)
-		logs.Info("[UltraVoucherServices]-[RedeemVoucher]")
-		logs.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
+		fmt.Println("Error : ", errredeem)
+		fmt.Println("[UltraVoucherServices]-[RedeemVoucher]")
+		fmt.Println("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
 
 		// sugarLogger.Info("Internal Server Error : ", errredeem)
 		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
@@ -129,57 +128,77 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	}
 
 	// order to u
+	fmt.Println("[OrderVoucher]")
 	order, errOrder := uv.OrderVoucher(reqOrder, param.InstitutionID)
 	if errOrder != nil || order.ResponseCode == "" {
-		logs.Info("Error : ", errOrder)
-		logs.Info("ResponseCode : ", order.ResponseCode)
-		logs.Info("[UltraVoucherServices]-[OrderVoucher]")
-		logs.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
+
+		fmt.Println("Error : ", errOrder)
+		fmt.Println("Response OrderVoucher : ", order)
+		fmt.Println("[UltraVoucherServices]-[OrderVoucher]")
+		fmt.Println("[Failed Order Voucher]-[Gagal Order Voucher]")
 
 		// sugarLogger.Info("Internal Server Error : ", errOrder)
 		sugarLogger.Info("[UltraVoucherServices]-[OrderVoucher]")
 		sugarLogger.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
 
-		for i := req.Jumlah; i > 0; i-- {
+		fmt.Println("[CheckStatusOrder]")
+		checkOrder, errCheck := uv.CheckStatusOrder(reqOrder.InstitutionRefno)
+		if errOrder != nil || order.ResponseCode == "" {
+			fmt.Println("Error : ", errCheck)
+			fmt.Println("Response CheckStatusOrder : ", checkOrder)
+			fmt.Println("[UltraVoucherServices]-[CheckStatusOrder]")
+			fmt.Println("[Failed CheckStatusOrder]-[Gagal CheckStatusOrder Voucher]")
 
-			logs.Info(fmt.Sprintf("[Line : %v]", i))
+			// sugarLogger.Info("Internal Server Error : ", errOrder)
+			sugarLogger.Info("[UltraVoucherServices]-[CheckStatusOrder]")
+			sugarLogger.Info("[Failed CheckStatusOrder]-[Gagal CheckStatusOrder]")
 
-			t := i - 1
-			CouponID := redeem.Coupons[t].Id
-			couponCode := redeem.Coupons[t].Code
+			for i := req.Jumlah; i > 0; i-- {
 
-			_, err2 := opl.CouponVoucherCustomer(req.CampaignID, CouponID, couponCode, param.CustID, 1)
-			if err2 != nil {
-				// res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
-				// return res
+				fmt.Println(fmt.Sprintf("[Line : %v]", i))
 
-				logs.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
-				logs.Info(fmt.Sprintf("[UltraVoucherServices]-[Error : %v]", err2))
-				sugarLogger.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
+				t := i - 1
+				CouponID := redeem.Coupons[t].Id
+				couponCode := redeem.Coupons[t].Code
+
+				fmt.Sprintf("[Reversal Voucher %v]", param.NamaVoucher)
+				use, err2 := opl.CouponVoucherCustomer(req.CampaignID, CouponID, couponCode, param.CustID, 1)
+
+				var useErr string
+				for _, value := range use.Coupons {
+					useErr = value.CouponID
+				}
+
+				if err2 != nil || useErr == "" {
+					fmt.Println("[UltraVoucherServices]-[CouponVoucherCustomer]")
+					fmt.Println(fmt.Sprintf("[UltraVoucherServices]-[Error : %v]", err2))
+					sugarLogger.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
+				}
 			}
+
+			Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
+			point := param.Point * req.Jumlah
+			totalPoint := strconv.Itoa(point)
+			reversal, errReversal := host.TransferPoint(param.CustID, totalPoint, Text)
+			if errReversal != nil || reversal.PointsTransferId == "" {
+				fmt.Println("Internal Server Error : ", errReversal)
+				fmt.Println("[UltraVoucherServices]-[TransferPoint]")
+				fmt.Println("[Failed Order Voucher]-[Gagal Reversal Point]")
+			}
+
+			res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
+			// res.Data = "Transaksi Gagal"
+
+			return res
 		}
 
-		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
-		point := param.Point * req.Jumlah
-		totalPoint := strconv.Itoa(point)
-		_, errReversal := host.TransferPoint(param.CustID, totalPoint, Text)
-		if errReversal != nil {
-			logs.Info("Internal Server Error : ", errReversal)
-			logs.Info("[UltraVoucherServices]-[TransferPoint]")
-			logs.Info("[Failed Order Voucher]-[Gagal Reversal Point]")
-		}
-
-		res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
-		// res.Data = "Transaksi Gagal"
-
-		return res
 	}
 
 	if order.ResponseCode == "02" {
-		logs.Info("Internal Server Error : ", errOrder)
-		logs.Info("ResponseCode : ", order.ResponseCode)
-		logs.Info("[UltraVoucherServices]-[OrderVoucher]")
-		logs.Info("[Stock not Available]-[Gagal Order Voucher]")
+		fmt.Println("Internal Server Error : ", errOrder)
+		fmt.Println("ResponseCode : ", order.ResponseCode)
+		fmt.Println("[UltraVoucherServices]-[OrderVoucher]")
+		fmt.Println("[Stock not Available]-[Gagal Order Voucher]")
 
 		// sugarLogger.Info("Internal Server Error : ", errOrder)
 		sugarLogger.Info("[UltraVoucherServices]-[OrderVoucher]")
@@ -192,12 +211,19 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			CouponID := redeem.Coupons[t].Id
 			couponCode := redeem.Coupons[t].Code
 
-			_, err2 := opl.CouponVoucherCustomer(req.CampaignID, CouponID, couponCode, param.CustID, 1)
-			if err2 != nil {
+			fmt.Sprintf("[Reversal Voucher %v]", param.NamaVoucher)
+			use, err2 := opl.CouponVoucherCustomer(req.CampaignID, CouponID, couponCode, param.CustID, 1)
+
+			var useErr string
+			for _, value := range use.Coupons {
+				useErr = value.CouponID
+			}
+
+			if err2 != nil || useErr == "" {
 				// res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
 				// return res
 
-				logs.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
+				fmt.Println("[UltraVoucherServices]-[CouponVoucherCustomer]")
 				fmt.Sprintf("[UltraVoucherServices]-[Error : %v]", err2)
 				sugarLogger.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
 			}
@@ -208,9 +234,9 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		totalPoint := strconv.Itoa(point)
 		_, errReversal := host.TransferPoint(param.CustID, totalPoint, Text)
 		if errReversal != nil {
-			logs.Info("Internal Server Error : ", errReversal)
-			logs.Info("[UltraVoucherServices]-[TransferPoint]")
-			logs.Info("[Failed Order Voucher]-[Gagal Reversal Point]")
+			fmt.Println("Internal Server Error : ", errReversal)
+			fmt.Println("[UltraVoucherServices]-[TransferPoint]")
+			fmt.Println("[Failed Order Voucher]-[Gagal Reversal Point]")
 		}
 
 		res = utils.GetMessageResponse(res, 145, false, errors.New(fmt.Sprintf("Voucher yg tersedia %v", order.Data.VouchersAvailable)))
@@ -220,9 +246,9 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	}
 
 	if order.ResponseCode != "00" {
-		logs.Info("Internal Server Error : ", errOrder)
-		logs.Info("ResponseCode : ", order.ResponseCode)
-		logs.Info("[UltraVoucherServices]-[OrderVoucher]")
+		fmt.Println("Internal Server Error : ", errOrder)
+		fmt.Println("ResponseCode : ", order.ResponseCode)
+		fmt.Println("[UltraVoucherServices]-[OrderVoucher]")
 		fmt.Sprintf("[Response %v]", order.ResponseCode)
 
 		// sugarLogger.Info("Internal Server Error : ", errOrder)
@@ -236,12 +262,16 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			CouponID := redeem.Coupons[t].Id
 			couponCode := redeem.Coupons[t].Code
 
-			_, err2 := opl.CouponVoucherCustomer(req.CampaignID, CouponID, couponCode, param.CustID, 1)
-			if err2 != nil {
-				// res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
-				// return res
+			fmt.Sprintf("[Reversal Voucher %v]", param.NamaVoucher)
+			use, err2 := opl.CouponVoucherCustomer(req.CampaignID, CouponID, couponCode, param.CustID, 1)
+			var useErr string
+			for _, value := range use.Coupons {
+				useErr = value.CouponID
+			}
 
-				logs.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
+			if err2 != nil || useErr == "" {
+
+				fmt.Println("[UltraVoucherServices]-[CouponVoucherCustomer]")
 				fmt.Sprintf("[UltraVoucherServices]-[Error : %v]", err2)
 				sugarLogger.Info("[UltraVoucherServices]-[CouponVoucherCustomer]")
 			}
@@ -250,11 +280,11 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		point := param.Point * req.Jumlah
 		totalPoint := strconv.Itoa(point)
-		_, errReversal := host.TransferPoint(param.CustID, totalPoint, Text)
-		if errReversal != nil {
-			logs.Info("Internal Server Error : ", errReversal)
-			logs.Info("[UltraVoucherServices]-[TransferPoint]")
-			logs.Info("[Failed Order Voucher]-[Gagal Reversal Point]")
+		reversal, errReversal := host.TransferPoint(param.CustID, totalPoint, Text)
+		if errReversal != nil || reversal.PointsTransferId == "" {
+			fmt.Println("Internal Server Error : ", errReversal)
+			fmt.Println("[UltraVoucherServices]-[TransferPoint]")
+			fmt.Println("[Failed Order Voucher]-[Gagal Reversal Point]")
 		}
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
@@ -277,7 +307,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 	// go SaveTransactionUV(param, order, reqOrder, req, "Payment", "00", order.ResponseCode)
 
-	logs.Info("ResponseCode : ", order.ResponseCode)
+	fmt.Println("Response UV : ", order)
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
 		Data: models.UltraVoucherResp{
@@ -292,7 +322,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 }
 
 func SaveDB(id, institution, coupon, vouchercode, phone, custIdOPL, campaignID string) {
-	logs.Info("[SaveDB]-[UltraVoucherServices]")
+	fmt.Println("[SaveDB]-[UltraVoucherServices]")
 	save := dbmodels.UserMyVocuher{
 		ID:            id,
 		InstitutionID: institution,
@@ -305,8 +335,8 @@ func SaveDB(id, institution, coupon, vouchercode, phone, custIdOPL, campaignID s
 
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
-		logs.Info("[Failed Save to DB ]", err)
-		logs.Info("[Package-Services]-[UltraVoucherServices]")
+		fmt.Println("[Failed Save to DB ]", err)
+		fmt.Println("[Package-Services]-[UltraVoucherServices]")
 		// return err
 	}
 }
@@ -321,30 +351,30 @@ func DataParameterOrder() models.ParamUV {
 
 	datanama, errnama := db.ParamData(nama)
 	if errnama != nil {
-		logs.Info("[Error get data from Db m_paramaters]")
-		logs.Info("Error : ", errnama)
-		logs.Info("Code :", nama)
+		fmt.Println("[Error get data from Db m_paramaters]")
+		fmt.Println("Error : ", errnama)
+		fmt.Println("Code :", nama)
 	}
 
 	dataemail, erremail := db.ParamData(email)
 	if erremail != nil {
-		logs.Info("[Error get data from Db m_paramaters]")
-		logs.Info("Error : ", erremail)
-		logs.Info("Code :", email)
+		fmt.Println("[Error get data from Db m_paramaters]")
+		fmt.Println("Error : ", erremail)
+		fmt.Println("Code :", email)
 	}
 
 	dataphone, errphone := db.ParamData(phone)
 	if errphone != nil {
-		logs.Info("[Error get data from Db m_paramaters]")
-		logs.Info("Error : ", errphone)
-		logs.Info("Code :", phone)
+		fmt.Println("[Error get data from Db m_paramaters]")
+		fmt.Println("Error : ", errphone)
+		fmt.Println("Code :", phone)
 	}
 
 	dataexpired, errexpired := db.ParamData(expired)
 	if errexpired != nil {
-		logs.Info("[Error get data from Db m_paramaters]")
-		logs.Info("Error : ", errexpired)
-		logs.Info("Code :", expired)
+		fmt.Println("[Error get data from Db m_paramaters]")
+		fmt.Println("Error : ", errexpired)
+		fmt.Println("Code :", expired)
 	}
 
 	res = models.ParamUV{
