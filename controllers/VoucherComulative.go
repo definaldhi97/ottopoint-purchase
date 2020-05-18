@@ -196,7 +196,7 @@ func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 		NamaVoucher: data.Name,
 		Point:       data.CostInPoints,
 		Category:    t,
-		// ExpDate:     data.CampaignActivity.ActiveTo,
+		ExpDate:     data.CampaignActivity.ActiveTo,
 	}
 
 	return res

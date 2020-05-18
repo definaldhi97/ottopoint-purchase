@@ -186,6 +186,34 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		Message_Comulative = "Gagal"
 	}
 
+	if req.Jumlah == 1 {
+
+		if getResRedeem.Rc == "" {
+			getmsg, errmsg := db.GetResponseOttoag("OTTOAG", getResp.Redeem.Rc)
+			if errmsg != nil || getmsg.InternalRc == "" {
+
+				fmt.Println("[VoucherComulativeService]-[GetResponseOttoag]")
+				fmt.Println("[Failed to Get Data Mapping Response]")
+				fmt.Println(fmt.Sprintf("[Data GetResponseOttoag : ]", getmsg))
+				fmt.Println(fmt.Sprintf("[Error %v]", errmsg))
+				// return res, err
+
+			}
+
+			Code_RC_Comulative = getmsg.InternalRc
+			Message_Comulative = getmsg.InternalRd
+
+			if getmsg.InternalRc == "" {
+				Code_RC_Comulative = getmsg.InternalRc
+				Message_Comulative = getmsg.InternalRd
+			}
+
+		} else {
+			Code_RC_Comulative = getResRedeem.Rc
+			Message_Comulative = getResRedeem.Msg
+		}
+
+	}
 	// pyenmentFail := req.Jumlah - countSuccess.Count
 	// pyenmentPending := req.Jumlah - countPending.Count
 
