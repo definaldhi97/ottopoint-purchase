@@ -118,7 +118,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		fmt.Println("[Error : %v]", errInquiry)
 		redeemRes = models.RedeemComuResp{
 			Code:    "01",
-			Message: "Invalid Prefix",
+			Message: "Inquiry Failed",
 		}
 
 		go voucher.SaveTransactionPulsa(paramInq, dataInquery, req, inqBiller, "Inquiry", "01", dataInquery.Rc)

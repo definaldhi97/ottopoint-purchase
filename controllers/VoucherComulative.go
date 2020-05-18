@@ -36,7 +36,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
 		res.Meta.Message = "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."
-		ctx.JSON(http.StatusBadRequest, res)
+		ctx.JSON(http.StatusOK, res)
 		go sugarLogger.Error("Error, body Request", zap.Error(err))
 		return
 	}
@@ -86,7 +86,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 		logs.Info(fmt.Sprintf("Error : ", errVoucher))
 
 		res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
-		ctx.JSON(http.StatusBadRequest, res)
+		ctx.JSON(http.StatusOK, res)
 		return
 	}
 
@@ -101,7 +101,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 		sugarLogger.Info("[Failed from DB]-[Get Data User]")
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
-		ctx.JSON(http.StatusBadRequest, res)
+		ctx.JSON(http.StatusOK, res)
 		return
 	}
 
@@ -124,7 +124,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 		default:
 			fmt.Println("Invalid Category")
 			res = utils.GetMessageResponse(res, 500, false, errors.New("Invalid Category"))
-			ctx.JSON(http.StatusBadRequest, res)
+			ctx.JSON(http.StatusOK, res)
 			return
 		}
 	}

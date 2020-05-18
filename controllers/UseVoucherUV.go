@@ -34,7 +34,7 @@ func UseVouhcerUVController(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
 		res.Meta.Message = "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."
-		ctx.JSON(http.StatusBadRequest, res)
+		ctx.JSON(http.StatusOK, res)
 		go sugarLogger.Error("Error, body Request", zap.Error(err))
 		return
 	}
@@ -65,7 +65,7 @@ func UseVouhcerUVController(ctx *gin.Context) {
 	// 	logs.Info(fmt.Sprintf("Error when validation request header"))
 
 	// 	res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
-	// 	ctx.JSON(http.StatusBadRequest, res)
+	// 	ctx.JSON(http.StatusOK, res)
 	// 	return
 	// }
 
@@ -80,7 +80,7 @@ func UseVouhcerUVController(ctx *gin.Context) {
 		sugarLogger.Info("[Failed from DB]-[Get Data Voucher-UV]")
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
-		ctx.JSON(http.StatusBadRequest, res)
+		ctx.JSON(http.StatusOK, res)
 		return
 	}
 
@@ -107,7 +107,7 @@ func UseVouhcerUVController(ctx *gin.Context) {
 		logs.Info(fmt.Sprintf("Error : ", errVoucher))
 
 		res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
-		ctx.JSON(http.StatusBadRequest, res)
+		ctx.JSON(http.StatusOK, res)
 		return
 	}
 

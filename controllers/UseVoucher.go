@@ -36,7 +36,7 @@ func UseVouhcerController(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
 		res.Meta.Message = "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."
-		ctx.JSON(http.StatusBadRequest, res)
+		ctx.JSON(http.StatusOK, res)
 		go sugarLogger.Error("Error, body Request", zap.Error(err))
 		return
 	}
@@ -77,7 +77,7 @@ func UseVouhcerController(ctx *gin.Context) {
 		logs.Info(fmt.Sprintf("Error : ", errVoucher))
 
 		res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
-		ctx.JSON(http.StatusBadRequest, res)
+		ctx.JSON(http.StatusOK, res)
 		return
 	}
 
@@ -88,16 +88,12 @@ func UseVouhcerController(ctx *gin.Context) {
 		logs.Info("[Voucher Ultra Voucher]")
 		getData, errData := db.CheckCouponUV(dataToken.Data, req.CampaignID, req.CouponID)
 		if errData != nil || getData.AccountId == "" {
-			logs.Info("Internal Server Error : ", errData)
-			logs.Info("[UseVoucherController]-[CheckCouponUV]")
-			logs.Info("[Failed Failed from DB]-[Get Data Voucher-UV]")
-
-			// sugarLogger.Info("Internal Server Error : ", errredeem)
+			fmt.Sprintf("Internal Server Error : %v\n", errData)
 			sugarLogger.Info("[UseVoucherController]-[CheckCouponUV]")
 			sugarLogger.Info("[Failed Failed from DB]-[Get Data Voucher-UV]")
 
 			res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
-			ctx.JSON(http.StatusBadRequest, res)
+			ctx.JSON(http.StatusOK, res)
 			return
 		}
 
@@ -106,11 +102,7 @@ func UseVouhcerController(ctx *gin.Context) {
 		logs.Info("[Voucher OttoAG]")
 		dataUser, errUser := db.CheckUser(dataToken.Data)
 		if errUser != nil || dataUser.CustID == "" {
-			logs.Info("Internal Server Error : ", errUser)
-			logs.Info("[UseVoucherController]-[CheckUser]")
-			logs.Info("[Failed from DB]-[Get Data User]")
-
-			// sugarLogger.Info("Internal Server Error : ", errredeem)
+			fmt.Sprintf("Internal Server Error : %v\n", errUser)
 			sugarLogger.Info("[UseVoucherController]-[CheckUser]")
 			sugarLogger.Info("[Failed from DB]-[Get Data User]")
 
@@ -119,8 +111,8 @@ func UseVouhcerController(ctx *gin.Context) {
 		custIdOPL = dataUser.CustID
 	}
 
-	logs.Info("SupplierID : ", data.SupplierID)
-	logs.Info("producrType : ", data.ProductType)
+	fmt.Println("SupplierID : ", data.SupplierID)
+	fmt.Println("producrType : ", data.ProductType)
 
 	sugarLogger.Info("=== SupplierID ===")
 	sugarLogger.Info(data.SupplierID)

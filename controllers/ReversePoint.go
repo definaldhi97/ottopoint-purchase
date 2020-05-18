@@ -34,7 +34,7 @@ func ReversePointController(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
 		res.Meta.Message = "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."
-		ctx.JSON(http.StatusBadRequest, res)
+		ctx.JSON(http.StatusOK, res)
 		go sugarLogger.Error("Error, body Request", zap.Error(err))
 		return
 	}
@@ -91,7 +91,7 @@ func ReversePointController(ctx *gin.Context) {
 		logs.Info("[UpdateStatusDeduction]-[controllers-ReversePoint]")
 		logs.Info(fmt.Sprintf("Error when update status deduction"))
 		res = utils.GetMessageResponse(res, 400, false, err)
-		ctx.JSON(http.StatusBadRequest, res)
+		ctx.JSON(http.StatusOK, res)
 		return
 	}
 
