@@ -88,6 +88,8 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		resRedeemComu.Code = redeemRes.Code
 		resRedeemComu.Message = redeemRes.Message
 
+		getResp <- resRedeemComu
+
 		return
 	}
 
@@ -123,8 +125,23 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 		ErrRespRedeem <- errInquiry
 
+		r := models.RedeemResponse{
+			Rc:          dataInquery.Rc,
+			Rrn:         dataInquery.Rrn,
+			CustID:      dataInquery.CustID,
+			ProductCode: dataInquery.ProductCode,
+			Amount:      dataInquery.Amount,
+			Msg:         dataInquery.Msg,
+			Uimsg:       dataInquery.Uimsg,
+			// Datetime:    time.Now(),
+			Data: dataInquery.Data,
+		}
+
+		resRedeemComu.Redeem = r
 		resRedeemComu.Code = redeemRes.Code
 		resRedeemComu.Message = redeemRes.Message
+
+		getResp <- resRedeemComu
 
 		return
 
@@ -147,6 +164,8 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 			Message: "Gagal Redeem",
 		}
 
+		resRedeemComu.Redeem.Rc = "01"
+		resRedeemComu.Redeem.Msg = "Gagal Redeem Voucher"
 		resRedeemComu.Code = redeemRes.Code
 		resRedeemComu.Message = redeemRes.Message
 

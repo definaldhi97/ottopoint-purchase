@@ -63,7 +63,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
 		sugarLogger.Info("[Internal Server Error]-[Gagal Redeem Voucher]")
 
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
+		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
 		// res.Data = "Transaksi Gagal"
 
 		return res

@@ -219,7 +219,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 
 	/* ------ Response UseVoucher Comulative */
 	fmt.Println("========== Mesage from Inquiry OTTOAG and OPL ===============")
-	fmt.Println("Code : ", getResp.Code)
+	fmt.Println("Rc : ", getResp.Code)
 	fmt.Println("Message : ", getResp.Message)
 	fmt.Println("=============================================================")
 	res = models.Response{

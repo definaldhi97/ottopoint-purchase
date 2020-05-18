@@ -33,7 +33,7 @@ func ReversePointController(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
-		res.Meta.Message = "Error, Unmarshall Body Request"
+		res.Meta.Message = "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."
 		ctx.JSON(http.StatusBadRequest, res)
 		go sugarLogger.Error("Error, body Request", zap.Error(err))
 		return

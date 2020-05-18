@@ -50,15 +50,18 @@ func RedeemPulsaComulative(req models.UseRedeemRequest, reqOP interface{}, param
 		SupplierID:    param.SupplierID,
 	}
 
-	fmt.Println("[Payment Response : %v]", billerRes)
-	if billerRes.Rc == "09" || billerRes.Rc == "68" {
+	fmt.Println(fmt.Sprintf("[Payment Response : %v]", billerRes))
+	if billerRes.Rc == "09" || billerRes.Rc == "68" || billerRes.Rc == "" {
 		fmt.Println("[Payment Pending]")
 
 		go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
 
 		res = models.UseRedeemResponse{
-			Rc:  "09",
-			Msg: "Request in progress",
+			// Rc:  "09",
+			// Msg: "Request in progress",
+			Rc:    billerRes.Rc,
+			Msg:   billerRes.Msg,
+			Uimsg: "Request in progress",
 		}
 		return res
 	}
@@ -69,15 +72,17 @@ func RedeemPulsaComulative(req models.UseRedeemRequest, reqOP interface{}, param
 		go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
 
 		res = models.UseRedeemResponse{
-			Rc:  "01",
-			Msg: "Payment Failed",
+			// Rc:  "01",
+			// Msg: "Payment Failed",
+			Rc:    billerRes.Rc,
+			Msg:   billerRes.Msg,
+			Uimsg: "Payment Failed",
 		}
 
 		return res
 	}
 
-	fmt.Println("[Payment Success]", billerRes.Rc)
-	// fmt.Println("[Response Payment %v]", billerRes.Rc)
+	fmt.Println("[Payment Success]")
 	go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
 
 	res = models.UseRedeemResponse{
@@ -87,7 +92,7 @@ func RedeemPulsaComulative(req models.UseRedeemRequest, reqOP interface{}, param
 		CustID:      billerReq.CustID,
 		ProductCode: billerReq.Productcode,
 		Amount:      int64(billerRes.Amount),
-		Msg:         "SUCCESS",
+		Msg:         billerRes.Msg,
 		Uimsg:       "SUCCESS",
 		Data:        billerRes.Data,
 		Datetime:    utils.GetTimeFormatYYMMDDHHMMSS(),
