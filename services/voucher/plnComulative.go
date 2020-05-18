@@ -20,10 +20,10 @@ func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param m
 
 	// payment to ottoag
 	billerReq := ottoagmodels.OttoAGPaymentReq{
-		Amount:      uint64(param.Amount),
-		CustID:      req.CustID,
-		MemberID:    utils.MemberID,
-		Period:      req.CustID2,
+		Amount:   uint64(param.Amount),
+		CustID:   req.CustID,
+		MemberID: utils.MemberID,
+		// Period:      req.CustID2,
 		Productcode: req.ProductCode,
 		Rrn:         param.RRN,
 	}

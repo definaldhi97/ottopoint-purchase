@@ -7,7 +7,6 @@ import (
 	"ottopoint-purchase/hosts/opl/host"
 	"ottopoint-purchase/models"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
-	"ottopoint-purchase/services/ottoag"
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/services/voucher"
 	"ottopoint-purchase/utils"
@@ -43,6 +42,10 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 			resRedeemComu.Code = redeemRes.Code
 			resRedeemComu.Message = redeemRes.Message
+			resRedeemComu.Redeem.Rc = "16"
+			resRedeemComu.Redeem.Msg = "Nomor yang kamu masukkan salah"
+
+			getResp <- resRedeemComu
 
 			return
 		}
@@ -72,26 +75,28 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		ProductCode:   param.ProductCode,
 	}
 
-	if !ottoag.ValidateDataInq(inqReq) {
-		fmt.Println("[Error-DataInquiry]-[RedeemComulativeVoucher]")
-		fmt.Println("[Error ValidateDataInq]")
-		var err error
-		redeemRes = models.RedeemComuResp{
-			Code:    "01",
-			Message: "Inquiry PreFafix",
-		}
+	// if !ottoag.ValidateDataInq(inqReq) {
+	// 	fmt.Println("[Error-DataInquiry]-[RedeemComulativeVoucher]")
+	// 	fmt.Println("[Error ValidateDataInq]")
+	// 	var err error
+	// 	redeemRes = models.RedeemComuResp{
+	// 		Code:    "01",
+	// 		Message: "Inquiry Gagal",
+	// 	}
 
-		// go voucher.SaveTransactionPulsa(paramInq, "Inquiry", "01")
+	// 	// go voucher.SaveTransactionPulsa(paramInq, "Inquiry", "01")
 
-		ErrRespRedeem <- err
+	// 	ErrRespRedeem <- err
 
-		resRedeemComu.Code = redeemRes.Code
-		resRedeemComu.Message = redeemRes.Message
+	// 	resRedeemComu.Code = redeemRes.Code
+	// 	resRedeemComu.Message = redeemRes.Message
+	// 	resRedeemComu.Redeem.Rc =
+	// 	resRedeemComu.Redeem.Msg = "Invalid "
 
-		getResp <- resRedeemComu
+	// 	getResp <- resRedeemComu
 
-		return
-	}
+	// 	return
+	// }
 
 	fmt.Println("[INQUIRY-BILLER][START]")
 	dataInquery, errInquiry := biller.InquiryBiller(inqReq.Data, req, reqInq, param)
@@ -164,12 +169,14 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 			Message: "Gagal Redeem",
 		}
 
+		ErrRespRedeem <- errx
+
 		resRedeemComu.Redeem.Rc = "01"
-		resRedeemComu.Redeem.Msg = "Gagal Redeem Voucher"
+		resRedeemComu.Redeem.Msg = "Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya"
 		resRedeemComu.Code = redeemRes.Code
 		resRedeemComu.Message = redeemRes.Message
 
-		ErrRespRedeem <- errx
+		getResp <- resRedeemComu
 
 		return
 
@@ -221,6 +228,26 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 func ValidatePrefixComulative(custID, productCode string) (bool, error) {
 
 	var err error
+
+	// validate panjang nomor, Jika nomor kurang dari 4
+	if len(custID) < 4 {
+
+		fmt.Println("[Kurang dari 4]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
+		fmt.Println(fmt.Sprintf("invalid Prefix %v", custID))
+
+		return false, err
+	}
+
+	// validate panjang nomor, Jika nomor kurang dari 11 & lebih dari 15
+	if len(custID) <= 10 || len(custID) > 15 {
+
+		fmt.Println("[Kurang dari 10 atau lebih dari 15]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
+		fmt.Println(fmt.Sprintf("invalid Prefix %v", custID))
+
+		return false, err
+
+	}
+
 	// get Prefix
 	dataPrefix, errPrefix := db.GetOperatorCodebyPrefix(custID)
 	if errPrefix != nil {
@@ -237,29 +264,10 @@ func ValidatePrefixComulative(custID, productCode string) (bool, error) {
 	// check operator by ProductCode
 	product := utils.ProductPulsa(productCode[0:4])
 
-	// validate panjang nomor, Jika nomor kurang dari 4
-	if len(custID) < 4 {
-
-		fmt.Println("[FAILED]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
-		fmt.Println(fmt.Sprintf("invalid Prefix %v", custID))
-
-		return false, err
-	}
-
-	// validate panjang nomor, Jika nomor kurang dari 11 & lebih dari 15
-	if len(custID) <= 10 || len(custID) > 15 {
-
-		fmt.Println("[FAILED]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
-		fmt.Println(fmt.Sprintf("invalid Prefix %v", custID))
-
-		return false, err
-
-	}
-
 	// Jika Nomor tidak sesuai dengan operator
 	if prefix != product {
 
-		fmt.Println("[FAILED]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
+		fmt.Println("[Operator]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
 		fmt.Println(fmt.Sprintf("invalid Prefix %v", prefix))
 
 		return false, err

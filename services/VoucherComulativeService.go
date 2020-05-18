@@ -153,7 +153,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	fmt.Println(" jumlah success transaction Pending : ", countPending.Count)
 	fmt.Println(" jumlah success transaction failed : ", pyenmentFail)
 	fmt.Println(" jumlah request : ", req.Jumlah)
-	fmt.Println(" categiry : ", param.Category)
+	fmt.Println(" category : ", param.Category)
 
 	respMessage := models.CommulativeResp{
 		Success: countSuccess.Count,
@@ -189,7 +189,12 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	if req.Jumlah == 1 {
 
 		if getResRedeem.Rc == "" {
+
 			getmsg, errmsg := db.GetResponseOttoag("OTTOAG", getResp.Redeem.Rc)
+
+			Code_RC_Comulative = getmsg.InternalRc
+			Message_Comulative = getmsg.InternalRd
+
 			if errmsg != nil || getmsg.InternalRc == "" {
 
 				fmt.Println("[VoucherComulativeService]-[GetResponseOttoag]")
@@ -198,19 +203,31 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 				fmt.Println(fmt.Sprintf("[Error %v]", errmsg))
 				// return res, err
 
+				Code_RC_Comulative = getResp.Redeem.Rc
+				Message_Comulative = getResp.Redeem.Msg
+
 			}
+
+		} else {
+
+			getmsg, errmsg := db.GetResponseOttoag("OTTOAG", getResRedeem.Rc)
 
 			Code_RC_Comulative = getmsg.InternalRc
 			Message_Comulative = getmsg.InternalRd
 
-			if getmsg.InternalRc == "" {
-				Code_RC_Comulative = getmsg.InternalRc
-				Message_Comulative = getmsg.InternalRd
+			if errmsg != nil || getmsg.InternalRc == "" {
+
+				fmt.Println("[VoucherComulativeService]-[GetResponseOttoag]")
+				fmt.Println("[Failed to Get Data Mapping Response]")
+				fmt.Println(fmt.Sprintf("[Data GetResponseOttoag : ]", getmsg))
+				fmt.Println(fmt.Sprintf("[Error %v]", errmsg))
+				// return res, err
+
+				Code_RC_Comulative = getResRedeem.Rc
+				Message_Comulative = getResRedeem.Msg
+
 			}
 
-		} else {
-			Code_RC_Comulative = getResRedeem.Rc
-			Message_Comulative = getResRedeem.Msg
 		}
 
 	}

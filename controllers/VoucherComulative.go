@@ -123,7 +123,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 			fmt.Println("Category PLN")
 		default:
 			fmt.Println("Invalid Category")
-			res = utils.GetMessageResponse(res, 500, false, errors.New("Invalid Category"))
+			res = utils.GetMessageResponse(res, 500, false, errors.New("Invalid BrandName"))
 			ctx.JSON(http.StatusOK, res)
 			return
 		}

@@ -74,7 +74,7 @@ func ReversePointController(ctx *gin.Context) {
 		logs.Info(fmt.Sprintf("Error when get data deduction"))
 
 		res = utils.GetMessageResponse(res, 400, false, err)
-		ctx.JSON(http.StatusInternalServerError, res)
+		ctx.JSON(http.StatusOK, res)
 		return
 	}
 	// reqDeduct.AccountNumber = dataDeduct.CustomerID
