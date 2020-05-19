@@ -115,7 +115,7 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 		sugarLogger.Info("[GetVoucherUV-Servcies]-[UseVoucherUV]")
 		sugarLogger.Info("[Failed Use Voucher UV]-[Gagal Use Voucher UV]")
 
-		res = utils.GetMessageResponse(res, 129, false, errors.New("Voucher Gagal Digunakan, Silahkan Coba Beberapa Saat Lagi"))
+		res = utils.GetMessageResponse(res, 129, false, errors.New("Transaksi tidak Berhasil, Silahkan dicoba kembali."))
 		// res.Data = "Transaksi Gagal"
 		return res
 	}

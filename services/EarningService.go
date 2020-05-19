@@ -122,7 +122,7 @@ type EarningServices struct {
 // 		logs.Info("[EEROR-DATABASE]-[EarningPoint-Services]-[GetConfig-DB]")
 // 		logs.Info(fmt.Sprintf("Failed Get Data from DB getConfig %v", errConf))
 
-// 		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
+// 		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
 
 // 		return res
 // 	}
@@ -272,7 +272,7 @@ func (t EarningServices) EarningPoint(req models.RulePointReq, dataToken redismo
 		logs.Info("[EEROR-DATABASE]-[EarningPoint-Services]-[GetConfig-DB]")
 		logs.Info(fmt.Sprintf("Failed Get Data from DB getConfig %v", errConf))
 
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
+		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
 
 		return res
 	}
