@@ -184,7 +184,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	// Sukses & Pending & Gagal
 	if (respMessage.Success != 0) && (respMessage.Pending != 0) && (respMessage.Failed != 0) {
 		Code_RC_Comulative = "33"
-		Message_Comulative = fmt.Sprintf("%v vVucher Anda berhasil ditukar namun %v Voucher pending dan %v voucher tidak berhasil. Harap hubungi customer support untuk informasi lebih lanjut.", countSuccess.Count, countPending.Count, pyenmentFail)
+		Message_Comulative = fmt.Sprintf("%v Vucher Anda berhasil ditukar namun %v Voucher pending dan %v voucher tidak berhasil. Harap hubungi customer support untuk informasi lebih lanjut.", countSuccess.Count, countPending.Count, pyenmentFail)
 		// Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil dirukar namun %v voucher tidak berhasil. Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, pyenmentFail)
 	}
 
@@ -208,14 +208,17 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		Message_Comulative = "Transaksi Gagal"
 	}
 
+	rc := Code_RC_Comulative
+	msg := Message_Comulative
+
 	if req.Jumlah == 1 {
 
 		if getResRedeem.Rc == "" {
 
 			getmsg, errmsg := db.GetResponseOttoag("OTTOAG", getResp.Redeem.Rc)
 
-			Code_RC_Comulative = getmsg.InternalRc
-			Message_Comulative = getmsg.InternalRd
+			rc = getmsg.InternalRc
+			msg = getmsg.InternalRd
 
 			if errmsg != nil || getmsg.InternalRc == "" {
 
@@ -225,8 +228,8 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 				fmt.Println(fmt.Sprintf("[Error %v]", errmsg))
 				// return res, err
 
-				Code_RC_Comulative = getResp.Redeem.Rc
-				Message_Comulative = getResp.Redeem.Msg
+				rc = getResp.Redeem.Rc
+				msg = getResp.Redeem.Msg
 
 			}
 
@@ -234,8 +237,8 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 
 			getmsg, errmsg := db.GetResponseOttoag("OTTOAG", getResRedeem.Rc)
 
-			Code_RC_Comulative = getmsg.InternalRc
-			Message_Comulative = getmsg.InternalRd
+			rc = getmsg.InternalRc
+			msg = getmsg.InternalRd
 
 			if errmsg != nil || getmsg.InternalRc == "" {
 
@@ -245,8 +248,8 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 				fmt.Println(fmt.Sprintf("[Error %v]", errmsg))
 				// return res, err
 
-				Code_RC_Comulative = getResRedeem.Rc
-				Message_Comulative = getResRedeem.Msg
+				rc = getResRedeem.Rc
+				msg = getResRedeem.Msg
 
 			}
 
@@ -254,10 +257,8 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 
 	}
 
-	rc := Code_RC_Comulative
-	msg := Message_Comulative
 	if req.Jumlah > 1 {
-		rc, msg = getMsgCummulative(Code_RC_Comulative, Message_Comulative)
+		rc, msg = getMsgCummulative(rc, msg)
 	}
 	// pyenmentFail := req.Jumlah - countSuccess.Count
 	// pyenmentPending := req.Jumlah - countPending.Count
