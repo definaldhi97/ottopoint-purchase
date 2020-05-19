@@ -57,6 +57,24 @@ func RedeemGameComulative(req models.UseRedeemRequest, reqOP interface{}, param 
 	}
 
 	fmt.Println(fmt.Sprintf("[Payment Response : %v]", billerRes))
+
+	// Time Out
+	if billerRes.Rc == "" {
+		fmt.Println("[Payment Time Out]")
+
+		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
+
+		res = models.UseRedeemResponse{
+			// Rc:  "09",
+			// Msg: "Request in progress",
+			Rc:    billerRes.Rc,
+			Msg:   "Timeout",
+			Uimsg: "Timeout",
+		}
+		return res
+	}
+
+	// Pending
 	if billerRes.Rc == "09" || billerRes.Rc == "68" || billerRes.Rc == "" {
 		fmt.Println("[Payment Pending]")
 
@@ -72,6 +90,7 @@ func RedeemGameComulative(req models.UseRedeemRequest, reqOP interface{}, param 
 		return res
 	}
 
+	// Gagal
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
 		fmt.Println("[Payment Failed]")
 

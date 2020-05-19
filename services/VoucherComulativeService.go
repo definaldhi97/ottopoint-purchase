@@ -171,18 +171,19 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	if (respMessage.Success != 0) && (respMessage.Pending == 0) && (respMessage.Failed != 0) {
 		Code_RC_Comulative = "33"
 		Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil dirukar namun %v voucher tidak berhasil. Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, pyenmentFail)
+
 	}
 
 	// Sukses & Pending
 	if (respMessage.Success != 0) && (respMessage.Pending != 0) && (respMessage.Failed == 0) {
 		Code_RC_Comulative = "33"
-		Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil dirukar & %v Transaksi Anda sedang dalam proses", countSuccess.Count, countPending.Count)
+		Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil ditukar & %v Transaksi Anda sedang dalam proses", countSuccess.Count, countPending.Count)
 	}
 
 	// Sukses & Pending & Gagal
 	if (respMessage.Success != 0) && (respMessage.Pending != 0) && (respMessage.Failed != 0) {
 		Code_RC_Comulative = "33"
-		Message_Comulative = fmt.Sprintf("%v Transaksi Anda Berhasil & %v Transaksi Anda sedang dalam proses & %v Transaksi Anda Gagal. Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, countPending.Count, pyenmentFail)
+		Message_Comulative = fmt.Sprintf("%v vVucher Anda berhasil ditukar namun %v Voucher pending dan %v voucher tidak berhasil. Harap hubungi customer support untuk informasi lebih lanjut.", countSuccess.Count, countPending.Count, pyenmentFail)
 		// Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil dirukar namun %v voucher tidak berhasil. Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, pyenmentFail)
 	}
 
@@ -251,6 +252,12 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		}
 
 	}
+
+	rc := Code_RC_Comulative
+	msg := Message_Comulative
+	if req.Jumlah != 1 {
+		rc, msg = getMsgCummulative(Code_RC_Comulative, Message_Comulative)
+	}
 	// pyenmentFail := req.Jumlah - countSuccess.Count
 	// pyenmentPending := req.Jumlah - countPending.Count
 
@@ -262,8 +269,8 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
 		Data: models.CommulativeResp{
-			Code:    Code_RC_Comulative,
-			Msg:     Message_Comulative,
+			Code:    rc,
+			Msg:     msg,
 			Success: countSuccess.Count,
 			Pending: countPending.Count,
 			Failed:  pyenmentFail,
@@ -273,4 +280,26 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	}
 
 	return res
+}
+
+func getMsgCummulative(rc, msg string) (string, string) {
+
+	var codeRc, codeMsg string
+
+	getmsg, errmsg := db.GetResponseCummulativeOttoAG(rc)
+	if errmsg != nil || getmsg.InternalRc == "" {
+
+		fmt.Println("[VoucherComulativeService]-[GetResponseCummulativeOttoAG]")
+		fmt.Println("[Failed to Get Data Mapping Response]")
+		fmt.Println(fmt.Sprintf("[Data GetResponseOttoag : ]", getmsg))
+		fmt.Println(fmt.Sprintf("[Error %v]", errmsg))
+		// return res, err
+
+		codeRc = rc
+		codeMsg = msg
+
+		return codeRc, codeMsg
+	}
+
+	return codeRc, codeMsg
 }

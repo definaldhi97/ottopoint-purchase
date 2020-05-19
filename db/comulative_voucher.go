@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"ottopoint-purchase/models/dbmodels"
 )
 
 type Count struct {
@@ -109,6 +110,22 @@ func GetResponseOttoag(issuer, rc string) (MappingRc, error) {
 	res := MappingRc{}
 
 	err := DbCon.Raw("select b.internal_rc,b.internal_rd from m_response_mapping a join m_response_internal b on (a.internal_rc=b.internal_rc) where a.institution_id = ? and a.institution_rc = ?", issuer, rc).Scan(&res).Error
+	if err != nil {
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[GetResponseOttoag]")
+		fmt.Println("[Get Data Mapping Response]")
+		fmt.Println(fmt.Sprintf("Failed to connect redeem_transactions %v", err))
+		return res, err
+	}
+
+	return res, nil
+
+}
+
+func GetResponseCummulativeOttoAG(rc string) (dbmodels.MResponseInternal, error) {
+	res := dbmodels.MResponseInternal{}
+
+	err := DbCon.Raw("select * from m_response_internal where internal_rc = ?", rc).Scan(&res).Error
 	if err != nil {
 		fmt.Println("[EEROR-DATABASE]")
 		fmt.Println("[GetResponseOttoag]")
