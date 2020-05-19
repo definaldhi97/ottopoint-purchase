@@ -160,30 +160,50 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		Pending: countPending.Count,
 		Failed:  pyenmentFail,
 	}
-	// sukses 	pending 	failed
+
+	// Sukses
 	if (respMessage.Success != 0) && (respMessage.Pending == 0) && (respMessage.Failed == 0) {
 		Code_RC_Comulative = "00"
-		Message_Comulative = "Sukses semua"
+		Message_Comulative = "Transaksi Berhasil"
 	}
+
+	// Sukses & Gagal
+	if (respMessage.Success != 0) && (respMessage.Pending == 0) && (respMessage.Failed != 0) {
+		Code_RC_Comulative = "33"
+		Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil dirukar namun %v voucher tidak berhasil. Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, pyenmentFail)
+	}
+
+	// Sukses & Pending
 	if (respMessage.Success != 0) && (respMessage.Pending != 0) && (respMessage.Failed == 0) {
 		Code_RC_Comulative = "33"
-		Message_Comulative = "Sukses sebagian"
+		Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil dirukar & %v Transaksi Anda sedang dalam proses", countSuccess.Count, countPending.Count)
 	}
+
+	// Sukses & Pending & Gagal
 	if (respMessage.Success != 0) && (respMessage.Pending != 0) && (respMessage.Failed != 0) {
 		Code_RC_Comulative = "33"
-		Message_Comulative = "Sukses sebagian"
+		Message_Comulative = fmt.Sprintf("%v Transaksi Anda Berhasil & %v Transaksi Anda sedang dalam proses & %v Transaksi Anda Gagal. Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, countPending.Count, pyenmentFail)
+		// Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil dirukar namun %v voucher tidak berhasil. Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, pyenmentFail)
 	}
+
+	// Pending
 	if (respMessage.Success == 0) && (respMessage.Pending != 0) && (respMessage.Failed == 0) {
 		Code_RC_Comulative = "56"
-		Message_Comulative = "Transaksi pending"
+		Message_Comulative = fmt.Sprintf("%v Transaksi Anda sedang dalam proses. Silahkan hubungi tim kami untuk informasi selengkapnya.", countPending.Count)
 	}
+
+	// Pending & Gagal
 	if (respMessage.Success == 0) && (respMessage.Pending != 0) && (respMessage.Failed != 0) {
-		Code_RC_Comulative = "56"
-		Message_Comulative = "Transaksi pending"
+		Code_RC_Comulative = "57"
+		Message_Comulative = fmt.Sprintf("%v Transaksi Anda sedang dalam proses & %v Transaksi Anda Gagal.Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, pyenmentFail)
+
+		// Message_Comulative = fmt.Sprintf("%v Transaksi Anda sedang dalam proses & %v Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, pyenmentFail)
 	}
+
+	// Gagal
 	if (respMessage.Success == 0) && (respMessage.Pending == 0) && (respMessage.Failed != 0) {
 		Code_RC_Comulative = "01"
-		Message_Comulative = "Gagal"
+		Message_Comulative = "Transaksi Gagal"
 	}
 
 	if req.Jumlah == 1 {

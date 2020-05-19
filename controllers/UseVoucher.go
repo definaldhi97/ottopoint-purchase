@@ -35,7 +35,8 @@ func UseVouhcerController(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
-		res.Meta.Message = "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."
+		res.Meta.Message = "Transaksi gagal, silahkan dicoba kembali. Jika masih gagal silahkan hubungi customer support kami."
+		// res.Meta.Message = "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."
 		ctx.JSON(http.StatusOK, res)
 		go sugarLogger.Error("Error, body Request", zap.Error(err))
 		return

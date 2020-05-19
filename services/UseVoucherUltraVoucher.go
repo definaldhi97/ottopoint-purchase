@@ -245,8 +245,6 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber, param.CustID, req.CampaignID)
 		}
 
-		// go SaveTransactionUV(param, order, reqOrder, req, "Payment", "00", order.ResponseCode)
-
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
 			Data: models.UltraVoucherResp{
@@ -411,8 +409,6 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		id := utils.GenerateTokenUUID()
 		go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber, param.CustID, req.CampaignID)
 	}
-
-	// go SaveTransactionUV(param, order, reqOrder, req, "Payment", "00", order.ResponseCode)
 
 	fmt.Println("Response UV : ", order)
 	res = models.Response{
