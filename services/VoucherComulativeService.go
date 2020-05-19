@@ -162,10 +162,14 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		Failed:  pyenmentFail,
 	}
 
+	var s, p, f int
+
 	// Sukses
 	if (respMessage.Success != 0) && (respMessage.Pending == 0) && (respMessage.Failed == 0) {
 		Code_RC_Comulative = "00"
 		Message_Comulative = "Transaksi Berhasil"
+
+		s = countSuccess.Count
 	}
 
 	// Sukses & Gagal
@@ -173,12 +177,18 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		Code_RC_Comulative = "174"
 		Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil dirukar namun %v voucher tidak berhasil. Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, pyenmentFail)
 
+		s = countSuccess.Count
+		f = pyenmentFail
 	}
 
 	// Sukses & Pending
 	if (respMessage.Success != 0) && (respMessage.Pending != 0) && (respMessage.Failed == 0) {
 		Code_RC_Comulative = "175"
 		Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil ditukar & %v Transaksi Anda sedang dalam proses", countSuccess.Count, countPending.Count)
+
+		s = countSuccess.Count
+		p = countPending.Count
+
 	}
 
 	// Sukses & Pending & Gagal
@@ -186,12 +196,19 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		Code_RC_Comulative = "33"
 		Message_Comulative = fmt.Sprintf("%v Vucher Anda berhasil ditukar namun %v Voucher pending dan %v voucher tidak berhasil. Harap hubungi customer support untuk informasi lebih lanjut.", countSuccess.Count, countPending.Count, pyenmentFail)
 		// Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil dirukar namun %v voucher tidak berhasil. Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, pyenmentFail)
+
+		s = countSuccess.Count
+		p = countPending.Count
+		f = pyenmentFail
 	}
 
 	// Pending
 	if (respMessage.Success == 0) && (respMessage.Pending != 0) && (respMessage.Failed == 0) {
 		Code_RC_Comulative = "56"
 		Message_Comulative = fmt.Sprintf("%v Transaksi Anda sedang dalam proses. Silahkan hubungi tim kami untuk informasi selengkapnya.", countPending.Count)
+
+		p = countPending.Count
+
 	}
 
 	// Pending & Gagal
@@ -199,13 +216,16 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		Code_RC_Comulative = "57"
 		Message_Comulative = fmt.Sprintf("%v Transaksi Anda sedang dalam proses & %v Transaksi Anda Gagal.Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, pyenmentFail)
 
-		// Message_Comulative = fmt.Sprintf("%v Transaksi Anda sedang dalam proses & %v Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, pyenmentFail)
+		p = countPending.Count
+		f = pyenmentFail
 	}
 
 	// Gagal
 	if (respMessage.Success == 0) && (respMessage.Pending == 0) && (respMessage.Failed != 0) {
 		Code_RC_Comulative = "01"
 		Message_Comulative = "Transaksi Gagal"
+
+		f = pyenmentFail
 	}
 
 	rc := Code_RC_Comulative
@@ -257,11 +277,37 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 
 	}
 
+	var m string
 	if req.Jumlah > 1 {
-		rc, msg = getMsgCummulative(rc, msg)
+		m = getMsgCummulative(rc, msg)
 	}
-	// pyenmentFail := req.Jumlah - countSuccess.Count
-	// pyenmentPending := req.Jumlah - countPending.Count
+
+	if s != 0 && f != 0 && p == 0 {
+		a := strings.Replace(m, "[x]", fmt.Sprintf("%v", s), 1)
+		b := strings.Replace(a, "[x]", fmt.Sprintf("%v", f), 1)
+
+		msg = b
+	}
+
+	if s != 0 && f == 0 && p != 0 {
+		a := strings.Replace(m, "[x]", fmt.Sprintf("%v", s), 1)
+		b := strings.Replace(a, "[x]", fmt.Sprintf("%v", p), 1)
+
+		msg = b
+	}
+
+	if s != 0 && f != 0 && p != 0 {
+		a := strings.Replace(m, "[x]", fmt.Sprintf("%v", s), 1)
+		b := strings.Replace(a, "[x]", fmt.Sprintf("%v", p), 1)
+		c := strings.Replace(b, "[x]", fmt.Sprintf("%v", f), 1)
+
+		msg = c
+	}
+
+	if s == 0 && f == 0 && p != 0 {
+		a := strings.Replace(m, "[x]", fmt.Sprintf("%v", p), 1)
+		msg = a
+	}
 
 	/* ------ Response UseVoucher Comulative */
 	fmt.Println("========== Mesage from Inquiry OTTOAG and OPL ===============")
@@ -284,9 +330,9 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	return res
 }
 
-func getMsgCummulative(rc, msg string) (string, string) {
+func getMsgCummulative(rc, msg string) string {
 
-	var codeRc, codeMsg string
+	var codeMsg string
 
 	getmsg, errmsg := db.GetResponseCummulativeOttoAG(rc)
 	if errmsg != nil || getmsg.InternalRc == "" {
@@ -297,15 +343,14 @@ func getMsgCummulative(rc, msg string) (string, string) {
 		fmt.Println(fmt.Sprintf("[Error %v]", errmsg))
 		// return res, err
 
-		codeRc = rc
 		codeMsg = msg
 
-		return codeRc, codeMsg
+		return codeMsg
 	}
 
-	codeRc = getmsg.InternalRc
-	codeMsg = strings.Replace(getmsg.InternalRd, "[x]", "%v", 10)
-	// codeMsg = getmsg.InternalRd
+	// codeRc = getmsg.InternalRc
+	// codeMsg = strings.Replace(getmsg.InternalRd, "[x]", "%v", 10)
+	codeMsg = getmsg.InternalRd
 
-	return codeRc, codeMsg
+	return codeMsg
 }

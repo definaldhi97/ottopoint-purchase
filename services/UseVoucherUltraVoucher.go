@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/hosts/opl/host"
@@ -65,8 +64,18 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
 		sugarLogger.Info("[Internal Server Error]-[Gagal Redeem Voucher]")
 
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
-		// res.Data = "Transaksi Gagal"
+		// res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
+
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: models.UltraVoucherResp{
+				Code:    "60",
+				Msg:     "Token or Session Expired Please Login Again",
+				Success: 0,
+				Failed:  req.Jumlah,
+				Pending: 0,
+			},
+		}
 
 		return res
 	}
@@ -80,8 +89,17 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
 		sugarLogger.Info("[Not enough points]-[Gagal Redeem Voucher]")
 
-		res = utils.GetMessageResponse(res, 500, false, errors.New("Point Tidak Cukup"))
-		// res.Data = "Transaksi Gagal"
+		// res = utils.GetMessageResponse(res, 500, false, errors.New("Point Tidak Cukup"))
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: models.UltraVoucherResp{
+				Code:    "27",
+				Msg:     "Point Tidak Mencukupi",
+				Success: 0,
+				Failed:  req.Jumlah,
+				Pending: 0,
+			},
+		}
 
 		return res
 	}
@@ -95,13 +113,28 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
 		sugarLogger.Info("[Limit exceeded]-[Gagal Redeem Voucher]")
 
-		res = utils.GetMessageResponse(res, 500, false, errors.New("Voucher Sudah Limit"))
-		// res.Data = "Transaksi Gagal"
+		// res = utils.GetMessageResponse(res, 500, false, errors.New("Voucher Sudah Limit"))
+
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: models.UltraVoucherResp{
+				Code:    "65",
+				Msg:     "Payment count limit exceeded",
+				Success: 0,
+				Failed:  req.Jumlah,
+				Pending: 0,
+			},
+		}
 
 		return res
 	}
 
-	if errredeem != nil || redeem.Error != "" {
+	var c string
+	for _, vall := range redeem.Coupons {
+		c = vall.Code
+	}
+
+	if errredeem != nil || redeem.Error != "" || c == "" {
 		fmt.Println("Error : ", errredeem)
 		fmt.Println("[UltraVoucherServices]-[RedeemVoucher]")
 		fmt.Println("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
@@ -110,8 +143,17 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
 		sugarLogger.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
 
-		res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
-		// res.Data = "Transaksi Gagal"
+		// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: models.UltraVoucherResp{
+				Code:    "68",
+				Msg:     "Maaf koneksi timeout. Silahkan dicoba kembali beberapa saat lagi",
+				Success: 0,
+				Failed:  req.Jumlah,
+				Pending: 0,
+			},
+		}
 
 		return res
 	}
@@ -155,8 +197,17 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			sugarLogger.Info("[UltraVoucherServices]-[CheckStatusOrder]")
 			sugarLogger.Info("[Failed CheckStatusOrder]-[Gagal CheckStatusOrder]")
 
-			res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Anda sedang dalam proses. Silahkan hubungi tim kami untuk informasi selengkapnya."))
-			// res.Data = "Transaksi Gagal"
+			// res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Anda sedang dalam proses. Silahkan hubungi tim kami untuk informasi selengkapnya."))
+			res = models.Response{
+				Meta: utils.ResponseMetaOK(),
+				Data: models.UltraVoucherResp{
+					Code:    "68",
+					Msg:     "Maaf koneksi timeout. Silahkan dicoba kembali beberapa saat lagi",
+					Success: 0,
+					Failed:  0,
+					Pending: req.Jumlah,
+				},
+			}
 
 			return res
 		}
@@ -227,8 +278,17 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 				fmt.Println("Error : ", errNotif)
 			}
 
-			res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
-
+			// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
+			res = models.Response{
+				Meta: utils.ResponseMetaOK(),
+				Data: models.UltraVoucherResp{
+					Code:    "01",
+					Msg:     "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya.",
+					Success: 0,
+					Failed:  req.Jumlah,
+					Pending: 0,
+				},
+			}
 			return res
 		}
 
@@ -245,13 +305,24 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber, param.CustID, req.CampaignID)
 		}
 
+		// res = models.Response{
+		// 	Meta: utils.ResponseMetaOK(),
+		// 	Data: models.UltraVoucherResp{
+		// 		Success: req.Jumlah,
+		// 		Failed:  0,
+		// 		Total:   req.Jumlah,
+		// 		Voucher: param.NamaVoucher,
+		// 	},
+		// }
+
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
 			Data: models.UltraVoucherResp{
+				Code:    "00",
+				Msg:     "Success",
 				Success: req.Jumlah,
 				Failed:  0,
-				Total:   req.Jumlah,
-				Voucher: param.NamaVoucher,
+				Pending: 0,
 			},
 		}
 
@@ -324,7 +395,17 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			fmt.Println("Error : ", errNotif)
 		}
 
-		res = utils.GetMessageResponse(res, 145, false, errors.New(fmt.Sprintf("Voucher yg tersedia %v", order.Data.VouchersAvailable)))
+		// res = utils.GetMessageResponse(res, 145, false, errors.New(fmt.Sprintf("Voucher yg tersedia %v", order.Data.VouchersAvailable)))
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: models.UltraVoucherResp{
+				Code:    "176",
+				Msg:     fmt.Sprintf("Voucher yg tersedia %v", order.Data.VouchersAvailable),
+				Success: 0,
+				Failed:  0,
+				Pending: req.Jumlah,
+			},
+		}
 		// res.Data = "Stok Tidak Tersedia"
 
 		return res
@@ -392,8 +473,17 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			fmt.Println("Error : ", errNotif)
 		}
 
-		res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
-		// res.Data = "Stok Tidak Tersedia"
+		// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: models.UltraVoucherResp{
+				Code:    "01",
+				Msg:     "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya.",
+				Success: 0,
+				Failed:  req.Jumlah,
+				Pending: 0,
+			},
+		}
 
 		return res
 	}
@@ -411,13 +501,24 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	}
 
 	fmt.Println("Response UV : ", order)
+	// res = models.Response{
+	// 	Meta: utils.ResponseMetaOK(),
+	// 	Data: models.UltraVoucherResp{
+	// 		Success: req.Jumlah,
+	// 		Failed:  0,
+	// 		Total:   req.Jumlah,
+	// 		Voucher: param.NamaVoucher,
+	// 	},
+	// }
+
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
 		Data: models.UltraVoucherResp{
+			Code:    "00",
+			Msg:     "Success",
 			Success: req.Jumlah,
 			Failed:  0,
-			Total:   req.Jumlah,
-			Voucher: param.NamaVoucher,
+			Pending: 0,
 		},
 	}
 
