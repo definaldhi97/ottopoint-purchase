@@ -255,7 +255,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 
 	rc := Code_RC_Comulative
 	msg := Message_Comulative
-	if req.Jumlah != 1 {
+	if req.Jumlah > 1 {
 		rc, msg = getMsgCummulative(Code_RC_Comulative, Message_Comulative)
 	}
 	// pyenmentFail := req.Jumlah - countSuccess.Count
@@ -300,6 +300,9 @@ func getMsgCummulative(rc, msg string) (string, string) {
 
 		return codeRc, codeMsg
 	}
+
+	codeRc = getmsg.InternalRc
+	codeMsg = getmsg.InternalRd
 
 	return codeRc, codeMsg
 }
