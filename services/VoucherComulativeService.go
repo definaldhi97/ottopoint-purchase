@@ -9,6 +9,7 @@ import (
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/opentracing/opentracing-go"
@@ -302,7 +303,8 @@ func getMsgCummulative(rc, msg string) (string, string) {
 	}
 
 	codeRc = getmsg.InternalRc
-	codeMsg = getmsg.InternalRd
+	codeMsg = strings.Replace(getmsg.InternalRd, "[x]", "%v", 10)
+	// codeMsg = getmsg.InternalRd
 
 	return codeRc, codeMsg
 }
