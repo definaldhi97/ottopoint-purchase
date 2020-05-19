@@ -169,14 +169,14 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 
 	// Sukses & Gagal
 	if (respMessage.Success != 0) && (respMessage.Pending == 0) && (respMessage.Failed != 0) {
-		Code_RC_Comulative = "33"
+		Code_RC_Comulative = "174"
 		Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil dirukar namun %v voucher tidak berhasil. Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, pyenmentFail)
 
 	}
 
 	// Sukses & Pending
 	if (respMessage.Success != 0) && (respMessage.Pending != 0) && (respMessage.Failed == 0) {
-		Code_RC_Comulative = "33"
+		Code_RC_Comulative = "175"
 		Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil ditukar & %v Transaksi Anda sedang dalam proses", countSuccess.Count, countPending.Count)
 	}
 
