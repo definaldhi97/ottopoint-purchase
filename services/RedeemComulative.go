@@ -152,6 +152,30 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 	}
 
+	// Time Out
+	if dataInquery.Rc == "" {
+		fmt.Println("[Error-DataInquiry]-[RedeemComulativeVoucher]")
+		fmt.Println("[Error : %v]", errInquiry)
+		redeemRes = models.RedeemComuResp{
+			Code:    "01",
+			Message: "Inquiry Failed",
+		}
+
+		go voucher.SaveTransactionPulsa(paramInq, dataInquery, req, inqBiller, "Inquiry", "01", dataInquery.Rc)
+
+		ErrRespRedeem <- errInquiry
+
+		resRedeemComu.Redeem.Rc = "01"
+		resRedeemComu.Redeem.Rc = "Time Out"
+		resRedeemComu.Code = redeemRes.Code
+		resRedeemComu.Message = redeemRes.Message
+
+		getResp <- resRedeemComu
+
+		return
+
+	}
+
 	go voucher.SaveTransactionPulsa(paramInq, dataInquery, req, inqBiller, "Inquiry", "00", dataInquery.Rc)
 
 	// coupon := []models.CouponsRedeem{}
