@@ -124,7 +124,7 @@ func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param m
 
 	fmt.Println("[Payment Success]")
 
-	go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
+	go SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
 
 	res = models.UseRedeemResponse{
 		Rc:          billerRes.Rc,

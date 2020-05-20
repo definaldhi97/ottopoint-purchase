@@ -69,7 +69,7 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 	if useUV.ResponseCode == "10" {
 
 		fmt.Sprint("[Response UV : %v]", useUV.ResponseCode)
-		go SaveTransactionUV(param, useUV, reqUV, req, "Inquiry", "01", useUV.ResponseCode)
+		// go SaveTransactionUV(param, useUV, reqUV, req, "Inquiry", "01", useUV.ResponseCode)
 
 		res = utils.GetMessageResponse(res, 147, false, errors.New("Voucher Tidak Ditemukan"))
 		// res.Data = "Transaksi Gagal"
@@ -92,7 +92,7 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 
 	if useUV.ResponseCode == "00" {
 		fmt.Sprint("[Response UV : %v]", useUV.ResponseCode)
-		go SaveTransactionUV(param, useUV, reqUV, req, "Inquiry", "00", useUV.ResponseCode)
+		// go SaveTransactionUV(param, useUV, reqUV, req, "Inquiry", "00", useUV.ResponseCode)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -125,7 +125,7 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 
 func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
 
-	logs.Info("[Start-SaveDB]-[UltraVoucher]")
+	fmt.Sprintf("[Start-SaveDB]-[UltraVoucher]-[%v]", trasnType)
 
 	var saveStatus string
 	switch status {
@@ -142,11 +142,11 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
 
 	save := dbmodels.TransaksiRedeem{
-		AccountNumber:   param.AccountNumber,
-		Voucher:         param.NamaVoucher,
-		MerchantID:      param.MerchantID,
-		CustID:          param.CustID,
-		RRN:             param.RRN,
+		AccountNumber: param.AccountNumber,
+		Voucher:       param.NamaVoucher,
+		MerchantID:    param.MerchantID,
+		// CustID:          param.CustID,
+		RRN:             param.Reffnum,
 		ProductCode:     param.ProductCode,
 		Amount:          int64(param.Amount),
 		TransType:       trasnType,
