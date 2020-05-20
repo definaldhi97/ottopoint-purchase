@@ -104,7 +104,7 @@ func UseVoucherUV(req models.UseVoucherUVReq) (*models.UseVoucherUVResp, error) 
 }
 
 // CheckStatusOrder
-func CheckStatusOrder(InstitutionReff, InstitutionId string) (*models.OrderVoucherResp, error) {
+func CheckStatusOrder(InstitutionReff, InstitutionId string) (models.OrderVoucherResp, error) {
 	var resp models.OrderVoucherResp
 
 	logs.Info("[Package Host UV]-[CheckStatusOrder]")
@@ -120,17 +120,17 @@ func CheckStatusOrder(InstitutionReff, InstitutionId string) (*models.OrderVouch
 	if err != nil {
 		logs.Error("Check error : ", err.Error())
 
-		return &resp, err
+		return resp, err
 	}
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
 		logs.Error("Failed to unmarshaling response CheckStatusOrder from Ultra Voucher ", err.Error())
 
-		return &resp, err
+		return resp, err
 	}
 
-	return &resp, nil
+	return resp, nil
 }
 
 // GetServiceHealthCheck ..

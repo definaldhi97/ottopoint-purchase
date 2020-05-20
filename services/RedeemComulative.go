@@ -1,16 +1,19 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/hosts/opl/host"
 	"ottopoint-purchase/models"
+	"ottopoint-purchase/models/dbmodels"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 	biller "ottopoint-purchase/services/ottoag"
-	"ottopoint-purchase/services/voucher"
 	"ottopoint-purchase/utils"
 	"strings"
+
+	"github.com/astaxie/beego/logs"
 )
 
 func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Params, getResp chan models.RedeemComuResp, ErrRespRedeem chan error) {
@@ -84,7 +87,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 	// 		Message: "Inquiry Gagal",
 	// 	}
 
-	// 	// go voucher.SaveTransactionPulsa(paramInq, "Inquiry", "01")
+	// 	// go SaveTransactionInq(param.Category, paramInq, "Inquiry", "01")
 
 	// 	ErrRespRedeem <- err
 
@@ -126,7 +129,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 			Message: "Inquiry Failed",
 		}
 
-		go voucher.SaveTransactionPulsa(paramInq, dataInquery, req, inqBiller, "Inquiry", "01", dataInquery.Rc)
+		go SaveTransactionInq(param.Category, paramInq, dataInquery, req, inqBiller, "Inquiry", "01", dataInquery.Rc)
 
 		ErrRespRedeem <- errInquiry
 
@@ -161,7 +164,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 			Message: "Inquiry Failed",
 		}
 
-		go voucher.SaveTransactionPulsa(paramInq, dataInquery, req, inqBiller, "Inquiry", "01", dataInquery.Rc)
+		go SaveTransactionInq(param.Category, paramInq, dataInquery, req, inqBiller, "Inquiry", "01", dataInquery.Rc)
 
 		ErrRespRedeem <- errInquiry
 
@@ -176,7 +179,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 	}
 
-	go voucher.SaveTransactionPulsa(paramInq, dataInquery, req, inqBiller, "Inquiry", "00", dataInquery.Rc)
+	go SaveTransactionInq(param.Category, paramInq, dataInquery, req, inqBiller, "Inquiry", "00", dataInquery.Rc)
 
 	// coupon := []models.CouponsRedeem{}
 
@@ -299,4 +302,55 @@ func ValidatePrefixComulative(custID, productCode string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func SaveTransactionInq(category string, param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
+
+	fmt.Sprintf("[Start-SaveDB]-[Inquiry]-[%]", category)
+
+	var saveStatus string
+	switch status {
+	case "00":
+		saveStatus = constants.Success
+	case "09":
+		saveStatus = constants.Pending
+	case "01":
+		saveStatus = constants.Failed
+	}
+
+	reqOttoag, _ := json.Marshal(&reqdata)  // Req Ottoag
+	responseOttoag, _ := json.Marshal(&res) // Response Ottoag
+	reqdataOP, _ := json.Marshal(&reqOP)    // Req Service
+
+	save := dbmodels.TransaksiRedeem{
+		AccountNumber:   param.AccountNumber,
+		Voucher:         param.NamaVoucher,
+		MerchantID:      param.MerchantID,
+		CustID:          param.CustID,
+		RRN:             param.RRN,
+		ProductCode:     param.ProductCode,
+		Amount:          int64(param.Amount),
+		TransType:       trasnType,
+		ProductType:     category,
+		Status:          saveStatus,
+		ExpDate:         param.ExpDate,
+		Institution:     param.InstitutionID,
+		CummulativeRef:  param.Reffnum,
+		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
+		ResponderData:   status,
+		Point:           param.Point,
+		ResponderRc:     rc,
+		RequestorData:   string(reqOttoag),
+		ResponderData2:  string(responseOttoag),
+		RequestorOPData: string(reqdataOP),
+		SupplierID:      param.SupplierID,
+	}
+
+	err := db.DbCon.Create(&save).Error
+	if err != nil {
+		logs.Info("[Failed Save to DB ]", err)
+		logs.Info("[Package-Voucher]-[Service-RedeemPulsa]")
+		// return err
+
+	}
 }

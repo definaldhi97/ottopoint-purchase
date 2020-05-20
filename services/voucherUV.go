@@ -53,13 +53,13 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 		logs.Info(fmt.Sprintf("[Response : %v]", use))
 		logs.Info("[Error from OPL]-[CouponVoucherCustomer]")
 
-		go SaveTransactionUV(param, useUV, reqUV, req, "Payment", "01", "")
+		// go SaveTransactionUV(param, useUV, reqUV, req, "Used", "01", "")
 
 		res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Use Voucher, Harap coba lagi"))
 		return res
 	}
 
-	go SaveTransactionUV(param, useUV, reqUV, req, "Payment", "00", "00")
+	go SaveTransactionUV(param, useUV, reqUV, req, "Used", "00", "00")
 
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),

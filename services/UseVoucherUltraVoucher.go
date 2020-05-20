@@ -13,6 +13,7 @@ import (
 	"ottopoint-purchase/models/dbmodels"
 	"ottopoint-purchase/utils"
 	"strconv"
+	"time"
 
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
@@ -147,8 +148,8 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
 			Data: models.UltraVoucherResp{
-				Code:    "68",
-				Msg:     "Maaf koneksi timeout. Silahkan dicoba kembali beberapa saat lagi",
+				Code:    "01",
+				Msg:     "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya.",
 				Success: 0,
 				Failed:  req.Jumlah,
 				Pending: 0,
@@ -186,16 +187,28 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		sugarLogger.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
 
 		fmt.Println("[CheckStatusOrder]")
-		checkOrder, errCheck := uv.CheckStatusOrder(reqOrder.InstitutionRefno, param.InstitutionID)
-		if errOrder != nil || checkOrder.ResponseCode == "" {
+		time.Sleep(5 * time.Second)
+
+		reqCheckStatus := map[string]interface{}{
+			"InstitutionRefno": reqOrder.InstitutionRefno,
+			"InstitutionID":    param.InstitutionID,
+		}
+		checkOrder, errCheck := chekStatus(reqOrder.InstitutionRefno, param.InstitutionID)
+		// checkOrder, errCheck := uv.CheckStatusOrder(reqOrder.InstitutionRefno, param.InstitutionID)
+
+		fmt.Println("Response Check Status : ", checkOrder)
+
+		if checkOrder.ResponseCode == "" || checkOrder.ResponseCode == "18" {
 			fmt.Println("Error : ", errCheck)
 			fmt.Println("Response CheckStatusOrder : ", checkOrder)
 			fmt.Println("[UltraVoucherServices]-[CheckStatusOrder]")
-			fmt.Println("[Failed CheckStatusOrder]-[Gagal CheckStatusOrder Voucher]")
+			fmt.Println("[TimeOunt or Pending CheckStatusOrder]-[Gagal CheckStatusOrder Voucher]")
 
 			// sugarLogger.Info("Internal Server Error : ", errOrder)
 			sugarLogger.Info("[UltraVoucherServices]-[CheckStatusOrder]")
-			sugarLogger.Info("[Failed CheckStatusOrder]-[Gagal CheckStatusOrder]")
+			sugarLogger.Info("[TimeOunt or Pending CheckStatusOrder]-[Gagal CheckStatusOrder]")
+
+			go SaveTransactionUV(param, checkOrder, reqCheckStatus, req, "Reedemtion", "09", checkOrder.ResponseCode)
 
 			// res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Anda sedang dalam proses. Silahkan hubungi tim kami untuk informasi selengkapnya."))
 			res = models.Response{
@@ -278,6 +291,8 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 				fmt.Println("Error : ", errNotif)
 			}
 
+			go SaveTransactionUV(param, checkOrder, reqCheckStatus, req, "Reedemtion", "01", checkOrder.ResponseCode)
+
 			// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
 			res = models.Response{
 				Meta: utils.ResponseMetaOK(),
@@ -314,6 +329,8 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		// 		Voucher: param.NamaVoucher,
 		// 	},
 		// }
+
+		go SaveTransactionUV(param, checkOrder, reqCheckStatus, req, "Reedemtion", "00", checkOrder.ResponseCode)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -395,6 +412,8 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			fmt.Println("Error : ", errNotif)
 		}
 
+		go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "01", order.ResponseCode)
+
 		// res = utils.GetMessageResponse(res, 145, false, errors.New(fmt.Sprintf("Voucher yg tersedia %v", order.Data.VouchersAvailable)))
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -473,6 +492,8 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			fmt.Println("Error : ", errNotif)
 		}
 
+		go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "01", order.ResponseCode)
+
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -510,6 +531,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	// 		Voucher: param.NamaVoucher,
 	// 	},
 	// }
+	go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "00", order.ResponseCode)
 
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
@@ -589,4 +611,28 @@ func DataParameterOrder() models.ParamUV {
 	}
 
 	return res
+}
+
+func chekStatus(institutionId, reffNo string) (uvmodels.OrderVoucherResp, error) {
+	res := uvmodels.OrderVoucherResp{}
+	var err error
+	var no int
+
+	for i := 3; i > 0; i-- {
+		no++
+
+		fmt.Println(fmt.Sprintf("[Percobaan ke : %v]", no))
+		time.Sleep(10 * time.Second)
+
+		res, err = uv.CheckStatusOrder(institutionId, reffNo)
+		fmt.Println(fmt.Sprintf("[Response ke %v : %v]", no, res))
+
+		if res.ResponseCode != "" {
+			return res, nil
+		}
+
+	}
+
+	return res, err
+
 }
