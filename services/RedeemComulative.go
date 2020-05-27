@@ -306,7 +306,7 @@ func ValidatePrefixComulative(custID, productCode string) (bool, error) {
 
 func SaveTransactionInq(category string, param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
 
-	fmt.Sprintf("[Start-SaveDB]-[Inquiry]-[%]", category)
+	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[Inquiry]-[%]", category))
 
 	var saveStatus string
 	switch status {

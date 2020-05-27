@@ -32,7 +32,7 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 	defer span.Finish()
 
 	// Use Voucher to Openloyalty
-	_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 1)
+	_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.AccountId, 1)
 	if err2 != nil {
 		res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Redeem Voucher, Harap coba lagi"))
 		return res
@@ -71,7 +71,7 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 		logs.Info("[UseVoucherOttoAG]")
 
 		logs.Info("[Reversal Voucher")
-		_, erv := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 0)
+		_, erv := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.AccountId, 0)
 		if erv != nil {
 			res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Reversal Voucher"))
 			return res
@@ -86,7 +86,7 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 		logs.Info("[UseVoucherOttoAG]")
 
 		logs.Info("[Reversal Voucher")
-		_, erv := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.CustID, 0)
+		_, erv := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.AccountId, 0)
 		if erv != nil {
 			res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Reversal Voucher"))
 			return res

@@ -14,8 +14,6 @@ import (
 	opl "ottopoint-purchase/hosts/opl/host"
 	token "ottopoint-purchase/hosts/redis_token/host"
 
-	"github.com/astaxie/beego/logs"
-
 	"github.com/gin-gonic/gin"
 	zaplog "github.com/opentracing-contrib/go-zap/log"
 	"github.com/opentracing/opentracing-go"
@@ -74,8 +72,8 @@ func UseVouhcerController(ctx *gin.Context) {
 		sugarLogger.Info("[UseVoucherController]-[VoucherDetail]")
 		sugarLogger.Info(fmt.Sprintf("Error : ", errVoucher))
 
-		logs.Info("[UseVoucherController]-[VoucherDetail]")
-		logs.Info(fmt.Sprintf("Error : ", errVoucher))
+		fmt.Println("[UseVoucherController]-[VoucherDetail]")
+		fmt.Println(fmt.Sprintf("Error : ", errVoucher))
 
 		res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
 		ctx.JSON(http.StatusOK, res)
@@ -86,10 +84,10 @@ func UseVouhcerController(ctx *gin.Context) {
 
 	var custIdOPL string
 	if data.SupplierID == "Ultra Voucher" {
-		logs.Info("[Voucher Ultra Voucher]")
+		fmt.Println("[Voucher Ultra Voucher]")
 		getData, errData := db.CheckCouponUV(dataToken.Data, req.CampaignID, req.CouponID)
 		if errData != nil || getData.AccountId == "" {
-			fmt.Sprintf("Internal Server Error : %v\n", errData)
+			fmt.Println(fmt.Sprintf("Internal Server Error : %v\n", errData))
 			sugarLogger.Info("[UseVoucherController]-[CheckCouponUV]")
 			sugarLogger.Info("[Failed Failed from DB]-[Get Data Voucher-UV]")
 
@@ -100,10 +98,10 @@ func UseVouhcerController(ctx *gin.Context) {
 
 		custIdOPL = getData.AccountId
 	} else {
-		logs.Info("[Voucher OttoAG]")
+		fmt.Println("[Voucher OttoAG]")
 		dataUser, errUser := db.CheckUser(dataToken.Data)
 		if errUser != nil || dataUser.CustID == "" {
-			fmt.Sprintf("Internal Server Error : %v\n", errUser)
+			fmt.Println(fmt.Sprintf("Internal Server Error : %v\n", errUser))
 			sugarLogger.Info("[UseVoucherController]-[CheckUser]")
 			sugarLogger.Info("[Failed from DB]-[Get Data User]")
 
@@ -126,7 +124,8 @@ func UseVouhcerController(ctx *gin.Context) {
 		MerchantID:    dataToken.MerchantID,
 		InstitutionID: header.InstitutionID,
 		SupplierID:    data.SupplierID,
-		CustID:        custIdOPL,
+		AccountId:     custIdOPL,
+		CampaignID:    req.CampaignID,
 		ProductType:   data.ProductType,
 		ProductCode:   data.ProductCode,
 		NamaVoucher:   data.NamaVoucher,

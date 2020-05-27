@@ -20,7 +20,7 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 	var res models.Response
 
 	logs.Info("=== UseVoucherUV ===")
-	fmt.Sprintf("=== UseVoucherUV ===")
+	fmt.Println("=== UseVoucherUV ===")
 
 	var useUV interface{}
 	var reqUV interface{}
@@ -29,6 +29,7 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 	sugarLogger.Info("[UseVoucherUV]",
 		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID),
 		zap.String("category : ", param.Category), zap.String("campaignId : ", campaignID),
+		zap.String("AccountID : ", param.AccountId), zap.String("AccountNumber : ", param.AccountNumber),
 		zap.String("VoucherCode : ", req.VoucherCode))
 
 	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[UseVoucherUV]")
@@ -37,10 +38,10 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 	logs.Info("Campaign : ", campaignID)
 	logs.Info("CouponID : ", param.CouponID)
 	logs.Info("ProductCode : ", param.CouponCode)
-	logs.Info("CustID : ", param.CustID)
+	logs.Info("AccountID : ", param.AccountId)
 
 	// Use Voucher to Openloyalty
-	use, err2 := opl.CouponVoucherCustomer(campaignID, param.CouponID, param.CouponCode, param.CustID, 1)
+	use, err2 := opl.CouponVoucherCustomer(campaignID, param.CouponID, param.CouponCode, param.AccountId, 1)
 
 	var useErr string
 	for _, value := range use.Coupons {
