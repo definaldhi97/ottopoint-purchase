@@ -4,9 +4,10 @@ type Params struct {
 	AccountNumber string
 	MerchantID    string
 	InstitutionID string
-	CustID        string //opl
+	AccountId     string //opl
 	Reffnum       string // internal
 	RRN           string // eksternal
+	CustID        string
 	Amount        int64
 	NamaVoucher   string
 	ProductType   string
@@ -16,6 +17,7 @@ type Params struct {
 	ExpDate       string
 	CouponID      string
 	CouponCode    string
+	CampaignID    string
 	SupplierID    string
 	// percobaan
 	Total int

@@ -136,7 +136,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		}
 
 		if dataNotif.RC != "00" {
-			fmt.Println("[Response Notif PLN]")
+			fmt.Println("[Response Notif Reversal]")
 			fmt.Println("Gagal Send Notif & Inbox")
 			fmt.Println("Error : ", errNotif)
 		}

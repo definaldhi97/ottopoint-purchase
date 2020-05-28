@@ -122,7 +122,7 @@ func UseVouhcerUVController(ctx *gin.Context) {
 		Category:    cekVoucher.BrandName,
 		CouponID:    getData.CouponID,
 		Point:       cekVoucher.CostInPoints,
-		CustID:      req.AccountId,
+		AccountId:   req.AccountId,
 	}
 
 	res = usevoucher.UseVoucherUV(req, param, getData.CampaignID)

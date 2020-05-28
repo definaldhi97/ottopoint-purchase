@@ -11,9 +11,11 @@ import (
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	"ottopoint-purchase/utils"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/opentracing/opentracing-go"
+	"github.com/vjeantet/jodaTime"
 	"go.uber.org/zap"
 )
 
@@ -21,7 +23,7 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 	var res models.Response
 
 	logs.Info("=== GetVoucherUV ===")
-	fmt.Sprintf("=== GetVoucherUV ===")
+	fmt.Println("=== GetVoucherUV ===")
 
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[GetVoucherUV-Services]",
@@ -125,7 +127,7 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 
 func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
 
-	fmt.Sprintf("[Start-SaveDB]-[UltraVoucher]-[%v]", trasnType)
+	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[UltraVoucher]-[%v]", trasnType))
 
 	var saveStatus string
 	switch status {
@@ -137,9 +139,11 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		saveStatus = constants.Failed
 	}
 
-	reqUV, _ := json.Marshal(&reqdata)   // Req Ottoag
-	responseUV, _ := json.Marshal(&res)  // Response Ottoag
+	reqUV, _ := json.Marshal(&reqdata)   // Req UV
+	responseUV, _ := json.Marshal(&res)  // Response UV
 	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
+
+	timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
 
 	save := dbmodels.TransaksiRedeem{
 		AccountNumber: param.AccountNumber,
@@ -163,6 +167,10 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		ResponderData2:  string(responseUV),
 		RequestorOPData: string(reqdataOP),
 		SupplierID:      param.SupplierID,
+		CouponId:        param.CouponID,
+		CampaignId:      param.CampaignID,
+		AccountId:       param.AccountId,
+		RedeemAt:        timeRedeem,
 	}
 
 	err := db.DbCon.Create(&save).Error
