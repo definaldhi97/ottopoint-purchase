@@ -11,9 +11,11 @@ import (
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	"ottopoint-purchase/utils"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/opentracing/opentracing-go"
+	"github.com/vjeantet/jodaTime"
 	"go.uber.org/zap"
 )
 
@@ -141,6 +143,8 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 	responseUV, _ := json.Marshal(&res)  // Response UV
 	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
 
+	timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+
 	save := dbmodels.TransaksiRedeem{
 		AccountNumber: param.AccountNumber,
 		Voucher:       param.NamaVoucher,
@@ -166,6 +170,7 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		CouponId:        param.CouponID,
 		CampaignId:      param.CampaignID,
 		AccountId:       param.AccountId,
+		RedeemAt:        timeRedeem,
 	}
 
 	err := db.DbCon.Create(&save).Error

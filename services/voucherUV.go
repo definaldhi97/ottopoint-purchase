@@ -3,12 +3,15 @@ package services
 import (
 	"errors"
 	"fmt"
+	"ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/opentracing/opentracing-go"
+	"github.com/vjeantet/jodaTime"
 	"go.uber.org/zap"
 )
 
@@ -21,9 +24,6 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 
 	logs.Info("=== UseVoucherUV ===")
 	fmt.Println("=== UseVoucherUV ===")
-
-	var useUV interface{}
-	var reqUV interface{}
 
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[UseVoucherUV]",
@@ -60,7 +60,16 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 		return res
 	}
 
-	go SaveTransactionUV(param, useUV, reqUV, req, "Used", "00", "00")
+	timeUse := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+
+	_, errUpdate := db.UpdateVoucher(timeUse, param.CouponID)
+	if errUpdate != nil {
+
+		logs.Info(fmt.Sprintf("[Error : %v]", errUpdate))
+		logs.Info("[Gagal Update Voucher]")
+		logs.Info("[UseVoucherUV]-[Package-Services]")
+
+	}
 
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),

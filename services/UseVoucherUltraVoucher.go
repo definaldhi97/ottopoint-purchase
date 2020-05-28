@@ -193,6 +193,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			"InstitutionRefno": reqOrder.InstitutionRefno,
 			"InstitutionID":    param.InstitutionID,
 		}
+
 		checkOrder, errCheck := chekStatus(reqOrder.InstitutionRefno, param.InstitutionID)
 		// checkOrder, errCheck := uv.CheckStatusOrder(reqOrder.InstitutionRefno, param.InstitutionID)
 
@@ -223,8 +224,10 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			res = models.Response{
 				Meta: utils.ResponseMetaOK(),
 				Data: models.UltraVoucherResp{
-					Code:    "68",
-					Msg:     "Maaf koneksi timeout. Silahkan dicoba kembali beberapa saat lagi",
+					// Code: "178",
+					Code: "68",
+					Msg:  "Transaksi Anda sedang dalam proses. Silahkan hubungi customer support kami untuk informasi selengkapnya.",
+					// Msg:     "Maaf koneksi timeout. Silahkan dicoba kembali beberapa saat lagi",
 					Success: 0,
 					Failed:  0,
 					Pending: req.Jumlah,
@@ -300,7 +303,16 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 				fmt.Println("Error : ", errNotif)
 			}
 
-			go SaveTransactionUV(param, checkOrder, reqCheckStatus, req, "Reedemtion", "01", checkOrder.ResponseCode)
+			for i := req.Jumlah; i > 0; i-- {
+
+				fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
+
+				t := i - 1
+				coupon := redeem.Coupons[t].Id
+				param.CouponID = coupon
+
+				go SaveTransactionUV(param, checkOrder, reqCheckStatus, req, "Reedemtion", "01", checkOrder.ResponseCode)
+			}
 
 			// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
 			res = models.Response{
@@ -410,7 +422,16 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			fmt.Println("Error : ", errNotif)
 		}
 
-		go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "01", order.ResponseCode)
+		for i := req.Jumlah; i > 0; i-- {
+
+			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
+
+			t := i - 1
+			coupon := redeem.Coupons[t].Id
+			param.CouponID = coupon
+
+			go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "01", order.ResponseCode)
+		}
 
 		// res = utils.GetMessageResponse(res, 145, false, errors.New(fmt.Sprintf("Voucher yg tersedia %v", order.Data.VouchersAvailable)))
 		res = models.Response{
@@ -490,7 +511,16 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			fmt.Println("Error : ", errNotif)
 		}
 
-		go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "01", order.ResponseCode)
+		for i := req.Jumlah; i > 0; i-- {
+
+			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
+
+			t := i - 1
+			coupon := redeem.Coupons[t].Id
+			param.CouponID = coupon
+
+			go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "01", order.ResponseCode)
+		}
 
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
 		res = models.Response{

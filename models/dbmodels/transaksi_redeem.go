@@ -28,6 +28,8 @@ type TransaksiRedeem struct {
 	CouponId        string    `gorm:"coupon_id"`
 	CampaignId      string    `gorm:"campaign_id"`
 	AccountId       string    `gorm:"account_id"`
+	RedeemAt        string    `gorm:"redeem_at"`
+	UsedAt          string    `gorm:"used_at"`
 	CreatedAT       time.Time `gorm:"created_at" json:"created_at"`
 	UpdatedAT       time.Time `gorm:"updated_at" json:"updated_at"`
 }
