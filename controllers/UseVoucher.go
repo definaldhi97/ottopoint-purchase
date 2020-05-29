@@ -82,7 +82,7 @@ func UseVouhcerController(ctx *gin.Context) {
 
 	data := SwitchCheckData(cekVoucher)
 
-	var custIdOPL string
+	var custIdOPL, merchant string
 	if data.SupplierID == "Ultra Voucher" {
 		fmt.Println("[Voucher Ultra Voucher]")
 		getData, errData := db.CheckCouponUV(dataToken.Data, req.CampaignID, req.CouponID)
@@ -108,6 +108,7 @@ func UseVouhcerController(ctx *gin.Context) {
 			res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
 		}
 		custIdOPL = dataUser.CustID
+		merchant = dataUser.MerchantID
 	}
 
 	fmt.Println("SupplierID : ", data.SupplierID)
@@ -121,7 +122,7 @@ func UseVouhcerController(ctx *gin.Context) {
 
 	param := models.Params{
 		AccountNumber: dataToken.Data,
-		MerchantID:    dataToken.MerchantID,
+		MerchantID:    merchant,
 		InstitutionID: header.InstitutionID,
 		SupplierID:    data.SupplierID,
 		AccountId:     custIdOPL,
