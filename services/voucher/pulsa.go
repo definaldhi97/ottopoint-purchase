@@ -260,7 +260,7 @@ func SaveTransactionPulsa(param models.Params, res interface{}, reqdata interfac
 		ProductCode:     param.ProductCode,
 		Amount:          int64(param.Amount),
 		TransType:       trasnType,
-		ProductType:     "Pulsa",
+		ProductType:     param.ProductType,
 		Status:          saveStatus,
 		ExpDate:         param.ExpDate,
 		Institution:     param.InstitutionID,

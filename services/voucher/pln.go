@@ -211,7 +211,7 @@ func SaveTransactionPLN(param models.Params, res interface{}, reqdata interface{
 		ProductCode:     param.ProductCode,
 		Amount:          int64(param.Amount),
 		TransType:       trasnType,
-		ProductType:     "PLN",
+		ProductType:     param.ProductType,
 		Status:          saveStatus,
 		ExpDate:         param.ExpDate,
 		Institution:     param.InstitutionID,

@@ -131,7 +131,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 
 	param := models.Params{
 		AccountNumber: dataToken.Data,
-		MerchantID:    dataToken.MerchantID,
+		MerchantID:    dataUser.MerchantID,
 		InstitutionID: header.InstitutionID,
 		AccountId:     dataUser.CustID,
 		CampaignID:    req.CampaignID,

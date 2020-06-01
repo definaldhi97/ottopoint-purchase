@@ -179,7 +179,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 	}
 
-	go SaveTransactionInq(param.Category, paramInq, dataInquery, req, inqBiller, "Inquiry", "00", dataInquery.Rc)
+	go SaveTransactionInq(param.ProductType, paramInq, dataInquery, req, inqBiller, "Inquiry", "00", dataInquery.Rc)
 
 	// coupon := []models.CouponsRedeem{}
 
