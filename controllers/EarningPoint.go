@@ -1,8 +1,9 @@
 package controllers
 
 import (
-	token "ottopoint-purchase/hosts/redis_token/host"
-	"ottopoint-purchase/services"
+	"fmt"
+	"ottopoint-purchase/constants"
+	services "ottopoint-purchase/services/earnings"
 	"ottopoint-purchase/utils"
 	"time"
 
@@ -18,12 +19,12 @@ import (
 	"ottopoint-purchase/models"
 )
 
-func EarningController(ctx *gin.Context) {
-	req := models.RulePointReq{}
+func EarningsPointController(ctx *gin.Context) {
+	req := models.EarningReq{}
 	res := models.Response{}
 
 	sugarLogger := ottologer.GetLogger()
-	namectrl := "[EarningController]"
+	namectrl := "[EarningsPointController]"
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
@@ -38,20 +39,20 @@ func EarningController(ctx *gin.Context) {
 	context := opentracing.ContextWithSpan(c, span)
 
 	//validate request
-	header, resultValidate := ValidateRequest(ctx, true, req)
-	if !resultValidate.Meta.Status {
-		ctx.JSON(http.StatusOK, resultValidate)
-		return
-	}
+	// header, resultValidate := ValidateRequest(ctx, true, req)
+	// if !resultValidate.Meta.Status {
+	// 	ctx.JSON(http.StatusOK, resultValidate)
+	// 	return
+	// }
 
-	dataToken, _ := token.CheckToken(header)
+	// dataToken, _ := token.CheckToken(header)
 
 	spanid := utilsgo.GetSpanId(span)
 	sugarLogger.Info("REQUEST:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", req),
 		zap.Any("HEADER", ctx.Request.Header))
 
-	earningPoint := services.EarningServices{
+	earningPoint := services.EarningPointServices{
 		General: models.GeneralModel{
 			ParentSpan: span,
 			OttoZaplog: sugarLogger,
@@ -60,14 +61,28 @@ func EarningController(ctx *gin.Context) {
 		},
 	}
 
-	// switch header.InstitutionID {
-	// case constants.INDOMARCO, constants.BOGASARI:
-	// 	res = earningPoint.EarningPointSupplyChen(req, dataToken, header)
-	// case "PSM0001", "PSM0002":
-	// 	res = earningPoint.EarningPoint(req, dataToken, header)
-	// }
+	fmt.Println("Request : ", req)
+	fmt.Println("Code : ", req.Earning)
 
-	res = earningPoint.EarningPoint(req, dataToken, header)
+	code := req.Earning[:2]
+	switch code {
+	case constants.GeneralSpending:
+		res = earningPoint.GeneralSpendingService(req)
+	// case constants.Multiply        :
+	// 	res = earningPoint.GeneralSpendingService(req)
+	case constants.InstantReward:
+		res = earningPoint.InstantRewardService(req)
+	case constants.EventRule:
+		res = earningPoint.EventRuleService(req)
+	case constants.CustomerReferral:
+		res = earningPoint.CustomerReferralService(req)
+	case constants.CustomeEventRule:
+		res = earningPoint.CustomeEventRuleService(req)
+	default:
+		// belum ada response
+
+	}
+	// res = earningRule.EarningsPointServuc(req, dataToken, header)
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", res))

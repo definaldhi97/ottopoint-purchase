@@ -54,7 +54,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	param.Amount = int64(param.Point)
 
 	// redeem to opl (potong point)
-	redeem, errredeem := host.RedeemVoucherCumulative(req.CampaignID, param.AccountNumber, total)
+	redeem, errredeem := host.RedeemVoucherCumulative(req.CampaignID, param.AccountId, total, "0")
 
 	if redeem.Message == "Invalid JWT Token" {
 		fmt.Println("Error : ", errredeem)
