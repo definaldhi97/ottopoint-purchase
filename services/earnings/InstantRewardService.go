@@ -27,21 +27,6 @@ func (t EarningPointServices) InstantRewardService(req models.EarningReq) models
 
 	fmt.Println("===== InstantRewardService =====")
 
-	// Get CustID OPL from DB
-	dataUser, errUser := db.CheckUser(req.AccountNumber1)
-	if errUser != nil || dataUser.CustID == "" {
-		fmt.Println(fmt.Sprintf("[Internal Server Error : %v]", errUser))
-		fmt.Println(fmt.Sprintf("[InstantRewardService]-[Error : %v]", dataUser))
-		fmt.Println("[Failed to Get CustID OPL]-[CheckUser]")
-
-		sugarLogger.Info("[Internal Server Error]")
-		sugarLogger.Info("[InstantRewardService]")
-		sugarLogger.Info("[Failed to Get CustID OPL]-[CheckUser]")
-
-		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_ACC_NOT_ELIGIBLE, constants.RD_ERROR_ACC_NOT_ELIGIBLE)
-		return res
-	}
-
 	// Get EaringCode from DB
 	earning, errEarning := db.GetEarningCode(req.Earning)
 	if errEarning != nil || earning.Code == "" {
@@ -54,6 +39,30 @@ func (t EarningPointServices) InstantRewardService(req models.EarningReq) models
 		sugarLogger.Info("[Failed to Get Data Earning]-[GetEarningCode]")
 
 		// response belum ada
+		return res
+	}
+
+	validateActive, errValidate := utils.ValidateTimeActive(earning.Active, earning.AllTimeActive, earning.StartAt, earning.EndAt)
+
+	if errValidate == false {
+
+		// response belum ada
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_ACC_NOT_ELIGIBLE, validateActive)
+		return res
+	}
+
+	// Get CustID OPL from DB
+	dataUser, errUser := db.CheckUser(req.AccountNumber1)
+	if errUser != nil || dataUser.CustID == "" {
+		fmt.Println(fmt.Sprintf("[Internal Server Error : %v]", errUser))
+		fmt.Println(fmt.Sprintf("[InstantRewardService]-[Error : %v]", dataUser))
+		fmt.Println("[Failed to Get CustID OPL]-[CheckUser]")
+
+		sugarLogger.Info("[Internal Server Error]")
+		sugarLogger.Info("[InstantRewardService]")
+		sugarLogger.Info("[Failed to Get CustID OPL]-[CheckUser]")
+
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_ACC_NOT_ELIGIBLE, constants.RD_ERROR_ACC_NOT_ELIGIBLE)
 		return res
 	}
 

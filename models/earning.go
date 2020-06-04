@@ -43,3 +43,8 @@ type EarningResp struct {
 	ReferenceId string `json:"referenceId"`
 	Point       int64  `json:"point"`
 }
+
+// ============== Check Status Earning ==============
+type CheckStatusEarningReq struct {
+	ReferenceId string `json:"referenceId"`
+}
