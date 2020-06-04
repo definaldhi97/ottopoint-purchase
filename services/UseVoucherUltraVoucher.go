@@ -165,7 +165,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	}
 
 	nama := "OTTOPOINT"
-	expired, _ := strconv.Atoi(param.ExpDate)
+	expired, _ := strconv.Atoi(dataorder.Expired)
 	reqOrder := uvmodels.OrderVoucherReq{
 		Sku:               param.ProductCode,
 		Qty:               req.Jumlah,
