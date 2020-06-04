@@ -47,14 +47,19 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	dataorder := DataParameterOrder()
 
 	param.Reffnum = utils.GenTransactionId()
-	param.ExpDate = dataorder.Expired
+
+	timeExp, _ := strconv.Atoi(dataorder.Expired)
+
+	exp := utils.FormatTimeString(time.Now(), 0, 0, timeExp)
+
+	param.ExpDate = exp
 
 	total := strconv.Itoa(req.Jumlah)
 
 	param.Amount = int64(param.Point)
 
 	// redeem to opl (potong point)
-	redeem, errredeem := host.RedeemVoucherCumulative(req.CampaignID, param.AccountNumber, total)
+	redeem, errredeem := host.RedeemVoucherCumulative(req.CampaignID, param.AccountId, total, "0")
 
 	if redeem.Message == "Invalid JWT Token" {
 		fmt.Println("Error : ", errredeem)
@@ -656,7 +661,7 @@ func chekStatus(institutionId, reffNo string) (uvmodels.OrderVoucherResp, error)
 		no++
 
 		fmt.Println(fmt.Sprintf("[Percobaan ke : %v]", no))
-		time.Sleep(10 * time.Second)
+		time.Sleep(5 * time.Second)
 
 		res, err = uv.CheckStatusOrder(institutionId, reffNo)
 		fmt.Println(fmt.Sprintf("[Response ke %v : %v]", no, res))
