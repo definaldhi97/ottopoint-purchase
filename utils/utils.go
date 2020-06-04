@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/leekchan/accounting"
+	"github.com/vjeantet/jodaTime"
 
 	ODU "ottodigital.id/library/utils"
 )
@@ -285,4 +286,26 @@ func GetMessageFailedErrorNew(res models.Response, resCode int, resDesc string) 
 	res.Meta.Message = resDesc
 
 	return res
+}
+
+func ValidateTimeActive(status, allTime bool, startAt, endAt time.Time) (string, bool) {
+
+	if status == false {
+		//
+		return "nonactive", false
+	}
+
+	if allTime == false {
+		now := jodaTime.Format("dd-MM-YYYY", time.Now())
+		start := jodaTime.Format("dd-MM-YYYY", startAt)
+		end := jodaTime.Format("dd-MM-YYYY", endAt)
+
+		// validate masa active earning
+		if now == end || now == start {
+			// response belum ada
+			return "Kadaluarsa", false
+		}
+	}
+
+	return "Success", true
 }

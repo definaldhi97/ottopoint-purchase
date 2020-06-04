@@ -28,6 +28,30 @@ func (t EarningPointServices) CustomerReferralService(req models.EarningReq) mod
 
 	fmt.Println("===== CustomerReferralService =====")
 
+	// Get EaringCode from DB
+	earning, errEarning := db.GetEarningCode(req.Earning)
+	if errEarning != nil || earning.Code == "" {
+		fmt.Println(fmt.Sprintf("[Error : %v]", errEarning))
+		fmt.Println(fmt.Sprintf("[CustomerReferralService]-[Error : %v]", earning))
+		fmt.Println("[Failed to Get Data Earning]-[GetEarningCode]")
+
+		sugarLogger.Info("[Internal Server Error]")
+		sugarLogger.Info("[CustomerReferralService]")
+		sugarLogger.Info("[Failed to Get Data Earning]-[GetEarningCode]")
+
+		// response belum ada
+		return res
+	}
+
+	validateActive, errValidate := utils.ValidateTimeActive(earning.Active, earning.AllTimeActive, earning.StartAt, earning.EndAt)
+
+	if errValidate == false {
+
+		// response belum ada
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_ACC_NOT_ELIGIBLE, validateActive)
+		return res
+	}
+
 	// Get CustID OPL from DB AccountNumber1
 	dataUser1, errUser1 := db.CheckUser(req.AccountNumber1)
 	if errUser1 != nil || dataUser1.CustID == "" {
@@ -55,21 +79,6 @@ func (t EarningPointServices) CustomerReferralService(req models.EarningReq) mod
 		sugarLogger.Info("[Failed to Get CustID OPL]-[CheckUser]")
 
 		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_ACC_NOT_ELIGIBLE, constants.RD_ERROR_ACC_NOT_ELIGIBLE)
-		return res
-	}
-
-	// Get EaringCode from DB
-	earning, errEarning := db.GetEarningCode(req.Earning)
-	if errEarning != nil || earning.Code == "" {
-		fmt.Println(fmt.Sprintf("[Error : %v]", errEarning))
-		fmt.Println(fmt.Sprintf("[CustomerReferralService]-[Error : %v]", earning))
-		fmt.Println("[Failed to Get Data Earning]-[GetEarningCode]")
-
-		sugarLogger.Info("[Internal Server Error]")
-		sugarLogger.Info("[CustomerReferralService]")
-		sugarLogger.Info("[Failed to Get Data Earning]-[GetEarningCode]")
-
-		// response belum ada
 		return res
 	}
 
