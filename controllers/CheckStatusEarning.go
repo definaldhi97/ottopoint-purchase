@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	services "ottopoint-purchase/services/earnings"
 	"ottopoint-purchase/utils"
 	"time"
 
@@ -35,12 +36,12 @@ func CheckStatusEarningController(ctx *gin.Context) {
 	c := ctx.Request.Context()
 	context := opentracing.ContextWithSpan(c, span)
 
-	//validate request
-	// header, resultValidate := ValidateRequest(ctx, true, req)
-	// if !resultValidate.Meta.Status {
-	// 	ctx.JSON(http.StatusOK, resultValidate)
-	// 	return
-	// }
+	// validate request
+	header, resultValidate := ValidateRequest(ctx, true, req)
+	if !resultValidate.Meta.Status {
+		ctx.JSON(http.StatusOK, resultValidate)
+		return
+	}
 
 	// dataToken, _ := token.CheckToken(header)
 
@@ -49,7 +50,7 @@ func CheckStatusEarningController(ctx *gin.Context) {
 		zap.Any("BODY", req),
 		zap.Any("HEADER", ctx.Request.Header))
 
-	checkStatusEarning := services.checkStatusEarningService{
+	checkStatusEarning := services.CheckStatusEarningService{
 		General: models.GeneralModel{
 			ParentSpan: span,
 			OttoZaplog: sugarLogger,
@@ -58,7 +59,7 @@ func CheckStatusEarningController(ctx *gin.Context) {
 		},
 	}
 
-	// res = earningRule.EarningsPointServuc(req, dataToken, header)
+	res = checkStatusEarning.EarningsPointServuc(req.ReferenceId, header.InstitutionID)
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", res))

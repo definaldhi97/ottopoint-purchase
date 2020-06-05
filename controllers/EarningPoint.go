@@ -38,12 +38,12 @@ func EarningsPointController(ctx *gin.Context) {
 	c := ctx.Request.Context()
 	context := opentracing.ContextWithSpan(c, span)
 
-	//validate request
-	// header, resultValidate := ValidateRequest(ctx, true, req)
-	// if !resultValidate.Meta.Status {
-	// 	ctx.JSON(http.StatusOK, resultValidate)
-	// 	return
-	// }
+	// validate request
+	header, resultValidate := ValidateRequest(ctx, true, req)
+	if !resultValidate.Meta.Status {
+		ctx.JSON(http.StatusOK, resultValidate)
+		return
+	}
 
 	// dataToken, _ := token.CheckToken(header)
 
@@ -67,17 +67,17 @@ func EarningsPointController(ctx *gin.Context) {
 	code := req.Earning[:2]
 	switch code {
 	case constants.GeneralSpending:
-		res = earningPoint.GeneralSpendingService(req)
+		res = earningPoint.GeneralSpendingService(req, header.InstitutionID)
 	// case constants.Multiply        :
-	// 	res = earningPoint.GeneralSpendingService(req)
+	// 	res = earningPoint.GeneralSpendingService(req, header.InstitutionID)
 	case constants.InstantReward:
-		res = earningPoint.InstantRewardService(req)
+		res = earningPoint.InstantRewardService(req, header.InstitutionID)
 	case constants.EventRule:
-		res = earningPoint.EventRuleService(req)
+		res = earningPoint.EventRuleService(req, header.InstitutionID)
 	case constants.CustomerReferral:
-		res = earningPoint.CustomerReferralService(req)
+		res = earningPoint.CustomerReferralService(req, header.InstitutionID)
 	case constants.CustomeEventRule:
-		res = earningPoint.CustomeEventRuleService(req)
+		res = earningPoint.CustomeEventRuleService(req, header.InstitutionID)
 	default:
 		// belum ada response
 

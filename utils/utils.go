@@ -288,11 +288,12 @@ func GetMessageFailedErrorNew(res models.Response, resCode int, resDesc string) 
 	return res
 }
 
-func ValidateTimeActive(status, allTime bool, startAt, endAt time.Time) (string, bool) {
+func ValidateTimeActive(status, allTime bool, startAt, endAt time.Time) bool {
 
 	if status == false {
-		//
-		return "nonactive", false
+
+		fmt.Println("=== Earning InActive ===")
+		return false
 	}
 
 	if allTime == false {
@@ -302,10 +303,11 @@ func ValidateTimeActive(status, allTime bool, startAt, endAt time.Time) (string,
 
 		// validate masa active earning
 		if now == end || now == start {
-			// response belum ada
-			return "Kadaluarsa", false
+
+			fmt.Println("=== Earning Kadaluarsa ===")
+			return false
 		}
 	}
 
-	return "Success", true
+	return true
 }
