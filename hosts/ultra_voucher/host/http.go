@@ -59,3 +59,28 @@ func HTTPxFormPostUV(url, InstitutionID string, jsonReq interface{}) ([]byte, er
 	}
 	return []byte(body), nil
 }
+
+func HTTPxFormGETUV(url, InstitutionReff, InstitutionId string) ([]byte, error) {
+	request := gorequest.New()
+	request.SetDebug(debugClientHTTP)
+	timeout, _ := time.ParseDuration(timeout)
+	//_ := errors.New("Connection Problem")
+	if strings.HasPrefix(url, "https") {
+		request.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	}
+	reqagent := request.Get(url)
+	reqagent.Header.Set("Content-Type", "application/json")
+	reqagent.Header.Set("InstitutionId", InstitutionId)
+	reqagent.Header.Set("InstitutionRefno", InstitutionReff)
+
+	_, body, errs := reqagent.
+		// Send(jsonReq).
+		Timeout(timeout).
+		Retry(retrybad, time.Second, http.StatusInternalServerError).
+		End()
+	if errs != nil {
+		logs.Error("Error Sending ", errs)
+		return nil, errs[0]
+	}
+	return []byte(body), nil
+}

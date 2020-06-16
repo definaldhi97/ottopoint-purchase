@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"ottopoint-purchase/hosts/opl/models"
-	"ottopoint-purchase/redis"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 	hcmodels "ottodigital.id/library/healthcheck/models"
-	hcutils "ottodigital.id/library/healthcheck/utils"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -17,14 +17,15 @@ var (
 	host string
 	name string
 
-	endpointVoucherDetail           string
-	endpointRedeemVoucher           string
-	endpointCouponVoucherCustomer   string
-	endpointHistoryVoucherCustomer  string
-	endpointRulePoint               string
-	endpointListRulePoint           string
-	endpointGetBalance              string
-	endpointRedeemCumulativeVoucher string
+	endpointVoucherDetail            string
+	endpointRedeemVoucher            string
+	endpointCouponVoucherCustomer    string
+	endpointHistoryVoucherCustomer   string
+	endpointRulePoint                string
+	endpointListRulePoint            string
+	endpointGetBalance               string
+	endpointRedeemCumulativeVoucher  string
+	endpointRedeemCumulativeVoucher2 string
 
 	endpointAddedPoint string
 	endpointSpendPoint string
@@ -37,8 +38,9 @@ func init() {
 	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_OPL", "OPENLOYALTY")
 
 	endpointRedeemVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM", "/api/customer/campaign/")
-	endpointRedeemCumulativeVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM_CUMULATIVE", "/api/customer/campaign/")
-	// endpointRedeemCumulativeVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM_CUMULATIVE", "/api/admin/customer/{custID}/campaign/{{campaignt}}/buy")
+	endpointRedeemCumulativeVoucher2 = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM_CUMULATIVE", "/api/customer/campaign/")
+	endpointRedeemCumulativeVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM_CUMULATIVE_v2", "/api/admin/customer/")
+
 	endpointVoucherDetail = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_DETAIL", "/api/campaign/")
 	endpointHistoryVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_HISTORY_VOUCHER", "/api/customer/campaign/bought")
 	endpointCouponVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_COUPONVOUCHER", "/api/admin/campaign/coupons/mark_as_used")
@@ -63,7 +65,7 @@ func RedeemVoucher(campaignID, phone string) (*models.BuyVocuherResp, error) {
 	api := campaignID + "/buy"
 	urlSvr := host + endpointRedeemVoucher + api
 
-	data, err := HTTPxFormPostCustomer1(urlSvr, phone)
+	data, err := HTTPxFormPostCustomerWithoutRequest(urlSvr, phone)
 	if err != nil {
 		logs.Error("Check error", err.Error())
 
@@ -81,19 +83,21 @@ func RedeemVoucher(campaignID, phone string) (*models.BuyVocuherResp, error) {
 }
 
 // Redeem Voucher Cumulative
-func RedeemVoucherCumulative(campaignID, phone, total string) (*models.BuyVocuherResp, error) {
+func RedeemVoucherCumulative(campaignID, custId, total, status string) (*models.BuyVocuherResp, error) {
 	var resp models.BuyVocuherResp
 
 	logs.Info("[Package Host OPL]-[RedeemVoucherCumulative]")
 
 	jsonData := map[string]interface{}{
-		"quantity": total,
+		"quantity":      total,
+		"withoutPoints": status, // 1 (true) tidak pake point, 0(false) pake pint
 	}
 
-	api := campaignID + "/buy"
+	// api := campaignID + "/buy"
+	api := custId + "/campaign/" + campaignID + "/buy"
 	urlSvr := host + endpointRedeemCumulativeVoucher + api
 
-	data, err := HTTPxFormPostCustomer2(urlSvr, phone, jsonData)
+	data, err := HTTPxFormPostAdminWithRequest(urlSvr, jsonData)
 	if err != nil {
 		logs.Error("Check error", err.Error())
 
@@ -121,7 +125,7 @@ func RulePoint(eventName, phone string) (models.RulePointResponse, error) {
 
 	urlSvr := host + todo
 
-	data, err := HTTPxFormPostCustomer1(urlSvr, phone)
+	data, err := HTTPxFormPostCustomerWithoutRequest(urlSvr, phone)
 	if err != nil {
 		logs.Error("Check error Rule Point", err.Error())
 		//fmt.Printf("Check error %v", err.Error())
@@ -233,7 +237,7 @@ func CouponVoucherCustomer(campaign, couponId, couponCode, custID string, useVou
 		"coupons[0][customerId]": custID}
 
 	logs.Info("===== Use Voucher True / False =====")
-	data, err := HTTPxFormPostAdmin2(urlSvr, jsonData)
+	data, err := HTTPxFormPostAdminWithRequest(urlSvr, jsonData)
 	if err != nil {
 		logs.Error("Check error ", err.Error())
 		return &resp, err
@@ -261,7 +265,7 @@ func TransferPoint(customer string, point string, text string) (*models.PointRes
 	}
 
 	logs.Info("Request to OPL : ", jsonData)
-	data, err := HTTPxFormPostAdmin2(urlSvr, jsonData)
+	data, err := HTTPxFormPostAdminWithRequest(urlSvr, jsonData)
 	if err != nil {
 		logs.Error("Check error ", err.Error())
 		return &resp, err
@@ -290,7 +294,7 @@ func SpendPoint(customer, point, text string) (*models.PointResponse, error) {
 	}
 
 	logs.Info("Request to OPL : ", jsonData)
-	data, err := HTTPxFormPostAdmin2(urlSvr, jsonData)
+	data, err := HTTPxFormPostAdminWithRequest(urlSvr, jsonData)
 	if err != nil {
 		logs.Error("Check error ", err.Error())
 		return &resp, err
@@ -329,11 +333,34 @@ func GetBalance(customer string) (*models.BalanceResponse, error) {
 }
 
 // GetServiceHealthCheck ..
-func GetServiceHealthCheck() hcmodels.ServiceHealthCheck {
-	redisClient := redis.GetRedisConnection()
-	return hcutils.GetServiceHealthCheck(&redisClient, &hcmodels.ServiceEnv{
-		Name:    name,
-		Address: host,
-		// HealthCheckKey: HealthCheckKey,
-	})
+func GetServiceHealthCheckOPL() hcmodels.ServiceHealthCheck {
+	res := hcmodels.ServiceHealthCheck{}
+	var erorr interface{}
+	// sugarLogger := service.General.OttoZapLog
+
+	PublicAddress := host + endpointListRulePoint
+	log.Print("url : ", PublicAddress)
+	res.Name = name
+	res.Address = PublicAddress
+	res.UpdatedAt = time.Now().UTC()
+
+	d, err := http.Get(PublicAddress)
+
+	erorr = err
+	if err != nil {
+		log.Print("masuk error")
+		res.Status = "Not OK"
+		res.Description = fmt.Sprintf("%v", erorr)
+		return res
+	}
+	if d.StatusCode != 200 {
+		res.Status = "Not OK"
+		res.Description = d.Status
+		return res
+	}
+
+	res.Status = "OK"
+	res.Description = ""
+
+	return res
 }

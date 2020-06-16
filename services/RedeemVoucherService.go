@@ -1,7 +1,7 @@
 package services
 
 import (
-	"errors"
+	"ottopoint-purchase/constants"
 	"ottopoint-purchase/hosts/opl/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
@@ -45,11 +45,12 @@ func (t VoucherRedeemServices) VoucherRedeem(req models.RedeemReq, AccountNumber
 		logs.Info("[VoucherRedeem-Services]")
 		logs.Info("[Get VoucherDetail]")
 
-		// sugarLogger.Info("Internal Server Error : ", errCoupon)
+		sugarLogger.Info("Internal Server Error : ")
 		sugarLogger.Info("[VoucherRedeem-Services]")
 		sugarLogger.Info("[Get VoucherDetail]")
 
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Voucher tidak ditemukan"))
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_VOUCHER_NOTFOUND, constants.RD_ERROR_VOUCHER_NOTFOUND)
+		//res = utils.GetMessageResponse(res, 422, false, errors.New("Voucher tidak ditemukan"))
 		return res
 	}
 
@@ -62,11 +63,11 @@ func (t VoucherRedeemServices) VoucherRedeem(req models.RedeemReq, AccountNumber
 			logs.Info("[VoucherRedeem-Services]")
 			logs.Info("[Failed Redeem Voucher]")
 
-			// sugarLogger.Info("Internal Server Error : ", err)
+			sugarLogger.Info("Internal Server Error : ")
 			sugarLogger.Info("[VoucherRedeem-Services]")
 			sugarLogger.Info("[Failed Redeem Voucher]")
-
-			res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
+			res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_FAILED_REDEEM_VOUCHER, constants.RD_ERROR_FAILED_REDEEM_VOUCHER)
+			//res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Redeem Voucher"))
 			return res
 		}
 
@@ -97,8 +98,8 @@ func (t VoucherRedeemServices) VoucherRedeem(req models.RedeemReq, AccountNumber
 
 		sugarLogger.Info("[VoucherRedeem-Services]")
 		sugarLogger.Info("[Voucher Kosong]")
-
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Anda mencapai batas maksimal pembelian voucher"))
+		res = utils.GetMessageFailedErrorNew(res, constants.RC_ERROR_FAILED_MAX_BUY_VOUCHER, constants.RD_ERROR_FAILED_MAX_BUY_VOUCHER)
+		//res = utils.GetMessageResponse(res, 422, false, errors.New("Anda mencapai batas maksimal pembelian voucher"))
 		return res
 	}
 

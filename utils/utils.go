@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/leekchan/accounting"
+	"github.com/vjeantet/jodaTime"
 
 	ODU "ottodigital.id/library/utils"
 )
@@ -35,7 +36,7 @@ func init() {
 	rrnkey = ODU.GetEnv("REDISKEY.OTTOFIN.RRN", "OTTOFIN:KEYRRN")
 	RedisKeyAuth = ODU.GetEnv("redis.key.auth", "Ottopoint-Token-Admin :")
 	LimitTRXPoint = ODU.GetEnv("limit.trx.point", "999999999999999")
-	MemberID = ODU.GetEnv("ottoag.memberid", "OTPOINT")
+	MemberID = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_MEMBERID", "OTPOINT")
 
 }
 
@@ -283,6 +284,38 @@ func GetMessageFailedErrorNew(res models.Response, resCode int, resDesc string) 
 	res.Meta.Status = false
 	res.Meta.Code = resCode
 	res.Meta.Message = resDesc
+
+	return res
+}
+
+func ValidateTimeActive(status, allTime bool, startAt, endAt time.Time) (string, bool) {
+
+	if status == false {
+		//
+		return "nonactive", false
+	}
+
+	if allTime == false {
+		now := jodaTime.Format("dd-MM-YYYY", time.Now())
+		start := jodaTime.Format("dd-MM-YYYY", startAt)
+		end := jodaTime.Format("dd-MM-YYYY", endAt)
+
+		// validate masa active earning
+		if now == end || now == start {
+			// response belum ada
+			return "Kadaluarsa", false
+		}
+	}
+
+	return "Success", true
+}
+
+func FormatTimeString(timestamp time.Time, year, month, day int) string {
+
+	t := timestamp.AddDate(year, month, day)
+
+	// 2020-05-01T17:40:24+0700
+	res := jodaTime.Format("YYYY-MM-dd", t)
 
 	return res
 }

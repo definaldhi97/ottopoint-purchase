@@ -22,3 +22,29 @@ type GetEarningRulesResp struct {
 	EventName    string `json:"eventName"`
 	PointsAmount int    `json:"pointsAmount"`
 }
+
+type EarningRuleReq struct {
+	Code string `json:"code"`
+}
+
+// ============== New Earning ==============
+type EarningReq struct {
+	Earning        string `json:"earning"`
+	ReferenceId    string `json:"referenceId"`
+	ProductCode    string `json:"productCode"`
+	ProductName    string `json:"productName"`
+	AccountNumber1 string `json:"accountNumber1"`
+	AccountNumber2 string `json:"accountNumber2"`
+	Amount         int64  `json:"amount"`
+	Remark         string `json:"remark"`
+}
+
+type EarningResp struct {
+	ReferenceId string `json:"referenceId"`
+	Point       int64  `json:"point"`
+}
+
+// ============== Check Status Earning ==============
+type CheckStatusEarningReq struct {
+	ReferenceId string `json:"referenceId"`
+}

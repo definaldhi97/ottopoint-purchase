@@ -1,13 +1,13 @@
 package models
 
-// CouponCustomer ..
 type CouponVoucherCustomerResp struct {
-	Points        int    `json:"points"`
-	Code          string `json:"code"`
-	CampaignID    string `json:"campaignId"`
-	CouponID      string `json:"couponId"`
-	AccountNumber string `json:"accountNumber"`
-	CustID        string `json:"custId"`
-	Date          string `json:"date"`
-	// Name          string `json:"name"`
+	Coupons []CouponsVoucherResp `json:"coupons"`
+}
+
+type CouponsVoucherResp struct {
+	Code       string `json:"code"`
+	CouponID   string `json:"couponId"`
+	Used       bool   `json:"used"`
+	CampaignID string `json:"campaignId"`
+	CustomerID string `json:"customerId"`
 }

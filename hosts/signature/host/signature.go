@@ -2,13 +2,15 @@ package host
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
 	"ottopoint-purchase/hosts/signature/models"
 	headermodels "ottopoint-purchase/models"
-	"ottopoint-purchase/redis"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 	hcmodels "ottodigital.id/library/healthcheck/models"
-	hcutils "ottodigital.id/library/healthcheck/utils"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -24,7 +26,7 @@ func init() {
 	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_SIGNATURE", "http://13.228.25.85:8666")
 	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_SIGNATURE", "SIGNATURE")
 
-	endpointSignature = ODU.GetEnv("OTTOPOINT_PURCHASE_ENDPOINT_VALIDATE_SIGNATURE", "/auth/signature")
+	endpointSignature = ODU.GetEnv("OTTOPOINT_PURCHASE_ENDPOINT_VALIDATE_SIGNATURE", "/auth/v2/signature")
 
 	HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_SIGNATURE", "OTTOPOINT-PURCHASE:SIGNATURE")
 }
@@ -55,11 +57,34 @@ func Signature(signature interface{}, header headermodels.RequestHeader) (*model
 }
 
 // GetServiceHealthCheck ..
-func GetServiceHealthCheck() hcmodels.ServiceHealthCheck {
-	redisClient := redis.GetRedisConnection()
-	return hcutils.GetServiceHealthCheck(&redisClient, &hcmodels.ServiceEnv{
-		Name:           name,
-		Address:        host,
-		HealthCheckKey: HealthCheckKey,
-	})
+func GetServiceHealthCheckSignature() hcmodels.ServiceHealthCheck {
+	res := hcmodels.ServiceHealthCheck{}
+	var erorr interface{}
+	// sugarLogger := service.General.OttoZapLog
+
+	PublicAddress := host
+	log.Print("url : ", PublicAddress)
+	res.Name = name
+	res.Address = PublicAddress
+	res.UpdatedAt = time.Now().UTC()
+
+	d, err := http.Get(PublicAddress)
+
+	erorr = err
+	if err != nil {
+		log.Print("masuk error")
+		res.Status = "Not OK"
+		res.Description = fmt.Sprintf("%v", erorr)
+		return res
+	}
+	if d.StatusCode != 200 {
+		res.Status = "Not OK"
+		res.Description = d.Status
+		return res
+	}
+
+	res.Status = "OK"
+	res.Description = ""
+
+	return res
 }

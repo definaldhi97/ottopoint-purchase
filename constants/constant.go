@@ -40,23 +40,32 @@ const (
 )
 
 const (
-	CategoryPulsa        = "Pulsa"
+	CategoryPulsa        = "pulsa"
 	CategoryPaketData    = "paket_data"
-	CategoryFreeFire     = "Free Fire"
-	CategoryMobileLegend = "Mobile Legend"
-	CategoryPLN          = "PLN"
-	CategoryGame         = "Game"
+	CategoryFreeFire     = "free fire"
+	CategoryMobileLegend = "mobile legends"
+	CategoryPLN          = "pln"
+	CategoryGame         = "game"
 )
 
 const (
-	Success = "(00 Success)"
-	Pending = "(09 Pending)"
-	Failed  = "(01 Failed)"
+	Success = "00 (Success)"
+	Pending = "09 (Pending)"
+	Failed  = "01 (Failed)"
 )
 
 const (
 	UV     = "Ultra Voucher"
 	OttoAG = "OttoAG"
+)
+
+const (
+	GeneralSpending  = "GS"
+	Multiply         = "MP"
+	InstantReward    = "IR"
+	CustomeEventRule = "CE"
+	EventRule        = "ER"
+	CustomerReferral = "CR"
 )
 
 const (

@@ -1,13 +1,11 @@
 package controllers
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
 	"ottopoint-purchase/db"
 	token "ottopoint-purchase/hosts/redis_token/host"
-	signature "ottopoint-purchase/hosts/signature/host"
 	"ottopoint-purchase/services"
 	"ottopoint-purchase/utils"
 
@@ -35,8 +33,8 @@ func ReversePointController(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
-		res.Meta.Message = "Error, Unmarshall Body Request"
-		ctx.JSON(http.StatusBadRequest, res)
+		res.Meta.Message = "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."
+		ctx.JSON(http.StatusOK, res)
 		go sugarLogger.Error("Error, body Request", zap.Error(err))
 		return
 	}
@@ -45,42 +43,15 @@ func ReversePointController(ctx *gin.Context) {
 	c := ctx.Request.Context()
 	context := opentracing.ContextWithSpan(c, span)
 
-	header := models.RequestHeader{
-		DeviceID:      ctx.Request.Header.Get("DeviceId"),
-		InstitutionID: ctx.Request.Header.Get("InstitutionId"),
-		Geolocation:   ctx.Request.Header.Get("Geolocation"),
-		ChannelID:     ctx.Request.Header.Get("ChannelId"),
-		AppsID:        ctx.Request.Header.Get("AppsId"),
-		Timestamp:     ctx.Request.Header.Get("Timestamp"),
-		Authorization: ctx.Request.Header.Get("Authorization"),
-		Signature:     ctx.Request.Header.Get("Signature"),
-	}
-
-	ValidateSignature, errSignature := signature.Signature(req, header)
-	if errSignature != nil || ValidateSignature.ResponseCode != "00" {
-		sugarLogger.Info("[ValidateSignature]-[ReversePointController]")
-		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
-
-		logs.Info("[ValidateSignature]-[ReversePointController]")
-		logs.Info(fmt.Sprintf("Error when validation request header"))
-
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
-		ctx.JSON(http.StatusBadRequest, res)
+	//validate request
+	header, resultValidate := ValidateRequest(ctx, true, req)
+	if !resultValidate.Meta.Status {
+		ctx.JSON(http.StatusOK, resultValidate)
 		return
 	}
 
-	dataToken, errToken := token.CheckToken(header)
-	if errToken != nil || dataToken.ResponseCode != "00" {
-		sugarLogger.Info("[ValidateToken]-[ReversePointController]")
-		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
+	dataToken, _ := token.CheckToken(header)
 
-		logs.Info("[ValidateToken]-[ReversePointController]")
-		logs.Info(fmt.Sprintf("Error when validation request header"))
-
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
-		ctx.JSON(http.StatusBadRequest, res)
-		return
-	}
 	spanid := utilsgo.GetSpanId(span)
 	sugarLogger.Info("REQUEST:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", req),
@@ -103,7 +74,7 @@ func ReversePointController(ctx *gin.Context) {
 		logs.Info(fmt.Sprintf("Error when get data deduction"))
 
 		res = utils.GetMessageResponse(res, 400, false, err)
-		ctx.JSON(http.StatusInternalServerError, res)
+		ctx.JSON(http.StatusOK, res)
 		return
 	}
 	// reqDeduct.AccountNumber = dataDeduct.CustomerID
@@ -120,7 +91,7 @@ func ReversePointController(ctx *gin.Context) {
 		logs.Info("[UpdateStatusDeduction]-[controllers-ReversePoint]")
 		logs.Info(fmt.Sprintf("Error when update status deduction"))
 		res = utils.GetMessageResponse(res, 400, false, err)
-		ctx.JSON(http.StatusBadRequest, res)
+		ctx.JSON(http.StatusOK, res)
 		return
 	}
 

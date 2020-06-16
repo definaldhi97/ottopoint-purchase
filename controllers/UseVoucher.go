@@ -13,9 +13,6 @@ import (
 	"ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
 	token "ottopoint-purchase/hosts/redis_token/host"
-	signature "ottopoint-purchase/hosts/signature/host"
-
-	"github.com/astaxie/beego/logs"
 
 	"github.com/gin-gonic/gin"
 	zaplog "github.com/opentracing-contrib/go-zap/log"
@@ -32,12 +29,13 @@ func UseVouhcerController(ctx *gin.Context) {
 	res := models.Response{}
 
 	sugarLogger := ottologer.GetLogger()
-	namectrl := "[UseVouhcerController]"
+	namectrl := "[UseVoucherController]"
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
-		res.Meta.Message = "Error, Unmarshall Body Request"
-		ctx.JSON(http.StatusBadRequest, res)
+		res.Meta.Message = "Transaksi gagal, silahkan dicoba kembali. Jika masih gagal silahkan hubungi customer support kami."
+		// res.Meta.Message = "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."
+		ctx.JSON(http.StatusOK, res)
 		go sugarLogger.Error("Error, body Request", zap.Error(err))
 		return
 	}
@@ -46,55 +44,14 @@ func UseVouhcerController(ctx *gin.Context) {
 	c := ctx.Request.Context()
 	context := opentracing.ContextWithSpan(c, span)
 
-	header := models.RequestHeader{
-		DeviceID:      ctx.Request.Header.Get("DeviceId"),
-		InstitutionID: ctx.Request.Header.Get("InstitutionId"),
-		Geolocation:   ctx.Request.Header.Get("Geolocation"),
-		ChannelID:     ctx.Request.Header.Get("ChannelId"),
-		AppsID:        ctx.Request.Header.Get("AppsId"),
-		Timestamp:     ctx.Request.Header.Get("Timestamp"),
-		Authorization: ctx.Request.Header.Get("Authorization"),
-		Signature:     ctx.Request.Header.Get("Signature"),
-	}
-
-	ValidateSignature, errSignature := signature.Signature(req, header)
-	if errSignature != nil || ValidateSignature.ResponseCode == "" {
-		sugarLogger.Info("[ValidateSignature]-[DeductSplitBillController]")
-		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
-
-		logs.Info("[ValidateSignature]-[DeductSplitBillController]")
-		logs.Info(fmt.Sprintf("Error when validation request header"))
-
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
-		ctx.JSON(http.StatusBadRequest, res)
+	//validate request
+	header, resultValidate := ValidateRequest(ctx, true, req)
+	if !resultValidate.Meta.Status {
+		ctx.JSON(http.StatusOK, resultValidate)
 		return
 	}
 
-	dataToken, errToken := token.CheckToken(header)
-	if errToken != nil || dataToken.ResponseCode != "00" {
-		sugarLogger.Info("[ValidateToken]-[DeductSplitBillController]")
-		sugarLogger.Info(fmt.Sprintf("Error when validation request header"))
-
-		logs.Info("[ValidateToken]-[DeductSplitBillController]")
-		logs.Info(fmt.Sprintf("Error when validation request header"))
-
-		res = utils.GetMessageResponse(res, 400, false, errors.New("Silahkan login kembali"))
-		ctx.JSON(http.StatusBadRequest, res)
-		return
-	}
-
-	dataUser, errUser := db.CheckUser(dataToken.Data)
-	if errUser != nil || dataUser.CustID == "" {
-		logs.Info("Internal Server Error : ", errUser)
-		logs.Info("[UltraVoucherServices]-[CheckUser]")
-		logs.Info("[Failed Redeem Voucher]-[Get Data User]")
-
-		// sugarLogger.Info("Internal Server Error : ", errredeem)
-		sugarLogger.Info("[UltraVoucherServices]-[CheckUser]")
-		sugarLogger.Info("[Failed Redeem Voucher]-[Get Data User]")
-
-		res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
-	}
+	dataToken, _ := token.CheckToken(header)
 
 	spanid := utilsgo.GetSpanId(span)
 	sugarLogger.Info("REQUEST:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
@@ -112,21 +69,50 @@ func UseVouhcerController(ctx *gin.Context) {
 
 	cekVoucher, errVoucher := opl.VoucherDetail(req.CampaignID)
 	if errVoucher != nil || cekVoucher.CampaignID == "" {
-		sugarLogger.Info("[HistoryVoucherCustomer]-[VoucherComulative-Controller]")
+		sugarLogger.Info("[UseVoucherController]-[VoucherDetail]")
 		sugarLogger.Info(fmt.Sprintf("Error : ", errVoucher))
 
-		logs.Info("[HistoryVoucherCustomer]-[VoucherComulative-Controller]")
-		logs.Info(fmt.Sprintf("Error : ", errVoucher))
+		fmt.Println("[UseVoucherController]-[VoucherDetail]")
+		fmt.Println(fmt.Sprintf("Error : ", errVoucher))
 
-		res = utils.GetMessageResponse(res, 422, false, errors.New("Internal Server Error"))
-		ctx.JSON(http.StatusBadRequest, res)
+		res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
+		ctx.JSON(http.StatusOK, res)
 		return
 	}
 
 	data := SwitchCheckData(cekVoucher)
 
-	logs.Info("SupplierID : ", data.SupplierID)
-	logs.Info("producrType : ", data.ProductType)
+	var custIdOPL, merchant string
+	if data.SupplierID == "Ultra Voucher" {
+		fmt.Println("[Voucher Ultra Voucher]")
+		getData, errData := db.CheckCouponUV(dataToken.Data, req.CampaignID, req.CouponID)
+		if errData != nil || getData.AccountId == "" {
+			fmt.Println(fmt.Sprintf("Internal Server Error : %v\n", errData))
+			sugarLogger.Info("[UseVoucherController]-[CheckCouponUV]")
+			sugarLogger.Info("[Failed Failed from DB]-[Get Data Voucher-UV]")
+
+			res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
+			ctx.JSON(http.StatusOK, res)
+			return
+		}
+
+		custIdOPL = getData.AccountId
+	} else {
+		fmt.Println("[Voucher OttoAG]")
+		dataUser, errUser := db.CheckUser(dataToken.Data)
+		if errUser != nil || dataUser.CustID == "" {
+			fmt.Println(fmt.Sprintf("Internal Server Error : %v\n", errUser))
+			sugarLogger.Info("[UseVoucherController]-[CheckUser]")
+			sugarLogger.Info("[Failed from DB]-[Get Data User]")
+
+			res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
+		}
+		custIdOPL = dataUser.CustID
+		merchant = dataUser.MerchantID
+	}
+
+	fmt.Println("SupplierID : ", data.SupplierID)
+	fmt.Println("producrType : ", data.ProductType)
 
 	sugarLogger.Info("=== SupplierID ===")
 	sugarLogger.Info(data.SupplierID)
@@ -136,16 +122,18 @@ func UseVouhcerController(ctx *gin.Context) {
 
 	param := models.Params{
 		AccountNumber: dataToken.Data,
-		MerchantID:    dataToken.MerchantID,
+		MerchantID:    merchant,
 		InstitutionID: header.InstitutionID,
 		SupplierID:    data.SupplierID,
-		CustID:        dataUser.CustID,
+		AccountId:     custIdOPL,
+		CampaignID:    req.CampaignID,
 		ProductType:   data.ProductType,
 		ProductCode:   data.ProductCode,
 		NamaVoucher:   data.NamaVoucher,
 		Category:      data.Category,
 		CouponID:      req.CouponID,
 		Point:         data.Point,
+		ExpDate:       data.ExpDate,
 	}
 
 	switch data.SupplierID {

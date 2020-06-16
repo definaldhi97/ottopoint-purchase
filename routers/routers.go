@@ -109,13 +109,13 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.Use(gin.Recovery())
 
 	// router.GET(cashbackbyproduct, controllers.InquiryController)
-	router.POST(healthcheck, controllers.HealthCheckService)
+	router.GET(healthcheck, controllers.HealthCheckService)
 	router.POST(redeem, controllers.VoucherRedeemController)
 	router.POST(comulative, controllers.VoucherComulativeController)
 	router.POST(use_voucher, controllers.UseVouhcerController)
 	router.POST(deductPoint, controllers.PointController)
 	router.POST(reversePoint, controllers.ReversePointController)
-	router.POST(earningPoint, controllers.EarningController)
+	// router.POST(earningPoint, controllers.EarningsPointController)
 	router.POST(splitbill, controllers.DeductSplitBillController)
 	router.POST(usevoucher_uv, controllers.UseVouhcerUVController)
 

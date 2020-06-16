@@ -1,36 +1,38 @@
 package voucher
 
 import (
+	"fmt"
 	"ottopoint-purchase/models"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/utils"
-
-	"github.com/astaxie/beego/logs"
 )
 
 func RedeemPulsaComulative(req models.UseRedeemRequest, reqOP interface{}, param models.Params) models.UseRedeemResponse {
 	res := models.UseRedeemResponse{}
 
-	logs.Info("[Start]-[Package-Voucher]-[RedeemPulsaComulative]")
+	fmt.Println("[Start]-[Package-Voucher]-[RedeemPulsaComulative]")
 
 	// ===== Payment OttoAG =====
-	logs.Info("[PAYMENT-BILLER][START]")
-	logs.Info("Param : ", param)
+	fmt.Println("[PAYMENT-BILLER][START]")
+	// fmt.Println("Param : ", param)
 	// refnum := utils.GetRrn()
 
 	// payment to ottoag
 	billerReq := ottoagmodels.OttoAGPaymentReq{
-		Amount:      uint64(param.Amount),
-		CustID:      req.CustID,
-		MemberID:    utils.MemberID,
-		Period:      req.CustID2,
+		Amount:   uint64(param.Amount),
+		CustID:   req.CustID,
+		MemberID: utils.MemberID,
+		// Period:      req.CustID2,
 		Productcode: req.ProductCode,
 		Rrn:         param.RRN,
 	}
 
 	billerRes := biller.PaymentBiller(billerReq, reqOP, req, param)
 
+	// fmt.Println("Jumlah Voucher : ", param.Total)
+	fmt.Println("Response OttoAG Payment : ", billerRes)
+	// fmt.Println("[Response Payment %v]", billerRes.Rc)
 	paramPay := models.Params{
 		AccountNumber: param.AccountNumber,
 		MerchantID:    param.MerchantID,
@@ -48,32 +50,58 @@ func RedeemPulsaComulative(req models.UseRedeemRequest, reqOP interface{}, param
 		SupplierID:    param.SupplierID,
 	}
 
-	if billerRes.Rc == "09" || billerRes.Rc == "68" {
-		logs.Info("[Response Payment %v]", billerRes.Rc)
+	fmt.Println(fmt.Sprintf("[Payment Response : %v]", billerRes))
+
+	// Time Out
+	if billerRes.Rc == "" {
+		fmt.Println("[Payment Time Out]")
 
 		go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
 
 		res = models.UseRedeemResponse{
-			Rc:  "09",
-			Msg: "Request in progress",
+			// Rc:  "09",
+			// Msg: "Request in progress",
+			Rc:    "68",
+			Msg:   "Timeout",
+			Uimsg: "Timeout",
 		}
 		return res
 	}
 
+	// Pending
+	if billerRes.Rc == "09" || billerRes.Rc == "68" {
+		fmt.Println("[Payment Pending]")
+
+		go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
+
+		res = models.UseRedeemResponse{
+			// Rc:  "09",
+			// Msg: "Request in progress",
+			Rc:    billerRes.Rc,
+			Msg:   billerRes.Msg,
+			Uimsg: "Request in progress",
+		}
+		return res
+	}
+
+	// Gagal
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
-		logs.Info("[Response Payment %v]", billerRes.Rc)
+		fmt.Println("[Payment Failed]")
 
 		go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
 
 		res = models.UseRedeemResponse{
-			Rc:  "01",
-			Msg: "Payment Failed",
+			// Rc:  "01",
+			// Msg: "Payment Failed",
+			Rc:    billerRes.Rc,
+			Msg:   billerRes.Msg,
+			Uimsg: "Payment Failed",
 		}
 
 		return res
 	}
 
-	logs.Info("[Response Payment %v]", billerRes.Rc)
+	fmt.Println("[Payment Success]")
 	go SaveTransactionPulsa(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
 
 	res = models.UseRedeemResponse{
@@ -83,7 +111,7 @@ func RedeemPulsaComulative(req models.UseRedeemRequest, reqOP interface{}, param
 		CustID:      billerReq.CustID,
 		ProductCode: billerReq.Productcode,
 		Amount:      int64(billerRes.Amount),
-		Msg:         "SUCCESS",
+		Msg:         billerRes.Msg,
 		Uimsg:       "SUCCESS",
 		Data:        billerRes.Data,
 		Datetime:    utils.GetTimeFormatYYMMDDHHMMSS(),
