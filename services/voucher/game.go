@@ -2,6 +2,7 @@ package voucher
 
 import (
 	"encoding/json"
+	"fmt"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/models"
@@ -169,7 +170,7 @@ func RedeemGame(req models.UseRedeemRequest, reqOP interface{}, param models.Par
 	return res
 }
 
-func SaveTransactionGame(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
+func SaveTransactionGame(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) string {
 
 	logs.Info("[Start-SaveDB]-[Game]")
 
@@ -213,9 +214,14 @@ func SaveTransactionGame(param models.Params, res interface{}, reqdata interface
 
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
-		logs.Info("[Failed Save to DB ]", err)
-		logs.Info("[Package-Voucher]-[Service-RedeemGame]")
-		// return err
+
+		fmt.Println(fmt.Sprintf("[Error : %v]", err))
+		fmt.Println("[Failed SaveTransactionGame to DB]")
+		fmt.Println(fmt.Sprintf("[TransType : %v || RRN : %v]", trasnType, param.RRN))
+
+		return "Gagal Save"
 
 	}
+
+	return "Berhasil Save"
 }
