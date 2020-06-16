@@ -53,7 +53,8 @@ func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param m
 	if billerRes.Rc == "" {
 		fmt.Println("[Payment Time Out]")
 
-		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
+		save := SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
+		fmt.Println("[Response Save Payment PLN : %v]", save)
 
 		res = models.UseRedeemResponse{
 			// Rc:  "09",
@@ -70,7 +71,8 @@ func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param m
 	if billerRes.Rc == "09" || billerRes.Rc == "68" || billerRes.Rc == "" {
 		fmt.Println("[Payment Pending]")
 
-		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
+		save := SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
+		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.UseRedeemResponse{
 			// Rc:  "09",
@@ -87,7 +89,8 @@ func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param m
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
 		fmt.Println("[Payment Failed]")
 
-		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
+		save := SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
+		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.UseRedeemResponse{
 			// Rc:  "01",
@@ -124,7 +127,8 @@ func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param m
 
 	fmt.Println("[Payment Success]")
 
-	go SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
+	save := SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
+	fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 	res = models.UseRedeemResponse{
 		Rc:          billerRes.Rc,
