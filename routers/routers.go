@@ -115,7 +115,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(use_voucher, controllers.UseVouhcerController)
 	router.POST(deductPoint, controllers.PointController)
 	router.POST(reversePoint, controllers.ReversePointController)
-	router.POST(earningPoint, controllers.EarningsPointController)
+	// router.POST(earningPoint, controllers.EarningsPointController)
 	router.POST(splitbill, controllers.DeductSplitBillController)
 	router.POST(usevoucher_uv, controllers.UseVouhcerUVController)
 
