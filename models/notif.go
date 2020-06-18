@@ -21,3 +21,11 @@ type Notifs struct {
 	AccountNumber string `json:"account_number"`
 	Body          string `json:"body"`
 }
+
+type NotifPubreq struct {
+	Type          string `json:"type"`
+	AccountNumber string `json:"accountNumber"`
+	Institution   string `json:"institution"`
+	Point         int    `json:"point"`
+	Product       string `json:"product"`
+}
