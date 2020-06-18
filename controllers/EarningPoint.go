@@ -6,13 +6,11 @@ import (
 	"fmt"
 	"ottopoint-purchase/constants"
 	kafka "ottopoint-purchase/hosts/publisher/host"
-	services "ottopoint-purchase/services/earnings"
 	"ottopoint-purchase/utils"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	zaplog "github.com/opentracing-contrib/go-zap/log"
-	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	ottologer "ottodigital.id/library/logger"
 	utilsgo "ottodigital.id/library/utils"
@@ -38,8 +36,8 @@ func EarningsPointController(ctx *gin.Context) {
 	}
 
 	span := TracingFirstControllerCtx(ctx, req, namectrl)
-	c := ctx.Request.Context()
-	context := opentracing.ContextWithSpan(c, span)
+	// c := ctx.Request.Context()
+	// context := opentracing.ContextWithSpan(c, span)
 
 	header := models.RequestHeader{}
 	header.InstitutionID = "PSM0001"
@@ -58,16 +56,16 @@ func EarningsPointController(ctx *gin.Context) {
 		zap.Any("BODY", req),
 		zap.Any("HEADER", ctx.Request.Header))
 
-	earningPoint := services.EarningPointServices{
-		General: models.GeneralModel{
-			ParentSpan: span,
-			OttoZaplog: sugarLogger,
-			SpanId:     spanid,
-			Context:    context,
-		},
-	}
+	// earningPoint := services.EarningPointServices{
+	// 	General: models.GeneralModel{
+	// 		ParentSpan: span,
+	// 		OttoZaplog: sugarLogger,
+	// 		SpanId:     spanid,
+	// 		Context:    context,
+	// 	},
+	// }
 
-	fmt.Println(earningPoint)
+	// fmt.Println(earningPoint)
 	fmt.Println(fmt.Sprintf("[Request : %v]", req))
 	fmt.Println(fmt.Sprintf("[Code : %v]", req.Earning))
 
@@ -119,15 +117,16 @@ func publishEarning(req models.EarningReq, header models.RequestHeader) {
 	fmt.Println(">>>>> Publisher Earning <<<<<")
 
 	pubReq := models.PublishEarningReq{
-		Header:         header,
-		Earning:        req.Earning,
-		ReferenceId:    req.ReferenceId,
-		ProductCode:    req.ProductCode,
-		ProductName:    req.ProductName,
-		AccountNumber1: req.AccountNumber1,
-		AccountNumber2: req.AccountNumber2,
-		Amount:         req.Amount,
-		Remark:         req.Remark,
+		Header:          header,
+		Earning:         req.Earning,
+		ReferenceId:     req.ReferenceId,
+		ProductCode:     req.ProductCode,
+		ProductName:     req.ProductName,
+		AccountNumber1:  req.AccountNumber1,
+		AccountNumber2:  req.AccountNumber2,
+		Amount:          req.Amount,
+		Remark:          req.Remark,
+		TransactionTime: req.TransactionTime,
 	}
 
 	bytePub, _ := json.Marshal(pubReq)
