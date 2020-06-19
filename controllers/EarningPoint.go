@@ -39,14 +39,14 @@ func EarningsPointController(ctx *gin.Context) {
 	// c := ctx.Request.Context()
 	// context := opentracing.ContextWithSpan(c, span)
 
-	header := models.RequestHeader{}
-	header.InstitutionID = "PSM0001"
+	// header := models.RequestHeader{}
+	// header.InstitutionID = "PSM0001"
 	// validate request
-	// header, resultValidate := ValidateRequest(ctx, true, req)
-	// if !resultValidate.Meta.Status {
-	// 	ctx.JSON(http.StatusOK, resultValidate)
-	// 	return
-	// }
+	header, resultValidate := ValidateRequest(ctx, true, req)
+	if !resultValidate.Meta.Status {
+		ctx.JSON(http.StatusOK, resultValidate)
+		return
+	}
 
 	// dataToken, _ := token.CheckToken(header)
 	// fmt.Println(dataToken)
@@ -98,6 +98,11 @@ func EarningsPointController(ctx *gin.Context) {
 	default:
 		fmt.Println("===== Invalid Code =====")
 		res = utils.GetMessageResponse(res, 178, false, errors.New("Earning Rule not found"))
+	}
+
+	if req.AccountNumber1 == "" || req.Earning == "" {
+		fmt.Println("===== Invalid Mandatory =====")
+		res = utils.GetMessageResponse(res, 06, false, errors.New("Invalid Mandatory"))
 	}
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),

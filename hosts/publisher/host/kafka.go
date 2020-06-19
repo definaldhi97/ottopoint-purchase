@@ -18,8 +18,8 @@ var (
 )
 
 func init() {
-	host = beego.AppConfig.DefaultString("host.publish", "http://13.228.25.85:8703/")
-	endpointPublisher = beego.AppConfig.DefaultString("endpoint.publish", "ottopoint/v0.1.0/kafka/publish")
+	host = beego.AppConfig.DefaultString("host.publish", "http://13.228.25.85:8703")
+	endpointPublisher = beego.AppConfig.DefaultString("endpoint.publish", "/ottopoint/v0.1.0/kafka/publish")
 }
 
 // SendPublishKafka ...
