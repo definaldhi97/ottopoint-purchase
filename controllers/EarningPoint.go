@@ -42,7 +42,7 @@ func EarningsPointController(ctx *gin.Context) {
 	// header := models.RequestHeader{}
 	// header.InstitutionID = "PSM0001"
 	// validate request
-	header, resultValidate := ValidateRequest(ctx, true, req)
+	header, resultValidate := ValidateRequestWithoutAuth(ctx, req)
 	if !resultValidate.Meta.Status {
 		ctx.JSON(http.StatusOK, resultValidate)
 		return
@@ -122,16 +122,16 @@ func publishEarning(req models.EarningReq, header models.RequestHeader) {
 	fmt.Println(">>>>> Publisher Earning <<<<<")
 
 	pubReq := models.PublishEarningReq{
-		Header:          header,
-		Earning:         req.Earning,
-		ReferenceId:     req.ReferenceId,
-		ProductCode:     req.ProductCode,
-		ProductName:     req.ProductName,
-		AccountNumber1:  req.AccountNumber1,
-		AccountNumber2:  req.AccountNumber2,
-		Amount:          req.Amount,
-		Remark:          req.Remark,
-		TransactionTime: req.TransactionTime,
+		Header:         header,
+		Earning:        req.Earning,
+		ReferenceId:    req.ReferenceId,
+		ProductCode:    req.ProductCode,
+		ProductName:    req.ProductName,
+		AccountNumber1: req.AccountNumber1,
+		AccountNumber2: req.AccountNumber2,
+		Amount:         req.Amount,
+		Remark:         req.Remark,
+		// TransactionTime: req.TransactionTime,
 	}
 
 	bytePub, _ := json.Marshal(pubReq)

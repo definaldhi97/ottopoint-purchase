@@ -1,7 +1,5 @@
 package models
 
-import "time"
-
 // RulePoint
 type RulePointReq struct {
 	Amount    int    `json:"amount"`
@@ -31,15 +29,15 @@ type EarningRuleReq struct {
 
 // ============== New Earning ==============
 type EarningReq struct {
-	Earning         string    `json:"earning"`
-	ReferenceId     string    `json:"referenceId"`
-	ProductCode     string    `json:"productCode"`
-	ProductName     string    `json:"productName"`
-	AccountNumber1  string    `json:"accountNumber1"`
-	AccountNumber2  string    `json:"accountNumber2"`
-	Amount          int64     `json:"amount"`
-	Remark          string    `json:"remark"`
-	TransactionTime time.Time `json:"transactionTime"`
+	Earning        string `json:"earning"`
+	ReferenceId    string `json:"referenceId"`
+	ProductCode    string `json:"productCode"`
+	ProductName    string `json:"productName"`
+	AccountNumber1 string `json:"accountNumber1"`
+	AccountNumber2 string `json:"accountNumber2"`
+	Amount         int64  `json:"amount"`
+	Remark         string `json:"remark"`
+	// TransactionTime time.Time `json:"transactionTime"`
 }
 
 type EarningResp struct {
