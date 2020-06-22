@@ -1,12 +1,14 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/hosts/opl/host"
 	opl "ottopoint-purchase/hosts/opl/host"
 	ottomart "ottopoint-purchase/hosts/ottomart/host"
 	ottomartmodels "ottopoint-purchase/hosts/ottomart/models"
+	kafka "ottopoint-purchase/hosts/publisher/host"
 	uv "ottopoint-purchase/hosts/ultra_voucher/host"
 	uvmodels "ottopoint-purchase/hosts/ultra_voucher/models"
 	"ottopoint-purchase/models"
@@ -47,7 +49,12 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	dataorder := DataParameterOrder()
 
 	param.Reffnum = utils.GenTransactionId()
-	param.ExpDate = dataorder.Expired
+
+	timeExp, _ := strconv.Atoi(dataorder.Expired)
+
+	exp := utils.FormatTimeString(time.Now(), 0, 0, timeExp)
+
+	param.ExpDate = exp
 
 	total := strconv.Itoa(req.Jumlah)
 
@@ -160,7 +167,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	}
 
 	nama := "OTTOPOINT"
-	expired, _ := strconv.Atoi(param.ExpDate)
+	expired, _ := strconv.Atoi(dataorder.Expired)
 	reqOrder := uvmodels.OrderVoucherReq{
 		Sku:               param.ProductCode,
 		Qty:               req.Jumlah,
@@ -283,25 +290,30 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 				fmt.Println("[Failed Order Voucher]-[Gagal Reversal Point]")
 			}
 
-			fmt.Println("========== Send Notif ==========")
-			notifReq := ottomartmodels.NotifRequest{
-				AccountNumber:    param.AccountNumber,
-				Title:            "Reversal Point",
-				Message:          fmt.Sprintf("Point anda berhasil di reversal sebesar %v", int64(point)),
-				NotificationType: 3,
+			fmt.Println("========== Send Publisher ==========")
+
+			pubreq := models.NotifPubreq{
+				Type:          "Reversal",
+				AccountNumber: param.AccountNumber,
+				Institution:   param.InstitutionID,
+				Point:         point,
+				Product:       param.NamaVoucher,
 			}
 
-			// send notif & inbox
-			dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
-			if errNotif != nil {
-				fmt.Println("Error to send Notif & Inbox")
+			bytePub, _ := json.Marshal(pubreq)
+
+			kafkaReq := kafka.PublishReq{
+				Topic: "ottopoint-notification-reversal",
+				Value: bytePub,
 			}
 
-			if dataNotif.RC != "00" {
-				fmt.Println(fmt.Sprintf("[Response : %v\n]", dataNotif))
-				fmt.Println("Gagal Send Notif & Inbox")
-				fmt.Println("Error : ", errNotif)
+			kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+			if err != nil {
+				fmt.Println("Gagal Send Publisher")
+				fmt.Println("Error : ", err)
 			}
+
+			fmt.Println("Response Publisher : ", kafkaRes)
 
 			for i := req.Jumlah; i > 0; i-- {
 
@@ -656,7 +668,7 @@ func chekStatus(institutionId, reffNo string) (uvmodels.OrderVoucherResp, error)
 		no++
 
 		fmt.Println(fmt.Sprintf("[Percobaan ke : %v]", no))
-		time.Sleep(10 * time.Second)
+		time.Sleep(5 * time.Second)
 
 		res, err = uv.CheckStatusOrder(institutionId, reffNo)
 		fmt.Println(fmt.Sprintf("[Response ke %v : %v]", no, res))

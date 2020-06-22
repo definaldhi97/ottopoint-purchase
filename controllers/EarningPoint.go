@@ -1,15 +1,16 @@
 package controllers
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"ottopoint-purchase/constants"
-	services "ottopoint-purchase/services/earnings"
+	kafka "ottopoint-purchase/hosts/publisher/host"
 	"ottopoint-purchase/utils"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	zaplog "github.com/opentracing-contrib/go-zap/log"
-	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	ottologer "ottodigital.id/library/logger"
 	utilsgo "ottodigital.id/library/utils"
@@ -35,54 +36,74 @@ func EarningsPointController(ctx *gin.Context) {
 	}
 
 	span := TracingFirstControllerCtx(ctx, req, namectrl)
-	c := ctx.Request.Context()
-	context := opentracing.ContextWithSpan(c, span)
+	// c := ctx.Request.Context()
+	// context := opentracing.ContextWithSpan(c, span)
 
+	// header := models.RequestHeader{}
+	// header.InstitutionID = "PSM0001"
 	// validate request
-	header, resultValidate := ValidateRequest(ctx, true, req)
+	header, resultValidate := ValidateRequestWithoutAuth(ctx, req)
 	if !resultValidate.Meta.Status {
 		ctx.JSON(http.StatusOK, resultValidate)
 		return
 	}
 
 	// dataToken, _ := token.CheckToken(header)
+	// fmt.Println(dataToken)
 
 	spanid := utilsgo.GetSpanId(span)
 	sugarLogger.Info("REQUEST:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", req),
 		zap.Any("HEADER", ctx.Request.Header))
 
-	earningPoint := services.EarningPointServices{
-		General: models.GeneralModel{
-			ParentSpan: span,
-			OttoZaplog: sugarLogger,
-			SpanId:     spanid,
-			Context:    context,
-		},
-	}
+	// earningPoint := services.EarningPointServices{
+	// 	General: models.GeneralModel{
+	// 		ParentSpan: span,
+	// 		OttoZaplog: sugarLogger,
+	// 		SpanId:     spanid,
+	// 		Context:    context,
+	// 	},
+	// }
 
-	fmt.Println("Request : ", req)
-	fmt.Println("Code : ", req.Earning)
+	// fmt.Println(earningPoint)
+	fmt.Println(fmt.Sprintf("[Request : %v]", req))
+	fmt.Println(fmt.Sprintf("[Code : %v]", req.Earning))
 
-	code := req.Earning[:2]
+	res = utils.GetMessageResponse(res, 200, true, errors.New("Transaksi sedang di proses"))
+
+	code := req.Earning[:3]
 	switch code {
 	case constants.GeneralSpending:
-		res = earningPoint.GeneralSpendingService(req, header.InstitutionID)
+		fmt.Println("===== GeneralSpending =====")
+		go publishEarning(req, header)
+		// res = earningPoint.GeneralSpendingService(req, header.InstitutionID)
 	// case constants.Multiply        :
 	// 	res = earningPoint.GeneralSpendingService(req, header.InstitutionID)
 	case constants.InstantReward:
-		res = earningPoint.InstantRewardService(req, header.InstitutionID)
+		fmt.Println("===== InstantReward =====")
+		go publishEarning(req, header)
+		// res = earningPoint.InstantRewardService(req, header.InstitutionID)
 	case constants.EventRule:
-		res = earningPoint.EventRuleService(req, header.InstitutionID)
+		fmt.Println("===== EventRule =====")
+		go publishEarning(req, header)
+		// res = earningPoint.EventRuleService(req, header.InstitutionID)
 	case constants.CustomerReferral:
-		res = earningPoint.CustomerReferralService(req, header.InstitutionID)
+		fmt.Println("===== CustomerReferral =====")
+		go publishEarning(req, header)
+		// res = earningPoint.CustomerReferralService(req, header.InstitutionID)
 	case constants.CustomeEventRule:
-		res = earningPoint.CustomeEventRuleService(req, header.InstitutionID)
+		fmt.Println("===== CustomeEventRule =====")
+		go publishEarning(req, header)
+		// res = earningPoint.CustomeEventRuleService(req, header.InstitutionID)
 	default:
-		// belum ada response
-
+		fmt.Println("===== Invalid Code =====")
+		res = utils.GetMessageResponse(res, 178, false, errors.New("Earning Rule not found"))
 	}
-	// res = earningRule.EarningsPointServuc(req, dataToken, header)
+
+	if req.AccountNumber1 == "" || req.Earning == "" {
+		fmt.Println("===== Invalid Mandatory =====")
+		res = utils.GetMessageResponse(res, 06, false, errors.New("Invalid Mandatory"))
+	}
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", res))
@@ -95,4 +116,36 @@ func EarningsPointController(ctx *gin.Context) {
 	defer span.Finish()
 	ctx.JSON(http.StatusOK, res)
 
+}
+
+func publishEarning(req models.EarningReq, header models.RequestHeader) {
+	fmt.Println(">>>>> Publisher Earning <<<<<")
+
+	pubReq := models.PublishEarningReq{
+		Header:         header,
+		Earning:        req.Earning,
+		ReferenceId:    req.ReferenceId,
+		ProductCode:    req.ProductCode,
+		ProductName:    req.ProductName,
+		AccountNumber1: req.AccountNumber1,
+		AccountNumber2: req.AccountNumber2,
+		Amount:         req.Amount,
+		Remark:         req.Remark,
+		// TransactionTime: req.TransactionTime,
+	}
+
+	bytePub, _ := json.Marshal(pubReq)
+
+	kafkaReq := kafka.PublishReq{
+		Topic: "ottopoint-earning-topics",
+		Value: bytePub,
+	}
+
+	kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+	if err != nil {
+		fmt.Println("Gagal Send Publisher")
+		fmt.Println("Error : ", err)
+	}
+
+	fmt.Println("Response Publisher : ", kafkaRes)
 }

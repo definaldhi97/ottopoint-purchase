@@ -5,6 +5,7 @@ import "time"
 type TEarning struct {
 	ID              string    `gorm:"column:id"`
 	EarningRule     string    `gorm:"column:earning_earning"`
+	EarningRuleAdd  string    `gorm:"column:earning_earning_add"`
 	MInstitutionId  string    `gorm:"column:m_institution_id"`
 	ReferenceId     string    `gorm:"column:reference_id"`
 	Transactionid   string    `grom:"column:transaction_id"`

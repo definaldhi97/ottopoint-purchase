@@ -311,3 +311,13 @@ func ValidateTimeActive(status, allTime bool, startAt, endAt time.Time) bool {
 
 	return true
 }
+
+func FormatTimeString(timestamp time.Time, year, month, day int) string {
+
+	t := timestamp.AddDate(year, month, day)
+
+	// 2020-05-01T17:40:24+0700
+	res := jodaTime.Format("YYYY-MM-dd", t)
+
+	return res
+}

@@ -60,12 +60,12 @@ const (
 )
 
 const (
-	GeneralSpending  = "GS"
-	Multiply         = "MP"
-	InstantReward    = "IR"
-	CustomeEventRule = "CE"
-	EventRule        = "ER"
-	CustomerReferral = "CR"
+	GeneralSpending  = "GSR"
+	Multiply         = "MEP"
+	InstantReward    = "IRR"
+	CustomeEventRule = "CER"
+	EventRule        = "ERC"
+	CustomerReferral = "CRR"
 )
 
 const (
