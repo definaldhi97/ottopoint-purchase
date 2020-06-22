@@ -19,7 +19,7 @@ func GetEarningCode(code string) (dbmodels.MEarningRule, error) {
 	return res, nil
 }
 
-func GetCheckStatusEarning(reff, institution string) (dbmodels.TEarning, error) {
+func GetCheckStatusEarning(reff string, institution int) (dbmodels.TEarning, error) {
 	res := dbmodels.TEarning{}
 
 	err := DbCon.Where("reference_id = ? and m_institution_id = ?", reff, institution).First(&res).Error
