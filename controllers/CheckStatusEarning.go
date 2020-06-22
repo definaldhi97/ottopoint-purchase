@@ -59,7 +59,7 @@ func CheckStatusEarningController(ctx *gin.Context) {
 		},
 	}
 
-	res = checkStatusEarning.EarningsPointServuc(req.ReferenceId, header.InstitutionID)
+	res = checkStatusEarning.CheckStatusEarningServices(req.ReferenceId, header.InstitutionID)
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", res))

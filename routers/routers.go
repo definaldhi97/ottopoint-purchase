@@ -50,7 +50,7 @@ func init() {
 	earningPoint = utils.GetEnv("earning_point", "/transaction/v2/earningpoint")
 	splitbill = utils.GetEnv("splitbill", "/transaction/v2/splitbill")
 	usevoucher_uv = utils.GetEnv("usevoucher_uv", "/transaction/v2/usevoucher_uv")
-	checkStatusEarning = utils.GetEnv("usevoucher_uv", "/check-status-earning")
+	checkStatusEarning = utils.GetEnv("checkStatusEarning", "/transaction/v2/check-status-earning")
 
 	debugmode = utils.GetEnv("apps.debug", "debug")
 
