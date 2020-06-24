@@ -69,6 +69,16 @@ func EarningsPointController(ctx *gin.Context) {
 	fmt.Println(fmt.Sprintf("[Request : %v]", req))
 	fmt.Println(fmt.Sprintf("[Code : %v]", req.Earning))
 
+	if req.Earning == "" || req.TransactionTime == "" || req.AccountNumber1 == "" {
+
+		res = utils.GetMessageResponse(res, 61, false, errors.New("Invalid Mandatory"))
+
+		defer span.Finish()
+		ctx.JSON(http.StatusOK, res)
+
+		return
+	}
+
 	res = utils.GetMessageResponse(res, 200, true, errors.New("Transaksi sedang di proses"))
 
 	code := req.Earning[:3]
@@ -98,11 +108,6 @@ func EarningsPointController(ctx *gin.Context) {
 	default:
 		fmt.Println("===== Invalid Code =====")
 		res = utils.GetMessageResponse(res, 178, false, errors.New("Earning Rule not found"))
-	}
-
-	if req.AccountNumber1 == "" || req.Earning == "" {
-		fmt.Println("===== Invalid Mandatory =====")
-		res = utils.GetMessageResponse(res, 06, false, errors.New("Invalid Mandatory"))
 	}
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
