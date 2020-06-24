@@ -3,8 +3,8 @@ package publisher
 import (
 	"fmt"
 
-	"github.com/astaxie/beego"
 	jsoniter "github.com/json-iterator/go"
+	ODU "ottodigital.id/library/utils"
 )
 
 type PublishReq struct {
@@ -18,8 +18,8 @@ var (
 )
 
 func init() {
-	host = beego.AppConfig.DefaultString("host.publish", "http://13.228.25.85:8703")
-	endpointPublisher = beego.AppConfig.DefaultString("endpoint.publish", "/ottopoint/v0.1.0/kafka/publish")
+	host = ODU.GetEnv("HOST_PUBLISHER", "http://13.228.25.85:8703")
+	endpointPublisher = ODU.GetEnv("endpoint.publish", "/ottopoint/v0.1.0/kafka/publish")
 }
 
 // SendPublishKafka ...
