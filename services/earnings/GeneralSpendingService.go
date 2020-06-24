@@ -40,7 +40,7 @@ func (t EarningPointServices) GeneralSpendingService(req models.EarningReq, inst
 	save := dbmodels.TEarning{
 		// ID             : ,
 		EarningRule:    req.Earning,
-		MInstitutionId: institutionID,
+		PartnerId: institutionID,
 		ReferenceId:    req.ReferenceId,
 		Transactionid:  utils.GenTransactionId(),
 		ProductCode:    req.ProductCode,

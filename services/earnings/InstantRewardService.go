@@ -35,7 +35,7 @@ func (t EarningPointServices) InstantRewardService(req models.EarningReq, instit
 	save := dbmodels.TEarning{
 		// ID             : ,
 		EarningRule:    req.Earning,
-		MInstitutionId: institutionID,
+		PartnerId: institutionID,
 		ReferenceId:    req.ReferenceId,
 		Transactionid:  utils.GenTransactionId(),
 		ProductCode:    req.ProductCode,
