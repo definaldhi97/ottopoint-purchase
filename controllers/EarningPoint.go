@@ -100,9 +100,12 @@ func EarningsPointController(ctx *gin.Context) {
 		res = utils.GetMessageResponse(res, 178, false, errors.New("Earning Rule not found"))
 	}
 
-	if req.AccountNumber1 == "" || req.Earning == "" {
+	if req.AccountNumber1 == "" || req.Earning == "" || req.TransactionTime == "" {
 		fmt.Println("===== Invalid Mandatory =====")
 		res = utils.GetMessageResponse(res, 06, false, errors.New("Invalid Mandatory"))
+
+		ctx.JSON(http.StatusOK, res)
+		return
 	}
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
@@ -121,17 +124,21 @@ func EarningsPointController(ctx *gin.Context) {
 func publishEarning(req models.EarningReq, header models.RequestHeader) {
 	fmt.Println(">>>>> Publisher Earning <<<<<")
 
+	layout := "2006-01-02 15:04:05"
+
+	t, _ := time.Parse(layout, req.TransactionTime)
+
 	pubReq := models.PublishEarningReq{
-		Header:         header,
-		Earning:        req.Earning,
-		ReferenceId:    req.ReferenceId,
-		ProductCode:    req.ProductCode,
-		ProductName:    req.ProductName,
-		AccountNumber1: req.AccountNumber1,
-		AccountNumber2: req.AccountNumber2,
-		Amount:         req.Amount,
-		Remark:         req.Remark,
-		// TransactionTime: req.TransactionTime,
+		Header:          header,
+		Earning:         req.Earning,
+		ReferenceId:     req.ReferenceId,
+		ProductCode:     req.ProductCode,
+		ProductName:     req.ProductName,
+		AccountNumber1:  req.AccountNumber1,
+		AccountNumber2:  req.AccountNumber2,
+		Amount:          req.Amount,
+		Remark:          req.Remark,
+		TransactionTime: t,
 	}
 
 	bytePub, _ := json.Marshal(pubReq)
