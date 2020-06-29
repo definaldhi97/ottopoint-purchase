@@ -184,7 +184,7 @@ func RedeemPLN(req models.UseRedeemRequest, reqOP interface{}, param models.Para
 	return res
 }
 
-func SaveTransactionPLN(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
+func SaveTransactionPLN(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) string {
 
 	logs.Info("[Start-SaveDB]-[PLN]")
 
@@ -228,9 +228,14 @@ func SaveTransactionPLN(param models.Params, res interface{}, reqdata interface{
 
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
-		logs.Info("[Failed Save to DB ]", err)
-		logs.Info("[Package-Voucher]-[Service-RedeemPLN]")
-		// return err
+
+		fmt.Println(fmt.Sprintf("[Error : %v]", err))
+		fmt.Println("[Failed SaveTransactionPLN to DB]")
+		fmt.Println(fmt.Sprintf("[TransType : %v || RRN : %v]", trasnType, param.RRN))
+
+		return "Gagal Save"
 
 	}
+
+	return "Berhasil Save"
 }
