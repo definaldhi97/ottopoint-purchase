@@ -41,7 +41,7 @@ const (
 
 const (
 	CategoryPulsa        = "pulsa"
-	CategoryPaketData    = "paket_data"
+	CategoryPaketData    = "paket data"
 	CategoryFreeFire     = "free fire"
 	CategoryMobileLegend = "mobile legends"
 	CategoryPLN          = "pln"

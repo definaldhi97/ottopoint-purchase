@@ -181,12 +181,8 @@ func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 	var producrType string
 	t := strings.ToLower(data.BrandName)
 	switch t {
-	case constants.CategoryPulsa:
-		producrType = "Pulsa"
 	case constants.CategoryFreeFire, constants.CategoryMobileLegend:
 		producrType = "Game"
-	case constants.CategoryPLN:
-		producrType = "PLN"
 	default:
 		producrType = data.BrandName
 	}
@@ -198,7 +194,7 @@ func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 		SupplierID:  supplierID,
 		NamaVoucher: data.Name,
 		Point:       data.CostInPoints,
-		Category:    t,
+		Category:    strings.ToLower(producrType),
 		ExpDate:     data.CampaignActivity.ActiveTo,
 	}
 
