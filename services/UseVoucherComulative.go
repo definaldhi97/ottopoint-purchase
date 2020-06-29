@@ -6,8 +6,7 @@ import (
 	"ottopoint-purchase/constants"
 	db "ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
-	ottomart "ottopoint-purchase/hosts/ottomart/host"
-	ottomartmodels "ottopoint-purchase/hosts/ottomart/models"
+	kafka "ottopoint-purchase/hosts/publisher/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
@@ -202,24 +201,37 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	// Format Token
 	stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
 
-	notifReq := ottomartmodels.NotifRequest{
-		AccountNumber:    req.AccountNumber,
-		Title:            "Transaksi Berhasil",
-		Message:          fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
-		NotificationType: 3,
+	// notifReq := ottomartmodels.NotifRequest{
+	// 	AccountNumber:    req.AccountNumber,
+	// 	Title:            "Transaksi Berhasil",
+	// 	Message:          fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
+	// 	NotificationType: 3,
+	// }
+
+	fmt.Println("========== Send Publisher ==========")
+
+	pubreq := models.NotifPubreq{
+		Type:          "PLN",
+		AccountNumber: param.AccountNumber,
+		Institution:   param.InstitutionID,
+		// Point:         point,
+		Product: stroomToken,
 	}
 
-	// send notif & inbox
-	dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
-	if errNotif != nil {
-		fmt.Println("Error to send Notif & Inbox")
+	bytePub, _ := json.Marshal(pubreq)
+
+	kafkaReq := kafka.PublishReq{
+		Topic: "ottopoint-notification-reversal",
+		Value: bytePub,
 	}
 
-	if dataNotif.RC != "00" {
-		fmt.Println("[Response Notif PLN]")
-		fmt.Println("Gagal Send Notif & Inbox")
-		fmt.Println("Error : ", errNotif)
+	kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+	if err != nil {
+		fmt.Println("Gagal Send Publisher")
+		fmt.Println("Error : ", err)
 	}
+
+	fmt.Println("Response Publisher : ", kafkaRes)
 
 	fmt.Println(fmt.Sprintf("[Payment %v Success]", param.ProductType))
 	save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
