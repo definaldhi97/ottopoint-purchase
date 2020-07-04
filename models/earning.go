@@ -37,6 +37,7 @@ type EarningReq struct {
 	AccountNumber2  string `json:"accountNumber2"`
 	Amount          int64  `json:"amount"`
 	Remark          string `json:"remark"`
+	MsgNotif        string `json:"messageNotif"`
 	TransactionTime string `json:"transactionTime"`
 }
 
