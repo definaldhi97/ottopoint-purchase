@@ -12,6 +12,7 @@ import (
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/utils"
+	"strings"
 	"sync"
 )
 
@@ -97,6 +98,9 @@ func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Pa
 
 func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param models.Params) models.UseRedeemResponse {
 	res := models.UseRedeemResponse{}
+
+	param.Category = strings.ToLower(param.Category)
+
 	// ===== Payment OttoAG =====
 	fmt.Println(fmt.Sprintf("[PAYMENT-%v][START]", param.ProductType))
 	// fmt.Println("Param : ", param)
@@ -198,40 +202,44 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		return res
 	}
 
-	// Format Token
-	stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
+	// Notif PLN
+	if param.Category == constants.CategoryPLN {
 
-	// notifReq := ottomartmodels.NotifRequest{
-	// 	AccountNumber:    req.AccountNumber,
-	// 	Title:            "Transaksi Berhasil",
-	// 	Message:          fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
-	// 	NotificationType: 3,
-	// }
+		// Format Token
+		stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
 
-	fmt.Println("========== Send Publisher ==========")
+		// notifReq := ottomartmodels.NotifRequest{
+		// 	AccountNumber:    req.AccountNumber,
+		// 	Title:            "Transaksi Berhasil",
+		// 	Message:          fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
+		// 	NotificationType: 3,
+		// }
 
-	pubreq := models.NotifPubreq{
-		Type:          "PLN",
-		AccountNumber: param.AccountNumber,
-		Institution:   param.InstitutionID,
-		// Point:         point,
-		Product: stroomToken,
+		fmt.Println("========== Send Publisher ==========")
+
+		pubreq := models.NotifPubreq{
+			Type:          "PLN",
+			AccountNumber: param.AccountNumber,
+			Institution:   param.InstitutionID,
+			// Point:         point,
+			Product: stroomToken,
+		}
+
+		bytePub, _ := json.Marshal(pubreq)
+
+		kafkaReq := kafka.PublishReq{
+			Topic: "ottopoint-notification-earning",
+			Value: bytePub,
+		}
+
+		kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+		if err != nil {
+			fmt.Println("Gagal Send Publisher")
+			fmt.Println("Error : ", err)
+		}
+
+		fmt.Println("Response Publisher : ", kafkaRes)
 	}
-
-	bytePub, _ := json.Marshal(pubreq)
-
-	kafkaReq := kafka.PublishReq{
-		Topic: "ottopoint-notification-reversal",
-		Value: bytePub,
-	}
-
-	kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
-	if err != nil {
-		fmt.Println("Gagal Send Publisher")
-		fmt.Println("Error : ", err)
-	}
-
-	fmt.Println("Response Publisher : ", kafkaRes)
 
 	fmt.Println(fmt.Sprintf("[Payment %v Success]", param.ProductType))
 	save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
