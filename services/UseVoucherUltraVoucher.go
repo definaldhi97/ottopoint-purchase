@@ -46,7 +46,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 	dataorder := DataParameterOrder()
 
-	param.Reffnum = utils.GenTransactionId()
+	param.CumReffnum = utils.GenTransactionId()
 
 	timeExp, _ := strconv.Atoi(dataorder.Expired)
 
@@ -180,6 +180,10 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	// order to u
 	fmt.Println("[OrderVoucher]")
 	order, errOrder := uv.OrderVoucher(reqOrder, param.InstitutionID)
+
+	// reffNumberUV
+	param.RRN = order.Data.InvoiceUV
+
 	if errOrder != nil || order.ResponseCode == "" {
 
 		fmt.Println("Error : ", errOrder)

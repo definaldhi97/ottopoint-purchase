@@ -38,7 +38,7 @@ func (t EarningPointServices) EventRuleService(req models.EarningReq, institutio
 		EarningRule:    req.Earning,
 		PartnerId: institutionID,
 		ReferenceId:    req.ReferenceId,
-		Transactionid:  utils.GenTransactionId(),
+		TransactionId:  utils.GenTransactionId(),
 		ProductCode:    req.ProductCode,
 		ProductName:    req.ProductName,
 		AccountNumber1: req.AccountNumber1,

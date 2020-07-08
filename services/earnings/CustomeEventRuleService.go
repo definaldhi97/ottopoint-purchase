@@ -36,9 +36,9 @@ func (t EarningPointServices) CustomeEventRuleService(req models.EarningReq, ins
 	save := dbmodels.TEarning{
 		// ID             : ,
 		EarningRule:    req.Earning,
-		PartnerId: institutionID,
+		PartnerId:      institutionID,
 		ReferenceId:    req.ReferenceId,
-		Transactionid:  utils.GenTransactionId(),
+		TransactionId:  utils.GenTransactionId(),
 		ProductCode:    req.ProductCode,
 		ProductName:    req.ProductName,
 		AccountNumber1: req.AccountNumber1,

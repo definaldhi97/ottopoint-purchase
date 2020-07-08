@@ -8,7 +8,7 @@ type TEarning struct {
 	EarningRuleAdd  string    `gorm:"column:earning_earning_add"`
 	PartnerId       string    `gorm:"column:partner_id"`
 	ReferenceId     string    `gorm:"column:reference_id"`
-	Transactionid   string    `grom:"column:transaction_id"`
+	TransactionId   string    `grom:"column:transaction_id"`
 	ProductCode     string    `gorm:"column:product_code"`
 	ProductName     string    `gorm:"column:product_name"`
 	AccountNumber1  string    `gorm:"column:account_number1"`

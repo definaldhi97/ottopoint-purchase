@@ -9,6 +9,7 @@ type TransaksiRedeem struct {
 	MerchantID      string    `gorm:"merchant_id"`
 	CustID          string    `gorm:"cust_id"`
 	RRN             string    `gorm:"rrn"`
+	TransactionId   string    `grom:"column:transaction_id"`
 	ProductCode     string    `gorm:"product_code"`
 	Amount          int64     `gorm:"amount"`
 	TransType       string    `gorm:"trans_type"`

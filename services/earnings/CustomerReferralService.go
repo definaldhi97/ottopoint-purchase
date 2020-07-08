@@ -38,7 +38,7 @@ func (t EarningPointServices) CustomerReferralService(req models.EarningReq, ins
 		EarningRule:    req.Earning,
 		PartnerId: institutionID,
 		ReferenceId:    req.ReferenceId,
-		Transactionid:  utils.GenTransactionId(),
+		TransactionId:  utils.GenTransactionId(),
 		ProductCode:    req.ProductCode,
 		ProductName:    req.ProductName,
 		AccountNumber1: req.AccountNumber1,
