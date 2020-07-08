@@ -1,21 +1,20 @@
 package voucher
 
 import (
+	"fmt"
 	"ottopoint-purchase/models"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/utils"
-
-	"github.com/astaxie/beego/logs"
 )
 
 func RedeemGameComulative(req models.UseRedeemRequest, reqOP interface{}, param models.Params) models.UseRedeemResponse {
 	res := models.UseRedeemResponse{}
 
-	logs.Info("[Start]-[Package-Voucher]-[RedeemGameComulative]")
+	fmt.Println("[Start]-[Package-Voucher]-[RedeemGameComulative]")
 
 	// ===== Payment OttoAG =====
-	logs.Info("[PAYMENT-BILLER][START]")
+	fmt.Println("[PAYMENT-BILLER][START]")
 	// refnum := utils.GetRrn()
 
 	// payment to ottoag
@@ -37,9 +36,9 @@ func RedeemGameComulative(req models.UseRedeemRequest, reqOP interface{}, param 
 		custIDGame = req.CustID
 	}
 
-	logs.Info("Jumlah Voucher : ", param.Total)
-	logs.Info("Response OttoAG Payment : ", billerRes)
-	logs.Info("[Response Payment %v]", billerRes.Rc)
+	fmt.Println("Jumlah Voucher : ", param.Total)
+	fmt.Println("Response OttoAG Payment : ", billerRes)
+	fmt.Println("[Response Payment %v]", billerRes.Rc)
 	paramPay := models.Params{
 		AccountNumber: param.AccountNumber,
 		MerchantID:    param.MerchantID,
@@ -57,34 +56,63 @@ func RedeemGameComulative(req models.UseRedeemRequest, reqOP interface{}, param 
 		SupplierID:    param.SupplierID,
 	}
 
-	logs.Info("[Payment Response : %v]", billerRes)
-	if billerRes.Rc == "09" || billerRes.Rc == "68" {
-		logs.Info("[Payment Pending]")
+	fmt.Println(fmt.Sprintf("[Payment Response : %v]", billerRes))
 
-		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
+	// Time Out
+	if billerRes.Rc == "" {
+		fmt.Println("[Payment Time Out]")
+
+		save := SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
+		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.UseRedeemResponse{
-			Rc:  "09",
-			Msg: "Request in progress",
+			// Rc:  "09",
+			// Msg: "Request in progress",
+			Rc:    billerRes.Rc,
+			Msg:   "Timeout",
+			Uimsg: "Timeout",
 		}
 		return res
 	}
 
+	// Pending
+	if billerRes.Rc == "09" || billerRes.Rc == "68" || billerRes.Rc == "" {
+		fmt.Println("[Payment Pending]")
+
+		save := SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
+		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
+
+		res = models.UseRedeemResponse{
+			// Rc:  "09",
+			// Msg: "Request in progress",
+			Rc:    billerRes.Rc,
+			Msg:   billerRes.Msg,
+			Uimsg: "Request in progress",
+		}
+		return res
+	}
+
+	// Gagal
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
-		logs.Info("[Payment Failed]")
+		fmt.Println("[Payment Failed]")
 
-		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
+		save := SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
+		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.UseRedeemResponse{
-			Rc:  "01",
-			Msg: "Payment Failed",
+			// Rc:  "01",
+			// Msg: "Payment Failed",
+			Rc:    billerRes.Rc,
+			Msg:   billerRes.Msg,
+			Uimsg: "Payment Failed",
 		}
 
 		return res
 	}
 
-	logs.Info("[Payment Success]")
-	go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
+	fmt.Println("[Payment Success]")
+	save := SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
+	fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 	res = models.UseRedeemResponse{
 		Rc:          billerRes.Rc,
@@ -94,7 +122,7 @@ func RedeemGameComulative(req models.UseRedeemRequest, reqOP interface{}, param 
 		CustID2:     billerRes.Period,
 		ProductCode: billerRes.Productcode,
 		Amount:      int64(billerRes.Amount),
-		Msg:         "SUCCESS",
+		Msg:         billerRes.Msg,
 		Uimsg:       "SUCCESS",
 		Data:        billerRes.Data,
 		Datetime:    utils.GetTimeFormatYYMMDDHHMMSS(),

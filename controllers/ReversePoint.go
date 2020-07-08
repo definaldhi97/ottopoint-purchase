@@ -33,8 +33,8 @@ func ReversePointController(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
-		res.Meta.Message = "Error, Unmarshall Body Request"
-		ctx.JSON(http.StatusBadRequest, res)
+		res.Meta.Message = "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."
+		ctx.JSON(http.StatusOK, res)
 		go sugarLogger.Error("Error, body Request", zap.Error(err))
 		return
 	}
@@ -74,7 +74,7 @@ func ReversePointController(ctx *gin.Context) {
 		logs.Info(fmt.Sprintf("Error when get data deduction"))
 
 		res = utils.GetMessageResponse(res, 400, false, err)
-		ctx.JSON(http.StatusInternalServerError, res)
+		ctx.JSON(http.StatusOK, res)
 		return
 	}
 	// reqDeduct.AccountNumber = dataDeduct.CustomerID
@@ -91,7 +91,7 @@ func ReversePointController(ctx *gin.Context) {
 		logs.Info("[UpdateStatusDeduction]-[controllers-ReversePoint]")
 		logs.Info(fmt.Sprintf("Error when update status deduction"))
 		res = utils.GetMessageResponse(res, 400, false, err)
-		ctx.JSON(http.StatusBadRequest, res)
+		ctx.JSON(http.StatusOK, res)
 		return
 	}
 

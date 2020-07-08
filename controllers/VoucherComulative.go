@@ -35,8 +35,8 @@ func VoucherComulativeController(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
-		res.Meta.Message = "Error, Unmarshall Body Request"
-		ctx.JSON(http.StatusBadRequest, res)
+		res.Meta.Message = "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."
+		ctx.JSON(http.StatusOK, res)
 		go sugarLogger.Error("Error, body Request", zap.Error(err))
 		return
 	}
@@ -86,7 +86,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 		logs.Info(fmt.Sprintf("Error : ", errVoucher))
 
 		res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
-		ctx.JSON(http.StatusBadRequest, res)
+		ctx.JSON(http.StatusOK, res)
 		return
 	}
 
@@ -101,7 +101,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 		sugarLogger.Info("[Failed from DB]-[Get Data User]")
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
-		ctx.JSON(http.StatusBadRequest, res)
+		ctx.JSON(http.StatusOK, res)
 		return
 	}
 
@@ -123,20 +123,22 @@ func VoucherComulativeController(ctx *gin.Context) {
 			fmt.Println("Category PLN")
 		default:
 			fmt.Println("Invalid Category")
-			res = utils.GetMessageResponse(res, 500, false, errors.New("Invalid Category"))
-			ctx.JSON(http.StatusBadRequest, res)
+			res = utils.GetMessageResponse(res, 500, false, errors.New("Invalid BrandName"))
+			ctx.JSON(http.StatusOK, res)
 			return
 		}
 	}
 
 	param := models.Params{
 		AccountNumber: dataToken.Data,
-		MerchantID:    dataToken.MerchantID,
+		MerchantID:    dataUser.MerchantID,
 		InstitutionID: header.InstitutionID,
-		CustID:        dataUser.CustID,
+		AccountId:     dataUser.CustID,
+		CampaignID:    req.CampaignID,
 		SupplierID:    data.SupplierID,
 		ProductType:   data.ProductType,
 		ProductCode:   data.ProductCode,
+		CouponCode:    data.CouponCode,
 		NamaVoucher:   data.NamaVoucher,
 		Point:         data.Point,
 		Category:      data.Category,
@@ -192,11 +194,12 @@ func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 	res = models.Params{
 		ProductType: producrType,
 		ProductCode: coupon,
+		CouponCode:  coupon,
 		SupplierID:  supplierID,
 		NamaVoucher: data.Name,
 		Point:       data.CostInPoints,
 		Category:    t,
-		// ExpDate:     data.CampaignActivity.ActiveTo,
+		ExpDate:     data.CampaignActivity.ActiveTo,
 	}
 
 	return res

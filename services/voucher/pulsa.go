@@ -233,7 +233,7 @@ func ValidatePrefix(OperatorCode int, custID, productCode string) bool {
 }
 
 // func SaveTransactionPulsa(AccountNumber, voucher, CustID, RRN, ProductCode, trasnType, status, instituion string, amount int64) {
-func SaveTransactionPulsa(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
+func SaveTransactionPulsa(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) string {
 
 	logs.Info("[Start-SaveDB]-[Pulsa]")
 
@@ -260,7 +260,7 @@ func SaveTransactionPulsa(param models.Params, res interface{}, reqdata interfac
 		ProductCode:     param.ProductCode,
 		Amount:          int64(param.Amount),
 		TransType:       trasnType,
-		ProductType:     "Pulsa",
+		ProductType:     param.ProductType,
 		Status:          saveStatus,
 		ExpDate:         param.ExpDate,
 		Institution:     param.InstitutionID,
@@ -277,9 +277,13 @@ func SaveTransactionPulsa(param models.Params, res interface{}, reqdata interfac
 
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
-		logs.Info("[Failed Save to DB ]", err)
-		logs.Info("[Package-Voucher]-[Service-RedeemPulsa]")
-		// return err
+		fmt.Println(fmt.Sprintf("[Error : %v]", err))
+		fmt.Println("[Failed SaveTransactionPulsa to DB]")
+		fmt.Println(fmt.Sprintf("[TransType : %v || RRN : %v]", trasnType, param.RRN))
+
+		return "Gagal Save"
 
 	}
+
+	return "Berhasil Save"
 }

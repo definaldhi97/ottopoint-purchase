@@ -3,12 +3,15 @@ package services
 import (
 	"errors"
 	"fmt"
+	"ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/opentracing/opentracing-go"
+	"github.com/vjeantet/jodaTime"
 	"go.uber.org/zap"
 )
 
@@ -20,15 +23,13 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 	var res models.Response
 
 	logs.Info("=== UseVoucherUV ===")
-	fmt.Sprintf("=== UseVoucherUV ===")
-
-	var useUV interface{}
-	var reqUV interface{}
+	fmt.Println("=== UseVoucherUV ===")
 
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[UseVoucherUV]",
 		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID),
 		zap.String("category : ", param.Category), zap.String("campaignId : ", campaignID),
+		zap.String("AccountID : ", param.AccountId), zap.String("AccountNumber : ", param.AccountNumber),
 		zap.String("VoucherCode : ", req.VoucherCode))
 
 	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[UseVoucherUV]")
@@ -37,10 +38,10 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 	logs.Info("Campaign : ", campaignID)
 	logs.Info("CouponID : ", param.CouponID)
 	logs.Info("ProductCode : ", param.CouponCode)
-	logs.Info("CustID : ", param.CustID)
+	logs.Info("AccountID : ", param.AccountId)
 
 	// Use Voucher to Openloyalty
-	use, err2 := opl.CouponVoucherCustomer(campaignID, param.CouponID, param.CouponCode, param.CustID, 1)
+	use, err2 := opl.CouponVoucherCustomer(campaignID, param.CouponID, param.CouponCode, param.AccountId, 1)
 
 	var useErr string
 	for _, value := range use.Coupons {
@@ -53,13 +54,22 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 		logs.Info(fmt.Sprintf("[Response : %v]", use))
 		logs.Info("[Error from OPL]-[CouponVoucherCustomer]")
 
-		go SaveTransactionUV(param, useUV, reqUV, req, "Payment", "01", "")
+		// go SaveTransactionUV(param, useUV, reqUV, req, "Used", "01", "")
 
 		res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Use Voucher, Harap coba lagi"))
 		return res
 	}
 
-	go SaveTransactionUV(param, useUV, reqUV, req, "Payment", "00", "00")
+	timeUse := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+
+	_, errUpdate := db.UpdateVoucher(timeUse, param.CouponID)
+	if errUpdate != nil {
+
+		logs.Info(fmt.Sprintf("[Error : %v]", errUpdate))
+		logs.Info("[Gagal Update Voucher]")
+		logs.Info("[UseVoucherUV]-[Package-Services]")
+
+	}
 
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),

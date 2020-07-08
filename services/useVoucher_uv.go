@@ -11,9 +11,11 @@ import (
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	"ottopoint-purchase/utils"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/opentracing/opentracing-go"
+	"github.com/vjeantet/jodaTime"
 	"go.uber.org/zap"
 )
 
@@ -21,7 +23,7 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 	var res models.Response
 
 	logs.Info("=== GetVoucherUV ===")
-	fmt.Sprintf("=== GetVoucherUV ===")
+	fmt.Println("=== GetVoucherUV ===")
 
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[GetVoucherUV-Services]",
@@ -69,7 +71,7 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 	if useUV.ResponseCode == "10" {
 
 		fmt.Sprint("[Response UV : %v]", useUV.ResponseCode)
-		go SaveTransactionUV(param, useUV, reqUV, req, "Inquiry", "01", useUV.ResponseCode)
+		// go SaveTransactionUV(param, useUV, reqUV, req, "Inquiry", "01", useUV.ResponseCode)
 
 		res = utils.GetMessageResponse(res, 147, false, errors.New("Voucher Tidak Ditemukan"))
 		// res.Data = "Transaksi Gagal"
@@ -92,7 +94,7 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 
 	if useUV.ResponseCode == "00" {
 		fmt.Sprint("[Response UV : %v]", useUV.ResponseCode)
-		go SaveTransactionUV(param, useUV, reqUV, req, "Inquiry", "00", useUV.ResponseCode)
+		// go SaveTransactionUV(param, useUV, reqUV, req, "Inquiry", "00", useUV.ResponseCode)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -115,7 +117,7 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 		sugarLogger.Info("[GetVoucherUV-Servcies]-[UseVoucherUV]")
 		sugarLogger.Info("[Failed Use Voucher UV]-[Gagal Use Voucher UV]")
 
-		res = utils.GetMessageResponse(res, 129, false, errors.New("Voucher Gagal Digunakan, Silahkan Coba Beberapa Saat Lagi"))
+		res = utils.GetMessageResponse(res, 129, false, errors.New("Transaksi tidak Berhasil, Silahkan dicoba kembali."))
 		// res.Data = "Transaksi Gagal"
 		return res
 	}
@@ -125,7 +127,7 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 
 func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
 
-	logs.Info("[Start-SaveDB]-[UltraVoucher]")
+	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[UltraVoucher]-[%v]", trasnType))
 
 	var saveStatus string
 	switch status {
@@ -137,16 +139,18 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		saveStatus = constants.Failed
 	}
 
-	reqUV, _ := json.Marshal(&reqdata)   // Req Ottoag
-	responseUV, _ := json.Marshal(&res)  // Response Ottoag
+	reqUV, _ := json.Marshal(&reqdata)   // Req UV
+	responseUV, _ := json.Marshal(&res)  // Response UV
 	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
 
+	timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+
 	save := dbmodels.TransaksiRedeem{
-		AccountNumber:   param.AccountNumber,
-		Voucher:         param.NamaVoucher,
-		MerchantID:      param.MerchantID,
-		CustID:          param.CustID,
-		RRN:             param.RRN,
+		AccountNumber: param.AccountNumber,
+		Voucher:       param.NamaVoucher,
+		MerchantID:    param.MerchantID,
+		// CustID:          param.CustID,
+		RRN:             param.Reffnum,
 		ProductCode:     param.ProductCode,
 		Amount:          int64(param.Amount),
 		TransType:       trasnType,
@@ -163,6 +167,10 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		ResponderData2:  string(responseUV),
 		RequestorOPData: string(reqdataOP),
 		SupplierID:      param.SupplierID,
+		CouponId:        param.CouponID,
+		CampaignId:      param.CampaignID,
+		AccountId:       param.AccountId,
+		RedeemAt:        timeRedeem,
 	}
 
 	err := db.DbCon.Create(&save).Error

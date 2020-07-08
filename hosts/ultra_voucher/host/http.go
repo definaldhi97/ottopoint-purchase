@@ -60,7 +60,7 @@ func HTTPxFormPostUV(url, InstitutionID string, jsonReq interface{}) ([]byte, er
 	return []byte(body), nil
 }
 
-func HTTPxFormGETUV(url, InstitutionID string) ([]byte, error) {
+func HTTPxFormGETUV(url, InstitutionReff, InstitutionId string) ([]byte, error) {
 	request := gorequest.New()
 	request.SetDebug(debugClientHTTP)
 	timeout, _ := time.ParseDuration(timeout)
@@ -68,13 +68,11 @@ func HTTPxFormGETUV(url, InstitutionID string) ([]byte, error) {
 	if strings.HasPrefix(url, "https") {
 		request.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	}
-	reqagent := request.Post(url)
-	if InstitutionID == "" {
-		reqagent.Header.Set("Content-Type", "application/json")
-	} else {
-		reqagent.Header.Set("Content-Type", "application/json")
-		reqagent.Header.Set("InstitutionId", InstitutionID)
-	}
+	reqagent := request.Get(url)
+	reqagent.Header.Set("Content-Type", "application/json")
+	reqagent.Header.Set("InstitutionId", InstitutionId)
+	reqagent.Header.Set("InstitutionRefno", InstitutionReff)
+
 	_, body, errs := reqagent.
 		// Send(jsonReq).
 		Timeout(timeout).

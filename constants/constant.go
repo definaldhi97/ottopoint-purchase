@@ -60,6 +60,15 @@ const (
 )
 
 const (
+	GeneralSpending  = "GSR"
+	Multiply         = "MEP"
+	InstantReward    = "IRR"
+	CustomeEventRule = "CER"
+	EventRule        = "ERC"
+	CustomerReferral = "CRR"
+)
+
+const (
 	RC_ERROR_HEADER_MANDATORY = 61
 	RD_ERROR_HEADER_MANDATORY = "Invalid header mandatory"
 

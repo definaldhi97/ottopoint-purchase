@@ -1,17 +1,19 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/hosts/opl/host"
 	"ottopoint-purchase/models"
+	"ottopoint-purchase/models/dbmodels"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
-	"ottopoint-purchase/services/ottoag"
 	biller "ottopoint-purchase/services/ottoag"
-	"ottopoint-purchase/services/voucher"
 	"ottopoint-purchase/utils"
 	"strings"
+
+	"github.com/astaxie/beego/logs"
 )
 
 func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Params, getResp chan models.RedeemComuResp, ErrRespRedeem chan error) {
@@ -43,6 +45,10 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 			resRedeemComu.Code = redeemRes.Code
 			resRedeemComu.Message = redeemRes.Message
+			resRedeemComu.Redeem.Rc = "16"
+			resRedeemComu.Redeem.Msg = "Nomor yang kamu masukkan salah"
+
+			getResp <- resRedeemComu
 
 			return
 		}
@@ -72,24 +78,28 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		ProductCode:   param.ProductCode,
 	}
 
-	if !ottoag.ValidateDataInq(inqReq) {
-		fmt.Println("[Error-DataInquiry]-[RedeemComulativeVoucher]")
-		fmt.Println("[Error ValidateDataInq]")
-		var err error
-		redeemRes = models.RedeemComuResp{
-			Code:    "01",
-			Message: "Inquiry PreFafix",
-		}
+	// if !ottoag.ValidateDataInq(inqReq) {
+	// 	fmt.Println("[Error-DataInquiry]-[RedeemComulativeVoucher]")
+	// 	fmt.Println("[Error ValidateDataInq]")
+	// 	var err error
+	// 	redeemRes = models.RedeemComuResp{
+	// 		Code:    "01",
+	// 		Message: "Inquiry Gagal",
+	// 	}
 
-		// go voucher.SaveTransactionPulsa(paramInq, "Inquiry", "01")
+	// 	// go SaveTransactionInq(param.Category, paramInq, "Inquiry", "01")
 
-		ErrRespRedeem <- err
+	// 	ErrRespRedeem <- err
 
-		resRedeemComu.Code = redeemRes.Code
-		resRedeemComu.Message = redeemRes.Message
+	// 	resRedeemComu.Code = redeemRes.Code
+	// 	resRedeemComu.Message = redeemRes.Message
+	// 	resRedeemComu.Redeem.Rc =
+	// 	resRedeemComu.Redeem.Msg = "Invalid "
 
-		return
-	}
+	// 	getResp <- resRedeemComu
+
+	// 	return
+	// }
 
 	fmt.Println("[INQUIRY-BILLER][START]")
 	dataInquery, errInquiry := biller.InquiryBiller(inqReq.Data, req, reqInq, param)
@@ -116,21 +126,60 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		fmt.Println("[Error : %v]", errInquiry)
 		redeemRes = models.RedeemComuResp{
 			Code:    "01",
-			Message: "Invalid Prefix",
+			Message: "Inquiry Failed",
 		}
 
-		go voucher.SaveTransactionPulsa(paramInq, dataInquery, req, inqBiller, "Inquiry", "01", dataInquery.Rc)
+		go SaveTransactionInq(param.Category, paramInq, dataInquery, req, inqBiller, "Inquiry", "01", dataInquery.Rc)
 
 		ErrRespRedeem <- errInquiry
 
+		r := models.RedeemResponse{
+			Rc:          dataInquery.Rc,
+			Rrn:         dataInquery.Rrn,
+			CustID:      dataInquery.CustID,
+			ProductCode: dataInquery.ProductCode,
+			Amount:      dataInquery.Amount,
+			Msg:         dataInquery.Msg,
+			Uimsg:       dataInquery.Uimsg,
+			// Datetime:    time.Now(),
+			Data: dataInquery.Data,
+		}
+
+		resRedeemComu.Redeem = r
 		resRedeemComu.Code = redeemRes.Code
 		resRedeemComu.Message = redeemRes.Message
+
+		getResp <- resRedeemComu
 
 		return
 
 	}
 
-	go voucher.SaveTransactionPulsa(paramInq, dataInquery, req, inqBiller, "Inquiry", "00", dataInquery.Rc)
+	// Time Out
+	if dataInquery.Rc == "" {
+		fmt.Println("[Error-DataInquiry]-[RedeemComulativeVoucher]")
+		fmt.Println("[Error : %v]", errInquiry)
+		redeemRes = models.RedeemComuResp{
+			Code:    "01",
+			Message: "Inquiry Failed",
+		}
+
+		go SaveTransactionInq(param.Category, paramInq, dataInquery, req, inqBiller, "Inquiry", "01", dataInquery.Rc)
+
+		ErrRespRedeem <- errInquiry
+
+		resRedeemComu.Redeem.Rc = "01"
+		resRedeemComu.Redeem.Rc = "Time Out"
+		resRedeemComu.Code = redeemRes.Code
+		resRedeemComu.Message = redeemRes.Message
+
+		getResp <- resRedeemComu
+
+		return
+
+	}
+
+	go SaveTransactionInq(param.ProductType, paramInq, dataInquery, req, inqBiller, "Inquiry", "00", dataInquery.Rc)
 
 	// coupon := []models.CouponsRedeem{}
 
@@ -147,10 +196,14 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 			Message: "Gagal Redeem",
 		}
 
+		ErrRespRedeem <- errx
+
+		resRedeemComu.Redeem.Rc = "01"
+		resRedeemComu.Redeem.Msg = "Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya"
 		resRedeemComu.Code = redeemRes.Code
 		resRedeemComu.Message = redeemRes.Message
 
-		ErrRespRedeem <- errx
+		getResp <- resRedeemComu
 
 		return
 
@@ -202,6 +255,26 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 func ValidatePrefixComulative(custID, productCode string) (bool, error) {
 
 	var err error
+
+	// validate panjang nomor, Jika nomor kurang dari 4
+	if len(custID) < 4 {
+
+		fmt.Println("[Kurang dari 4]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
+		fmt.Println(fmt.Sprintf("invalid Prefix %v", custID))
+
+		return false, err
+	}
+
+	// validate panjang nomor, Jika nomor kurang dari 11 & lebih dari 15
+	if len(custID) <= 10 || len(custID) > 15 {
+
+		fmt.Println("[Kurang dari 10 atau lebih dari 15]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
+		fmt.Println(fmt.Sprintf("invalid Prefix %v", custID))
+
+		return false, err
+
+	}
+
 	// get Prefix
 	dataPrefix, errPrefix := db.GetOperatorCodebyPrefix(custID)
 	if errPrefix != nil {
@@ -218,29 +291,10 @@ func ValidatePrefixComulative(custID, productCode string) (bool, error) {
 	// check operator by ProductCode
 	product := utils.ProductPulsa(productCode[0:4])
 
-	// validate panjang nomor, Jika nomor kurang dari 4
-	if len(custID) < 4 {
-
-		fmt.Println("[FAILED]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
-		fmt.Println(fmt.Sprintf("invalid Prefix %v", custID))
-
-		return false, err
-	}
-
-	// validate panjang nomor, Jika nomor kurang dari 11 & lebih dari 15
-	if len(custID) <= 10 || len(custID) > 15 {
-
-		fmt.Println("[FAILED]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
-		fmt.Println(fmt.Sprintf("invalid Prefix %v", custID))
-
-		return false, err
-
-	}
-
 	// Jika Nomor tidak sesuai dengan operator
 	if prefix != product {
 
-		fmt.Println("[FAILED]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
+		fmt.Println("[Operator]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
 		fmt.Println(fmt.Sprintf("invalid Prefix %v", prefix))
 
 		return false, err
@@ -248,4 +302,55 @@ func ValidatePrefixComulative(custID, productCode string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func SaveTransactionInq(category string, param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
+
+	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[Inquiry]-[%]", category))
+
+	var saveStatus string
+	switch status {
+	case "00":
+		saveStatus = constants.Success
+	case "09":
+		saveStatus = constants.Pending
+	case "01":
+		saveStatus = constants.Failed
+	}
+
+	reqOttoag, _ := json.Marshal(&reqdata)  // Req Ottoag
+	responseOttoag, _ := json.Marshal(&res) // Response Ottoag
+	reqdataOP, _ := json.Marshal(&reqOP)    // Req Service
+
+	save := dbmodels.TransaksiRedeem{
+		AccountNumber:   param.AccountNumber,
+		Voucher:         param.NamaVoucher,
+		MerchantID:      param.MerchantID,
+		CustID:          param.CustID,
+		RRN:             param.RRN,
+		ProductCode:     param.ProductCode,
+		Amount:          int64(param.Amount),
+		TransType:       trasnType,
+		ProductType:     category,
+		Status:          saveStatus,
+		ExpDate:         param.ExpDate,
+		Institution:     param.InstitutionID,
+		CummulativeRef:  param.Reffnum,
+		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
+		ResponderData:   status,
+		Point:           param.Point,
+		ResponderRc:     rc,
+		RequestorData:   string(reqOttoag),
+		ResponderData2:  string(responseOttoag),
+		RequestorOPData: string(reqdataOP),
+		SupplierID:      param.SupplierID,
+	}
+
+	err := db.DbCon.Create(&save).Error
+	if err != nil {
+		logs.Info("[Failed Save to DB ]", err)
+		logs.Info("[Package-Voucher]-[Service-RedeemPulsa]")
+		// return err
+
+	}
 }

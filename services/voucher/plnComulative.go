@@ -8,24 +8,22 @@ import (
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/utils"
-
-	"github.com/astaxie/beego/logs"
 )
 
 func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param models.Params) models.UseRedeemResponse {
 	res := models.UseRedeemResponse{}
 
-	logs.Info("[Start]-[Package-Voucher]-[RedeemPLNComulative]")
+	fmt.Println("[Start]-[Package-Voucher]-[RedeemPLNComulative]")
 
 	// ===== Payment OttoAG =====
-	logs.Info("[PAYMENT-BILLER][START]")
+	fmt.Println("[PAYMENT-BILLER][START]")
 
 	// payment to ottoag
 	billerReq := ottoagmodels.OttoAGPaymentReq{
-		Amount:      uint64(param.Amount),
-		CustID:      req.CustID,
-		MemberID:    utils.MemberID,
-		Period:      req.CustID2,
+		Amount:   uint64(param.Amount),
+		CustID:   req.CustID,
+		MemberID: utils.MemberID,
+		// Period:      req.CustID2,
 		Productcode: req.ProductCode,
 		Rrn:         param.RRN,
 	}
@@ -49,27 +47,57 @@ func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param m
 		SupplierID:    param.SupplierID,
 	}
 
-	logs.Info("[Payment Response : %v]", billerRes)
-	if billerRes.Rc == "09" || billerRes.Rc == "68" {
-		logs.Info("[Payment Pending]")
+	fmt.Println(fmt.Sprintf("[Payment Response : %v]", billerRes))
 
-		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
+	// Time Out
+	if billerRes.Rc == "" {
+		fmt.Println("[Payment Time Out]")
+
+		save := SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
+		fmt.Println("[Response Save Payment PLN : %v]", save)
 
 		res = models.UseRedeemResponse{
-			Rc:  "09",
-			Msg: "Request in progress",
+			// Rc:  "09",
+			// Msg: "Request in progress",
+			Rc:    billerRes.Rc,
+			Msg:   "Timeout",
+			Uimsg: "Timeout",
 		}
+
 		return res
 	}
 
-	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
-		logs.Info("[Payment Failed]")
+	// Pending
+	if billerRes.Rc == "09" || billerRes.Rc == "68" || billerRes.Rc == "" {
+		fmt.Println("[Payment Pending]")
 
-		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
+		save := SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
+		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.UseRedeemResponse{
-			Rc:  "01",
-			Msg: "Payment Failed",
+			// Rc:  "09",
+			// Msg: "Request in progress",
+			Rc:    billerRes.Rc,
+			Msg:   billerRes.Msg,
+			Uimsg: "Request in progress",
+		}
+
+		return res
+	}
+
+	// Gagal
+	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
+		fmt.Println("[Payment Failed]")
+
+		save := SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
+		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
+
+		res = models.UseRedeemResponse{
+			// Rc:  "01",
+			// Msg: "Payment Failed",
+			Rc:    billerRes.Rc,
+			Msg:   billerRes.Msg,
+			Uimsg: "Payment Failed",
 		}
 
 		return res
@@ -88,18 +116,19 @@ func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param m
 	// send notif & inbox
 	dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
 	if errNotif != nil {
-		logs.Info("Error to send Notif & Inbox")
+		fmt.Println("Error to send Notif & Inbox")
 	}
 
 	if dataNotif.RC != "00" {
-		logs.Info("[Response Notif PLN]")
-		logs.Info("Gagal Send Notif & Inbox")
-		logs.Info("Error : ", errNotif)
+		fmt.Println("[Response Notif PLN]")
+		fmt.Println("Gagal Send Notif & Inbox")
+		fmt.Println("Error : ", errNotif)
 	}
 
-	logs.Info("[Payment Success]")
+	fmt.Println("[Payment Success]")
 
-	go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
+	save := SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
+	fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 	res = models.UseRedeemResponse{
 		Rc:          billerRes.Rc,
@@ -108,7 +137,7 @@ func RedeemPLNComulative(req models.UseRedeemRequest, reqOP interface{}, param m
 		CustID:      billerRes.Custid,
 		Amount:      int64(billerRes.Amount),
 		ProductCode: billerRes.Productcode,
-		Msg:         "SUCCESS",
+		Msg:         billerRes.Msg,
 		Uimsg:       "SUCCESS",
 		Data:        billerRes.Data,
 		Datetime:    utils.GetTimeFormatYYMMDDHHMMSS(),

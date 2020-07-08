@@ -1,14 +1,15 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/hosts/opl/host"
-	ottomart "ottopoint-purchase/hosts/ottomart/host"
-	ottomartmodels "ottopoint-purchase/hosts/ottomart/models"
+	kafka "ottopoint-purchase/hosts/publisher/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/opentracing/opentracing-go"
@@ -120,25 +121,30 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 			fmt.Println("[transfer point] : ", errReversal)
 		}
 
-		fmt.Println("========== Send Notif ==========")
-		notifReq := ottomartmodels.NotifRequest{
-			AccountNumber:    rcUseVoucher.AccountNumber,
-			Title:            "Reversal Point",
-			Message:          fmt.Sprintf("Point anda berhasil di reversal sebesar %v", int64(rcUseVoucher.Count)),
-			NotificationType: 3,
+		fmt.Println("========== Send Publisher ==========")
+
+		pubreq := models.NotifPubreq{
+			Type:          "Reversal",
+			AccountNumber: param.AccountNumber,
+			Institution:   param.InstitutionID,
+			Point:         rcUseVoucher.Count,
+			Product:       param.NamaVoucher,
 		}
 
-		// send notif & inbox
-		dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
-		if errNotif != nil {
-			fmt.Println("Error to send Notif & Inbox")
+		bytePub, _ := json.Marshal(pubreq)
+
+		kafkaReq := kafka.PublishReq{
+			Topic: "ottopoint-notification-reversal",
+			Value: bytePub,
 		}
 
-		if dataNotif.RC != "00" {
-			fmt.Println("[Response Notif PLN]")
-			fmt.Println("Gagal Send Notif & Inbox")
-			fmt.Println("Error : ", errNotif)
+		kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+		if err != nil {
+			fmt.Println("Gagal Send Publisher")
+			fmt.Println("Error : ", err)
 		}
+
+		fmt.Println("Response Publisher : ", kafkaRes)
 
 	}
 
@@ -153,52 +159,171 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	fmt.Println(" jumlah success transaction Pending : ", countPending.Count)
 	fmt.Println(" jumlah success transaction failed : ", pyenmentFail)
 	fmt.Println(" jumlah request : ", req.Jumlah)
-	fmt.Println(" categiry : ", param.Category)
+	fmt.Println(" category : ", param.Category)
 
 	respMessage := models.CommulativeResp{
 		Success: countSuccess.Count,
 		Pending: countPending.Count,
 		Failed:  pyenmentFail,
 	}
-	// sukses 	pending 	failed
+
+	var s, p, f int
+
+	// Sukses
 	if (respMessage.Success != 0) && (respMessage.Pending == 0) && (respMessage.Failed == 0) {
 		Code_RC_Comulative = "00"
-		Message_Comulative = "Sukses semua"
-	}
-	if (respMessage.Success != 0) && (respMessage.Pending != 0) && (respMessage.Failed == 0) {
-		Code_RC_Comulative = "33"
-		Message_Comulative = "Sukses sebagian"
-	}
-	if (respMessage.Success != 0) && (respMessage.Pending != 0) && (respMessage.Failed != 0) {
-		Code_RC_Comulative = "33"
-		Message_Comulative = "Sukses sebagian"
-	}
-	if (respMessage.Success == 0) && (respMessage.Pending != 0) && (respMessage.Failed == 0) {
-		Code_RC_Comulative = "56"
-		Message_Comulative = "Transaksi pending"
-	}
-	if (respMessage.Success == 0) && (respMessage.Pending != 0) && (respMessage.Failed != 0) {
-		Code_RC_Comulative = "56"
-		Message_Comulative = "Transaksi pending"
-	}
-	if (respMessage.Success == 0) && (respMessage.Pending == 0) && (respMessage.Failed != 0) {
-		Code_RC_Comulative = "01"
-		Message_Comulative = "Gagal"
+		Message_Comulative = "Transaksi Berhasil"
+
+		s = countSuccess.Count
 	}
 
-	// pyenmentFail := req.Jumlah - countSuccess.Count
-	// pyenmentPending := req.Jumlah - countPending.Count
+	// Sukses & Gagal
+	if (respMessage.Success != 0) && (respMessage.Pending == 0) && (respMessage.Failed != 0) {
+		Code_RC_Comulative = "174"
+		Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil dirukar namun %v voucher tidak berhasil. Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, pyenmentFail)
+
+		s = countSuccess.Count
+		f = pyenmentFail
+	}
+
+	// Sukses & Pending
+	if (respMessage.Success != 0) && (respMessage.Pending != 0) && (respMessage.Failed == 0) {
+		Code_RC_Comulative = "175"
+		Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil ditukar & %v Transaksi Anda sedang dalam proses", countSuccess.Count, countPending.Count)
+
+		s = countSuccess.Count
+		p = countPending.Count
+
+	}
+
+	// Sukses & Pending & Gagal
+	if (respMessage.Success != 0) && (respMessage.Pending != 0) && (respMessage.Failed != 0) {
+		Code_RC_Comulative = "33"
+		Message_Comulative = fmt.Sprintf("%v Vucher Anda berhasil ditukar namun %v Voucher pending dan %v voucher tidak berhasil. Harap hubungi customer support untuk informasi lebih lanjut.", countSuccess.Count, countPending.Count, pyenmentFail)
+		// Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil dirukar namun %v voucher tidak berhasil. Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, pyenmentFail)
+
+		s = countSuccess.Count
+		p = countPending.Count
+		f = pyenmentFail
+	}
+
+	// Pending
+	if (respMessage.Success == 0) && (respMessage.Pending != 0) && (respMessage.Failed == 0) {
+		Code_RC_Comulative = "56"
+		Message_Comulative = fmt.Sprintf("%v Transaksi Anda sedang dalam proses. Silahkan hubungi tim kami untuk informasi selengkapnya.", countPending.Count)
+
+		p = countPending.Count
+
+	}
+
+	// Pending & Gagal
+	if (respMessage.Success == 0) && (respMessage.Pending != 0) && (respMessage.Failed != 0) {
+		Code_RC_Comulative = "57"
+		Message_Comulative = fmt.Sprintf("%v Transaksi Anda sedang dalam proses & %v Transaksi Anda Gagal.Poin yang tidak digunakan akan dikembalikan ke saldo Anda", countSuccess.Count, pyenmentFail)
+
+		p = countPending.Count
+		f = pyenmentFail
+	}
+
+	// Gagal
+	if (respMessage.Success == 0) && (respMessage.Pending == 0) && (respMessage.Failed != 0) {
+		Code_RC_Comulative = "01"
+		Message_Comulative = "Transaksi Gagal"
+
+		f = pyenmentFail
+	}
+
+	rc := Code_RC_Comulative
+	msg := Message_Comulative
+
+	if req.Jumlah == 1 {
+
+		if getResRedeem.Rc == "" {
+
+			getmsg, errmsg := db.GetResponseOttoag("OTTOAG", getResp.Redeem.Rc)
+
+			rc = getmsg.InternalRc
+			msg = getmsg.InternalRd
+
+			if errmsg != nil || getmsg.InternalRc == "" {
+
+				fmt.Println("[VoucherComulativeService]-[GetResponseOttoag]")
+				fmt.Println("[Failed to Get Data Mapping Response]")
+				fmt.Println(fmt.Sprintf("[Data GetResponseOttoag : ]", getmsg))
+				fmt.Println(fmt.Sprintf("[Error %v]", errmsg))
+				// return res, err
+
+				rc = getResp.Redeem.Rc
+				msg = getResp.Redeem.Msg
+
+			}
+
+		} else {
+
+			getmsg, errmsg := db.GetResponseOttoag("OTTOAG", getResRedeem.Rc)
+
+			rc = getmsg.InternalRc
+			msg = getmsg.InternalRd
+
+			if errmsg != nil || getmsg.InternalRc == "" {
+
+				fmt.Println("[VoucherComulativeService]-[GetResponseOttoag]")
+				fmt.Println("[Failed to Get Data Mapping Response]")
+				fmt.Println(fmt.Sprintf("[Data GetResponseOttoag : ]", getmsg))
+				fmt.Println(fmt.Sprintf("[Error %v]", errmsg))
+				// return res, err
+
+				rc = getResRedeem.Rc
+				msg = getResRedeem.Msg
+
+			}
+
+		}
+
+	}
+
+	var m string
+	if req.Jumlah > 1 {
+		m = getMsgCummulative(rc, msg)
+	}
+
+	if s != 0 && f != 0 && p == 0 {
+		a := strings.Replace(m, "[x]", fmt.Sprintf("%v", s), 1)
+		b := strings.Replace(a, "[x]", fmt.Sprintf("%v", f), 1)
+
+		msg = b
+	}
+
+	if s != 0 && f == 0 && p != 0 {
+		a := strings.Replace(m, "[x]", fmt.Sprintf("%v", s), 1)
+		b := strings.Replace(a, "[x]", fmt.Sprintf("%v", p), 1)
+
+		msg = b
+	}
+
+	if s != 0 && f != 0 && p != 0 {
+		a := strings.Replace(m, "[x]", fmt.Sprintf("%v", s), 1)
+		b := strings.Replace(a, "[x]", fmt.Sprintf("%v", p), 1)
+		c := strings.Replace(b, "[x]", fmt.Sprintf("%v", f), 1)
+
+		msg = c
+	}
+
+	if s == 0 && f == 0 && p != 0 {
+		a := strings.Replace(m, "[x]", fmt.Sprintf("%v", p), 1)
+		msg = a
+	}
 
 	/* ------ Response UseVoucher Comulative */
 	fmt.Println("========== Mesage from Inquiry OTTOAG and OPL ===============")
-	fmt.Println("Code : ", getResp.Code)
+	fmt.Println("Rc : ", getResp.Code)
 	fmt.Println("Message : ", getResp.Message)
 	fmt.Println("=============================================================")
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
 		Data: models.CommulativeResp{
-			Code:    Code_RC_Comulative,
-			Msg:     Message_Comulative,
+			Code:    rc,
+			Msg:     msg,
 			Success: countSuccess.Count,
 			Pending: countPending.Count,
 			Failed:  pyenmentFail,
@@ -208,4 +333,29 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	}
 
 	return res
+}
+
+func getMsgCummulative(rc, msg string) string {
+
+	var codeMsg string
+
+	getmsg, errmsg := db.GetResponseCummulativeOttoAG(rc)
+	if errmsg != nil || getmsg.InternalRc == "" {
+
+		fmt.Println("[VoucherComulativeService]-[GetResponseCummulativeOttoAG]")
+		fmt.Println("[Failed to Get Data Mapping Response]")
+		fmt.Println(fmt.Sprintf("[Data GetResponseOttoag : ]", getmsg))
+		fmt.Println(fmt.Sprintf("[Error %v]", errmsg))
+		// return res, err
+
+		codeMsg = msg
+
+		return codeMsg
+	}
+
+	// codeRc = getmsg.InternalRc
+	// codeMsg = strings.Replace(getmsg.InternalRd, "[x]", "%v", 10)
+	codeMsg = getmsg.InternalRd
+
+	return codeMsg
 }
