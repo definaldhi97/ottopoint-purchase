@@ -40,20 +40,6 @@ func OrderVoucher(req models.OrderVoucherReq, institutionID string) (*models.Ord
 
 	logs.Info("[PackageHostUV]-[OrderVoucher]")
 
-	// nama = "OTTOPOINT"
-	// expired, _ := strconv.Atoi(param.ExpDate)
-
-	// req := models.OrderVoucherReq{
-	// 	Sku:               param.ProductCode,
-	// 	Qty:               total,
-	// 	AccountID:         param.CustID,
-	// 	InstitutionRefno:  param.Reffnum,
-	// 	ExpireDateVoucher: expired,
-	// 	ReceiverName:      nama,
-	// 	ReceiverEmail:     email,
-	// 	ReceiverPhone:     phone,
-	// }
-
 	urlSvr := host + endpointOrderVoucher
 
 	data, err := HTTPxFormPostUV(urlSvr, institutionID, req)
