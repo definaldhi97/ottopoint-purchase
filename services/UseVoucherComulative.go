@@ -143,15 +143,19 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		Point:         param.Point,
 		ExpDate:       param.ExpDate,
 		SupplierID:    param.SupplierID,
+		DataSupplier: models.Supplier{
+			Rc: billerRes.Rc,
+			Rd: billerRes.Msg,
+		},
 	}
 
 	fmt.Println(fmt.Sprintf("[Payment Response : %v]", billerRes))
 
 	// Time Out
 	if billerRes.Rc == "" {
-		fmt.Println("[Payment Time Out]")
+		fmt.Println(fmt.Sprintf("[Payment %v Time Out]", param.ProductType))
 
-		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09", billerRes.Rc)
+		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09")
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.UseRedeemResponse{
@@ -168,7 +172,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
 		fmt.Println(fmt.Sprintf("[Payment %v Pending]", param.ProductType))
 
-		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09", billerRes.Rc)
+		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09")
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.UseRedeemResponse{
@@ -185,7 +189,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
 		fmt.Println(fmt.Sprintf("[Payment %v Failed]", param.ProductType))
 
-		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "01", billerRes.Rc)
+		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "01")
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.UseRedeemResponse{
@@ -222,7 +226,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	}
 
 	fmt.Println(fmt.Sprintf("[Payment %v Success]", param.ProductType))
-	save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "00", billerRes.Rc)
+	save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "00")
 	fmt.Println(fmt.Sprintf("[Response Save Payment %v : %v]", param.ProductType, save))
 
 	res = models.UseRedeemResponse{
@@ -241,7 +245,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	return res
 }
 
-func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, status, rc string) string {
+func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, status string) string {
 
 	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[%v]", param.ProductType))
 
@@ -277,7 +281,8 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
 		ResponderData:   status,
 		Point:           param.Point,
-		ResponderRc:     rc,
+		ResponderRc:     param.DataSupplier.Rc,
+		ResponderRd:     param.DataSupplier.Rd,
 		RequestorData:   string(reqOttoag),
 		ResponderData2:  string(responseOttoag),
 		RequestorOPData: string(reqdataOP),

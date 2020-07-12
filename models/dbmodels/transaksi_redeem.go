@@ -23,6 +23,7 @@ type TransaksiRedeem struct {
 	ResponderData   string    `gorm:"responder_data"`
 	Point           int       `gorm:"point"`
 	ResponderRc     string    `gorm:"responder_rc"`
+	ResponderRd     string    `gorm:"responder_rd"`
 	RequestorData   string    `gorm:"requestor_data"`
 	ResponderData2  string    `gorm:"responder_data"`
 	RequestorOPData string    `gorm:"requestor_op_data"`

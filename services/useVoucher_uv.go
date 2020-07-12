@@ -117,7 +117,7 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 	return res
 }
 
-func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) {
+func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status string) {
 
 	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[UltraVoucher]-[%v]", trasnType))
 
@@ -155,7 +155,8 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
 		ResponderData:   status,
 		Point:           param.Point,
-		ResponderRc:     rc,
+		ResponderRc:     param.DataSupplier.Rc,
+		ResponderRd:     param.DataSupplier.Rd,
 		RequestorData:   string(reqUV),
 		ResponderData2:  string(responseUV),
 		RequestorOPData: string(reqdataOP),
