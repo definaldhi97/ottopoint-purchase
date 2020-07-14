@@ -77,7 +77,7 @@ func GetCountFailedPyenment(cummulative_ref string) (Count, error) {
 
 func GetCountPyenment(cummulative_ref string) (Count, error) {
 	res := Count{}
-	err := DbCon.Raw("select count(*) as count from public.redeem_transactions where cummulative_ref = ?", cummulative_ref).Scan(&res).Error
+	err := DbCon.Raw("select count(*) as count from public.redeem_transactions where cummulative_ref = ? and trans_type = 'Redeemtion'", cummulative_ref).Scan(&res).Error
 	if err != nil {
 		fmt.Println("[EEROR-DATABASE]")
 		fmt.Println("[GetCountPyenment]")

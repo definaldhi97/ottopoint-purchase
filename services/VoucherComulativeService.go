@@ -83,9 +83,8 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	wg.Wait()
 
 	fmt.Println("Response OttoAG Payment 2 : ", getResRedeem)
-	total := req.Jumlah * 2
 	countPayment, _ := db.GetCountPyenment(comulative_ref)
-	if countPayment.Count != total {
+	if countPayment.Count != req.Jumlah*2 {
 		countPayment, _ = db.GetCountPyenment(comulative_ref)
 	}
 
@@ -94,17 +93,12 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		countPending, _ = db.GetCountPending_Pyenment(comulative_ref)
 	}
 
-	// countFailed, _ := db.GetCountFailedPyenment(comulative_ref)
-	// if countFailed.Count == 0 {
-	// 	countFailed, _ = db.GetCountFailedPyenment(comulative_ref)
-	// }
-
 	countSuccess, _ := db.GetCountSucc_Pyenment(comulative_ref)
 	if countSuccess.Count == 0 {
 		countSuccess, _ = db.GetCountSucc_Pyenment(comulative_ref)
 	}
 
-	pyenmentFail := req.Jumlah - countSuccess.Count
+	pyenmentFail := req.Jumlah - countSuccess.Count - countPending.Count
 
 	/* ------ Reversal to Point ----- */
 	rcUseVoucher, _ := db.GetPyenmentFailed(comulative_ref)
