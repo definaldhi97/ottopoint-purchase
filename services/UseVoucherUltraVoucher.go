@@ -182,10 +182,11 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	// order to u
 	fmt.Println(">>> OrderVoucher <<<")
 	order, errOrder := uv.OrderVoucher(reqOrder, param.InstitutionID)
-	if errOrder != nil || order.ResponseCode == "" {
 
-		// reffNumberUV
-		param.RRN = order.Data.InvoiceUV
+	// reffNumberUV
+	param.RRN = order.Data.InvoiceUV
+
+	if errOrder != nil || order.ResponseCode == "" {
 
 		fmt.Println("Error : ", errOrder)
 		fmt.Println("Response OrderVoucher : ", order)
