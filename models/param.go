@@ -4,6 +4,7 @@ type Params struct {
 	AccountNumber string
 	MerchantID    string
 	InstitutionID string
+	TransType     string
 	AccountId     string //opl
 	Reffnum       string // internal
 	RRN           string // eksternal

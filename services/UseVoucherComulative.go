@@ -105,10 +105,10 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 
 	// payment to ottoag
 	billerReq := ottoagmodels.OttoAGPaymentReq{
-		Amount:   uint64(param.Amount),
-		CustID:   req.CustID,
-		MemberID: utils.MemberID,
-		// Period:      req.CustID2,
+		Amount:      uint64(param.Amount),
+		CustID:      req.CustID,
+		MemberID:    utils.MemberID,
+		Period:      req.CustID2,
 		Productcode: req.ProductCode,
 		Rrn:         param.RRN,
 	}
@@ -133,6 +133,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		MerchantID:    param.MerchantID,
 		InstitutionID: param.InstitutionID,
 		CustID:        custId,
+		TransType:     "Redeemtion",
 		Reffnum:       param.Reffnum, // Internal
 		RRN:           billerRes.Rrn,
 		Amount:        int64(billerRes.Amount),
