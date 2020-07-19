@@ -226,11 +226,8 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		// 		coupon := redeem.Coupons[t].Id
 		// 		param.CouponID = coupon
 
-				param.DataSupplier.Rd = checkOrder.ResponseDesc
-				param.DataSupplier.Rc = checkOrder.ResponseCode
-
-				go SaveTransactionUV(param, checkOrder, reqCheckStatus, req, "Reedemtion", "09")
-			}
+		// 		go SaveTransactionUV(param, checkOrder, reqCheckStatus, req, "Reedemtion", "09", checkOrder.ResponseCode)
+		// 	}
 
 		// 	// res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Anda sedang dalam proses. Silahkan hubungi tim kami untuk informasi selengkapnya."))
 		// 	res = models.Response{
@@ -320,11 +317,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 		// 	fmt.Println("Response Publisher : ", kafkaRes)
 
-				param.DataSupplier.Rd = checkOrder.ResponseDesc
-				param.DataSupplier.Rc = checkOrder.ResponseCode
-
-				go SaveTransactionUV(param, checkOrder, reqCheckStatus, req, "Reedemtion", "01")
-			}
+		// 	for i := req.Jumlah; i > 0; i-- {
 
 		// 		fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
 
@@ -384,12 +377,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			coupon := redeem.Coupons[t].Id
 			param.CouponID = coupon
 
-			param.DataSupplier.Rd = checkOrder.ResponseDesc
-			param.DataSupplier.Rc = checkOrder.ResponseCode
-
-			id := utils.GenerateTokenUUID()
-			go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber, param.AccountId, req.CampaignID)
-			go SaveTransactionUV(param, checkOrder, reqCheckStatus, req, "Reedemtion", "00")
+			go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "09")
 		}
 
 		res = models.Response{
@@ -487,9 +475,6 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			coupon := redeem.Coupons[t].Id
 			param.CouponID = coupon
 
-			param.DataSupplier.Rd = order.ResponseDesc
-			param.DataSupplier.Rc = order.ResponseCode
-
 			go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "01")
 		}
 
@@ -584,9 +569,6 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			coupon := redeem.Coupons[t].Id
 			param.CouponID = coupon
 
-			param.DataSupplier.Rd = order.ResponseDesc
-			param.DataSupplier.Rc = order.ResponseCode
-
 			go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "01")
 		}
 
@@ -607,8 +589,6 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 	for i := req.Jumlah; i > 0; i-- {
 
-		fmt.Println(">>> Order Success <<<")
-
 		fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
 
 		t := i - 1
@@ -616,10 +596,6 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		code := order.Data.VouchersCode[t].Code
 
 		param.CouponID = coupon
-
-		// Data Supplier
-		param.DataSupplier.Rd = order.ResponseDesc
-		param.DataSupplier.Rc = order.ResponseCode
 
 		id := utils.GenerateTokenUUID()
 		go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber, param.AccountId, req.CampaignID)

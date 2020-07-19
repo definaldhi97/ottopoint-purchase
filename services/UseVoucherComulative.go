@@ -14,6 +14,9 @@ import (
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/utils"
 	"sync"
+	"time"
+
+	"github.com/vjeantet/jodaTime"
 )
 
 // func UseVoucherService1(header models.RequestHeader, req models.VoucherComultaiveReq, dataToken ottomartmodels.ResponseToken, amount int64, rrn string) models.Response {
@@ -292,9 +295,13 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
+
 		fmt.Println(fmt.Sprintf("[Error : %v]", err))
 		fmt.Println("[Failed saveTransactionOttoAg to DB]")
-		fmt.Println(fmt.Sprintf("[TransType : %v || RRN : %v]", "Redeemtion", param.RRN))
+		fmt.Println(fmt.Sprintf("[TransType : %v || RRN : %v]", "Redeemtion", param.CumReffnum))
+
+		name := "OttoAG-" + jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
+		go utils.CreateCSVFile(save, name)
 
 		return "Gagal Save"
 
