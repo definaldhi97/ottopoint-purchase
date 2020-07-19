@@ -180,6 +180,10 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	// order to u
 	fmt.Println("[OrderVoucher]")
 	order, errOrder := uv.OrderVoucher(reqOrder, param.InstitutionID)
+
+	param.DataSupplier.Rd = order.ResponseDesc
+	param.DataSupplier.Rc = order.ResponseCode
+
 	if errOrder != nil || order.ResponseCode == "" {
 
 		fmt.Println("Error : ", errOrder)
@@ -200,6 +204,9 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		}
 
 		checkOrder, errCheck := chekStatus(reqOrder.InstitutionRefno, param.InstitutionID)
+
+		param.DataSupplier.Rd = checkOrder.ResponseDesc
+		param.DataSupplier.Rc = checkOrder.ResponseCode
 		// checkOrder, errCheck := uv.CheckStatusOrder(reqOrder.InstitutionRefno, param.InstitutionID)
 
 		fmt.Println("Response Check Status : ", checkOrder)
@@ -221,9 +228,6 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 				t := i - 1
 				coupon := redeem.Coupons[t].Id
 				param.CouponID = coupon
-
-				param.DataSupplier.Rd = checkOrder.ResponseDesc
-				param.DataSupplier.Rc = checkOrder.ResponseCode
 
 				go SaveTransactionUV(param, checkOrder, reqCheckStatus, req, "Reedemtion", "09")
 			}
@@ -319,9 +323,6 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 				coupon := redeem.Coupons[t].Id
 				param.CouponID = coupon
 
-				param.DataSupplier.Rd = checkOrder.ResponseDesc
-				param.DataSupplier.Rc = checkOrder.ResponseCode
-
 				go SaveTransactionUV(param, checkOrder, reqCheckStatus, req, "Reedemtion", "01")
 			}
 
@@ -349,9 +350,6 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			code := checkOrder.Data.VouchersCode[t].Code
 
 			param.CouponID = coupon
-
-			param.DataSupplier.Rd = checkOrder.ResponseDesc
-			param.DataSupplier.Rc = checkOrder.ResponseCode
 
 			id := utils.GenerateTokenUUID()
 			go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber, param.AccountId, req.CampaignID)
@@ -446,9 +444,6 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			coupon := redeem.Coupons[t].Id
 			param.CouponID = coupon
 
-			param.DataSupplier.Rd = order.ResponseDesc
-			param.DataSupplier.Rc = order.ResponseCode
-
 			go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "01")
 		}
 
@@ -538,9 +533,6 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			coupon := redeem.Coupons[t].Id
 			param.CouponID = coupon
 
-			param.DataSupplier.Rd = order.ResponseDesc
-			param.DataSupplier.Rc = order.ResponseCode
-
 			go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "01")
 		}
 
@@ -570,10 +562,6 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		code := order.Data.VouchersCode[t].Code
 
 		param.CouponID = coupon
-
-		// Data Supplier
-		param.DataSupplier.Rd = order.ResponseDesc
-		param.DataSupplier.Rc = order.ResponseCode
 
 		id := utils.GenerateTokenUUID()
 		go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber, param.AccountId, req.CampaignID)
