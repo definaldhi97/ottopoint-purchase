@@ -109,6 +109,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		MerchantID:    param.MerchantID,
 		InstitutionID: param.InstitutionID,
 		CustID:        req.CustID,
+		TransType:     "Inquiry",
 		Reffnum:       param.Reffnum, // internal
 		RRN:           dataInquery.Rrn,
 		Amount:        dataInquery.Amount,
@@ -119,6 +120,10 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		Point:         param.Point,
 		ExpDate:       param.ExpDate,
 		SupplierID:    param.SupplierID,
+		DataSupplier: models.Supplier{
+			Rc: dataInquery.Rc,
+			Rd: dataInquery.Msg,
+		},
 	}
 
 	if dataInquery.Rc != "00" {
@@ -129,7 +134,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 			Message: "Inquiry Failed",
 		}
 
-		go SaveTransactionInq(param.Category, paramInq, dataInquery, req, inqBiller, "Inquiry", "01", dataInquery.Rc)
+		go saveTransactionOttoAg(paramInq, dataInquery, reqInq, req, "01")
 
 		ErrRespRedeem <- errInquiry
 
@@ -164,7 +169,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 			Message: "Inquiry Failed",
 		}
 
-		go SaveTransactionInq(param.Category, paramInq, dataInquery, req, inqBiller, "Inquiry", "01", dataInquery.Rc)
+		go saveTransactionOttoAg(paramInq, dataInquery, req, inqBiller, "01")
 
 		ErrRespRedeem <- errInquiry
 
@@ -179,7 +184,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 	}
 
-	go SaveTransactionInq(param.ProductType, paramInq, dataInquery, req, inqBiller, "Inquiry", "00", dataInquery.Rc)
+	go saveTransactionOttoAg(paramInq, dataInquery, req, inqBiller, "00")
 
 	// coupon := []models.CouponsRedeem{}
 
@@ -339,7 +344,8 @@ func SaveTransactionInq(category string, param models.Params, res interface{}, r
 		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
 		ResponderData:   status,
 		Point:           param.Point,
-		ResponderRc:     rc,
+		ResponderRc:     param.DataSupplier.Rc,
+		ResponderRd:     param.DataSupplier.Rd,
 		RequestorData:   string(reqOttoag),
 		ResponderData2:  string(responseOttoag),
 		RequestorOPData: string(reqdataOP),

@@ -4,6 +4,7 @@ type Params struct {
 	AccountNumber string
 	MerchantID    string
 	InstitutionID string
+	TransType     string
 	AccountId     string //opl
 	Reffnum       string // internal (generate ottopoint)
 	CumReffnum    string // internal (generate ottopoint) untuk pembelian kelipatan
@@ -21,5 +22,13 @@ type Params struct {
 	CampaignID    string
 	SupplierID    string
 	// percobaan
-	Total int
+	Total        int
+	DataSupplier Supplier
+}
+
+type Supplier struct {
+	Request  string // Request dijadikan byte[] >> string
+	Response string // Response dijadikan byte[] >> string
+	Rd       string // msg response
+	Rc       string // rc response
 }
