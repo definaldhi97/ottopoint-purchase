@@ -6,8 +6,9 @@ type Params struct {
 	InstitutionID string
 	TransType     string
 	AccountId     string //opl
-	Reffnum       string // internal
-	RRN           string // eksternal
+	Reffnum       string // internal (generate ottopoint)
+	CumReffnum    string // internal (generate ottopoint) untuk pembelian kelipatan
+	RRN           string // eksternal (from supplier exp : ottoag, uv)
 	CustID        string
 	Amount        int64
 	NamaVoucher   string

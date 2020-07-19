@@ -21,7 +21,9 @@ type OrderVoucherResp struct {
 
 type DataOrder struct {
 	OrderID           string            `json:"orderId"`
+	InstReffnum       string            `json:"instReffnum"`
 	InvoiceOp         string            `json:"invoiceOp"`
+	InvoiceUV         string            `json:"InvoiceUV"`
 	VouchersAvailable string            `json:"vouchersAvailable"`
 	VouchersCode      []DataVoucherCode `json:"vouchersCode"`
 }

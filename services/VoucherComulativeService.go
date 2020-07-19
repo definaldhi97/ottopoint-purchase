@@ -1,11 +1,11 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/hosts/opl/host"
-	ottomart "ottopoint-purchase/hosts/ottomart/host"
-	ottomartmodels "ottopoint-purchase/hosts/ottomart/models"
+	kafka "ottopoint-purchase/hosts/publisher/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
 	"strconv"
@@ -115,25 +115,30 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 			fmt.Println("[transfer point] : ", errReversal)
 		}
 
-		fmt.Println("========== Send Notif ==========")
-		notifReq := ottomartmodels.NotifRequest{
-			AccountNumber:    rcUseVoucher.AccountNumber,
-			Title:            "Reversal Point",
-			Message:          fmt.Sprintf("Point anda berhasil di reversal sebesar %v", int64(rcUseVoucher.Count)),
-			NotificationType: 3,
+		fmt.Println("========== Send Publisher ==========")
+
+		pubreq := models.NotifPubreq{
+			Type:          "Reversal",
+			AccountNumber: param.AccountNumber,
+			Institution:   param.InstitutionID,
+			Point:         rcUseVoucher.Count,
+			Product:       param.NamaVoucher,
 		}
 
-		// send notif & inbox
-		dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
-		if errNotif != nil {
-			fmt.Println("Error to send Notif & Inbox")
+		bytePub, _ := json.Marshal(pubreq)
+
+		kafkaReq := kafka.PublishReq{
+			Topic: "ottopoint-notification-reversal",
+			Value: bytePub,
 		}
 
-		if dataNotif.RC != "00" {
-			fmt.Println("[Response Notif Reversal]")
-			fmt.Println("Gagal Send Notif & Inbox")
-			fmt.Println("Error : ", errNotif)
+		kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+		if err != nil {
+			fmt.Println("Gagal Send Publisher")
+			fmt.Println("Error : ", err)
 		}
+
+		fmt.Println("Response Publisher : ", kafkaRes)
 
 	}
 
