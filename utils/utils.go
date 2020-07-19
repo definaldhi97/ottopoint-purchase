@@ -1,10 +1,12 @@
 package utils
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
+	"os"
 	"os/exec"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/models"
@@ -26,6 +28,7 @@ var (
 	RedisKeyAuth      string
 	LimitTRXPoint     string
 	MemberID          string
+	PathCSV           string
 
 	ListErrorCode []models.MappingErrorCodes
 )
@@ -37,6 +40,8 @@ func init() {
 	RedisKeyAuth = ODU.GetEnv("redis.key.auth", "Ottopoint-Token-Admin :")
 	LimitTRXPoint = ODU.GetEnv("limit.trx.point", "999999999999999")
 	MemberID = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_MEMBERID", "OTPOINT")
+	// PathCSV = ODU.GetEnv("PATH_CSV", "//Users/abdulrohmat/Documents/Golang/src/ottopoint-purchase/utils/")
+	PathCSV = ODU.GetEnv("PATH_CSV", "/opt/ottopoint-purchase/csv/")
 
 }
 
@@ -320,4 +325,43 @@ func FormatTimeString(timestamp time.Time, year, month, day int) string {
 	res := jodaTime.Format("YYYY-MM-dd", t)
 
 	return res
+}
+
+func CreateCSVFile(data interface{}, name string) {
+	fmt.Println(">>> createCSVFile <<<")
+
+	time := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+	path := PathCSV + name
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		if file, err = os.Create(path); err != nil {
+			return
+		}
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+
+	returnError := writer.Write([]string{""})
+	returnError = writer.Write([]string{time})
+	if returnError != nil {
+		fmt.Println(returnError)
+	}
+
+	writer.Flush()
+
+	datas, _ := json.Marshal(&data)
+
+	dataString := strings.Fields(string(datas))
+
+	for _, value := range dataString {
+		_, err := file.WriteString(strings.TrimSpace(value))
+		if err != nil { //exception handler
+			fmt.Println(err)
+			break
+		}
+	}
+
+	writer.Flush()
+
 }
