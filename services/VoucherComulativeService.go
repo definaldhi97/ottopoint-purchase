@@ -124,11 +124,15 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		fmt.Println("========== Send Publisher ==========")
 
 		pubreq := models.NotifPubreq{
-			Type:          "Reversal",
-			AccountNumber: param.AccountNumber,
-			Institution:   param.InstitutionID,
-			Point:         rcUseVoucher.Count,
-			Product:       param.NamaVoucher,
+			Type:           "REVERSAL_POINT",
+			NotificationTo: param.AccountNumber,
+			Institution:    param.InstitutionID,
+			ReferenceId:    param.RRN,
+			TransactionId:  param.Reffnum,
+			Data: models.DataValue{
+				RewardValue: param.NamaVoucher,
+				Value:       strconv.Itoa(rcUseVoucher.Count),
+			},
 		}
 
 		bytePub, _ := json.Marshal(pubreq)

@@ -291,17 +291,21 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			fmt.Println("========== Send Publisher ==========")
 
 			pubreq := models.NotifPubreq{
-				Type:          "Reversal",
-				AccountNumber: param.AccountNumber,
-				Institution:   param.InstitutionID,
-				Point:         point,
-				Product:       param.NamaVoucher,
+				Type:           "REVERSAL_POINT",
+				NotificationTo: param.AccountNumber,
+				Institution:    param.InstitutionID,
+				ReferenceId:    param.RRN,
+				TransactionId:  param.Reffnum,
+				Data: models.DataValue{
+					RewardValue: param.NamaVoucher,
+					Value:       totalPoint,
+				},
 			}
 
 			bytePub, _ := json.Marshal(pubreq)
 
 			kafkaReq := kafka.PublishReq{
-				Topic: "ottopoint-notification-reversal",
+				Topic: "ottopoint-notification-topics",
 				Value: bytePub,
 			}
 
@@ -417,11 +421,15 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		fmt.Println("========== Send Publisher ==========")
 
 		pubreq := models.NotifPubreq{
-			Type:          "Reversal",
-			AccountNumber: param.AccountNumber,
-			Institution:   param.InstitutionID,
-			Point:         point,
-			Product:       param.NamaVoucher,
+			Type:           "REVERSAL_POINT",
+			NotificationTo: param.AccountNumber,
+			Institution:    param.InstitutionID,
+			ReferenceId:    param.RRN,
+			TransactionId:  param.Reffnum,
+			Data: models.DataValue{
+				RewardValue: param.NamaVoucher,
+				Value:       totalPoint,
+			},
 		}
 
 		bytePub, _ := json.Marshal(pubreq)
@@ -511,11 +519,15 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		fmt.Println("========== Send Publisher ==========")
 
 		pubreq := models.NotifPubreq{
-			Type:          "Reversal",
-			AccountNumber: param.AccountNumber,
-			Institution:   param.InstitutionID,
-			Point:         point,
-			Product:       param.NamaVoucher,
+			Type:           "REVERSAL_POINT",
+			NotificationTo: param.AccountNumber,
+			Institution:    param.InstitutionID,
+			ReferenceId:    param.RRN,
+			TransactionId:  param.Reffnum,
+			Data: models.DataValue{
+				RewardValue: param.NamaVoucher,
+				Value:       totalPoint,
+			},
 		}
 
 		bytePub, _ := json.Marshal(pubreq)

@@ -218,17 +218,21 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		fmt.Println("========== Send Publisher ==========")
 
 		pubreq := models.NotifPubreq{
-			Type:          "PLN",
-			AccountNumber: param.AccountNumber,
-			Institution:   param.InstitutionID,
-			// Point:         point,
-			Product: stroomToken,
+			Type:           "REDEEM_PLN",
+			NotificationTo: param.AccountNumber,
+			Institution:    param.InstitutionID,
+			ReferenceId:    param.RRN,
+			TransactionId:  param.Reffnum,
+			Data: models.DataValue{
+				RewardValue: param.NamaVoucher,
+				Value:       stroomToken,
+			},
 		}
 
 		bytePub, _ := json.Marshal(pubreq)
 
 		kafkaReq := kafka.PublishReq{
-			Topic: "ottopoint-notification-earning",
+			Topic: "ottopoint-notification-topics",
 			Value: bytePub,
 		}
 
