@@ -31,7 +31,7 @@ func CreateFileCSVController(ctx *gin.Context) {
 		return
 	}
 
-	name := "csv-" + jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
+	name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
 
 	go utils.CreateCSVFile(req, name)
 

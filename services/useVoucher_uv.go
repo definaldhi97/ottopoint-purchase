@@ -172,7 +172,7 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		logs.Info(fmt.Sprintf("[Error : %v]", err))
 		logs.Info("[Failed Save to DB]")
 
-		name := "UV-" + jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
+		name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
 		go utils.CreateCSVFile(save, name)
 
 		// return err

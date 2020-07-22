@@ -300,7 +300,7 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		fmt.Println("[Failed saveTransactionOttoAg to DB]")
 		fmt.Println(fmt.Sprintf("[TransType : %v || RRN : %v]", "Redeemtion", param.CumReffnum))
 
-		name := "OttoAG-" + jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
+		name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
 		go utils.CreateCSVFile(save, name)
 
 		return "Gagal Save"
