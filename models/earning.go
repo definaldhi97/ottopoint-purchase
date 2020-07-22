@@ -46,6 +46,24 @@ type EarningResp struct {
 	Point       int64  `json:"point"`
 }
 
+type ResponseEarning struct {
+	// Code           string        `json:"code"`
+	// Message        string        `json:"message"`
+	ReferenceId    string        `json:"referenceId`
+	TransactionId  string        `json:"transactionId"`
+	PartnerId      string        `json:"partnerId"`
+	Amount         int64         `json:"amount"`
+	EarningRule    string        `json:"earningRule"`
+	EarningRuleAdd string        `json:"errningRuleAdd"`
+	EarningDate    string        `json:"earningDate"`
+	AccountData    []DataEarning `json:"accountData"`
+}
+
+type DataEarning struct {
+	AccountNumber string `json:"accountNumber"`
+	Point         int64  `json:"point"`
+}
+
 // ============== Check Status Earning ==============
 type CheckStatusEarningReq struct {
 	ReferenceId string `json:"referenceId"`
