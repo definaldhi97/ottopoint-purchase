@@ -39,7 +39,7 @@ func (t CheckStatusEarningService) CheckStatusEarningServices(referenceId, insti
 		sugarLogger.Info("[GetCheckStatusEarning]")
 		sugarLogger.Info("[Failed to Get Data Earning]-[GetCheckStatusEarning]")
 
-		res = utils.GetMessageResponse(res, 178, false, errors.New("Earning Rule not found"))
+		res = utils.GetMessageResponse(res, 153, false, errors.New("Data Not Found"))
 
 		return res
 	}

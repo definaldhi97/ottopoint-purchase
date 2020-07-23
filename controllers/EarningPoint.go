@@ -110,14 +110,6 @@ func EarningsPointController(ctx *gin.Context) {
 		res = utils.GetMessageResponse(res, 178, false, errors.New("Earning Rule not found"))
 	}
 
-	if req.AccountNumber1 == "" || req.Earning == "" || req.TransactionTime == "" {
-		fmt.Println("===== Invalid Mandatory =====")
-		res = utils.GetMessageResponse(res, 06, false, errors.New("Invalid Mandatory"))
-
-		ctx.JSON(http.StatusOK, res)
-		return
-	}
-
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", res))
 
