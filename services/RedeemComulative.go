@@ -29,7 +29,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 	fmt.Println("[Start][Inquiry]-[Package-Services]-[RedeemComulativeVoucher]")
 
-	if category == constants.CategoryPulsa {
+	if category == constants.CategoryPulsa || category == constants.CategoryPaketData {
 		// validate prefix
 		validate, errValidate := ValidatePrefixComulative(req.CustID, param.ProductCode)
 		if validate == false {
@@ -109,7 +109,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		MerchantID:    param.MerchantID,
 		InstitutionID: param.InstitutionID,
 		CustID:        req.CustID,
-		TransType:     "Inquiry",
+		TransType:     constants.CODE_TRANSTYPE_INQUERY,
 		Reffnum:       param.Reffnum, // internal
 		RRN:           dataInquery.Rrn,
 		Amount:        dataInquery.Amount,

@@ -41,7 +41,7 @@ const (
 
 const (
 	CategoryPulsa        = "pulsa"
-	CategoryPaketData    = "paket data"
+	CategoryPaketData    = "Paket Data"
 	CategoryFreeFire     = "free fire"
 	CategoryMobileLegend = "mobile legends"
 	CategoryPLN          = "pln"
@@ -149,4 +149,18 @@ var (
 	CONS_LINK_ACCOUNT       = "link"
 	CONS_UNLINK_ACCOUNT     = "unlink"
 	CONS_USER_STATUS_ACTIVE = "active"
+)
+
+const (
+	CODE_TRANSTYPE_REDEMPTION = "TSP02"
+	CODE_TRANSTYPE_INQUERY    = "TSP01"
+)
+
+const (
+	CODE_EARNING_POINT         = "earning_voucher"
+	CODE_REVERSAL_POINT        = "reversal_point"
+	CODE_REDEEM_PLN            = "redeem_pln"
+	CODE_EARNING_VOUCHER       = "earning_voucher"
+	CODE_VOUCHER_EXPIRED       = "voucher_expired"
+	CODE_GIFT_POINT_ACTIVATION = "gift_point_activation"
 )

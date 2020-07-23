@@ -6,8 +6,7 @@ import (
 	"ottopoint-purchase/constants"
 	db "ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
-	ottomart "ottopoint-purchase/hosts/ottomart/host"
-	ottomartmodels "ottopoint-purchase/hosts/ottomart/models"
+	kafka "ottopoint-purchase/hosts/publisher/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
@@ -133,7 +132,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		MerchantID:    param.MerchantID,
 		InstitutionID: param.InstitutionID,
 		CustID:        custId,
-		TransType:     "Redeemtion",
+		TransType:     constants.CODE_TRANSTYPE_REDEMPTION,
 		Reffnum:       param.Reffnum, // Internal
 		RRN:           billerRes.Rrn,
 		Amount:        int64(billerRes.Amount),
@@ -204,26 +203,58 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		return res
 	}
 
-	// Format Token
-	stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
+	// Notif PLN
+	if param.Category == constants.CategoryPLN {
+		// Format Token
+		stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
 
-	notifReq := ottomartmodels.NotifRequest{
-		AccountNumber:    req.AccountNumber,
-		Title:            "Transaksi Berhasil",
-		Message:          fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
-		NotificationType: 3,
-	}
+		// notifReq := ottomartmodels.NotifRequest{
+		// 	AccountNumber:    req.AccountNumber,
+		// 	Title:            "Transaksi Berhasil",
+		// 	Message:          fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
+		// 	NotificationType: 3,
+		// }
 
-	// send notif & inbox
-	dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
-	if errNotif != nil {
-		fmt.Println("Error to send Notif & Inbox")
-	}
+		// send notif & inbox
+		// dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
+		// if errNotif != nil {
+		// 	fmt.Println("Error to send Notif & Inbox")
+		// }
 
-	if dataNotif.RC != "00" {
-		fmt.Println("[Response Notif PLN]")
-		fmt.Println("Gagal Send Notif & Inbox")
-		fmt.Println("Error : ", errNotif)
+		// if dataNotif.RC != "00" {
+		// 	fmt.Println("[Response Notif PLN]")
+		// 	fmt.Println("Gagal Send Notif & Inbox")
+		// 	fmt.Println("Error : ", errNotif)
+		// }
+		fmt.Println("========== Send Publisher ==========")
+
+		pubreq := models.NotifPubreq{
+			Type:           constants.CODE_REDEEM_PLN,
+			NotificationTo: param.AccountNumber,
+			Institution:    param.InstitutionID,
+			ReferenceId:    param.RRN,
+			TransactionId:  param.Reffnum,
+			Data: models.DataValue{
+				RewardValue: param.NamaVoucher,
+				Value:       stroomToken,
+			},
+		}
+
+		bytePub, _ := json.Marshal(pubreq)
+
+		kafkaReq := kafka.PublishReq{
+			Topic: "ottopoint-notification-topics",
+			Value: bytePub,
+		}
+
+		kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+		if err != nil {
+			fmt.Println("Gagal Send Publisher")
+			fmt.Println("Error : ", err)
+		}
+
+		fmt.Println("Response Publisher : ", kafkaRes)
+
 	}
 
 	fmt.Println(fmt.Sprintf("[Payment %v Success]", param.ProductType))
@@ -265,14 +296,15 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	reqdataOP, _ := json.Marshal(&reqOP)    // Req Service
 
 	save := dbmodels.TransaksiRedeem{
-		AccountNumber:   param.AccountNumber,
-		Voucher:         param.NamaVoucher,
-		MerchantID:      param.MerchantID,
-		CustID:          param.CustID,
-		RRN:             param.RRN,
-		ProductCode:     param.ProductCode,
-		Amount:          int64(param.Amount),
-		TransType:       "Redeemtion",
+		AccountNumber: param.AccountNumber,
+		Voucher:       param.NamaVoucher,
+		MerchantID:    param.MerchantID,
+		CustID:        param.CustID,
+		RRN:           param.RRN,
+		ProductCode:   param.ProductCode,
+		Amount:        int64(param.Amount),
+		// TransType:       "Redeemtion",
+		TransType:       param.TransType,
 		IsUsed:          true,
 		ProductType:     param.ProductType,
 		Status:          saveStatus,
@@ -294,7 +326,7 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	if err != nil {
 		fmt.Println(fmt.Sprintf("[Error : %v]", err))
 		fmt.Println("[Failed saveTransactionOttoAg to DB]")
-		fmt.Println(fmt.Sprintf("[TransType : %v || RRN : %v]", "Redeemtion", param.RRN))
+		fmt.Println(fmt.Sprintf("[TransType : %v || RRN : %v]", param.TransType, param.RRN))
 
 		return "Gagal Save"
 

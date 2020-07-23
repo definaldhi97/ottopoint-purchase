@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/hosts/opl/host"
 	opl "ottopoint-purchase/hosts/opl/host"
@@ -208,7 +209,8 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			coupon := redeem.Coupons[t].Id
 			param.CouponID = coupon
 
-			go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "09")
+			// go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "09")
+			go SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09")
 		}
 
 		res = models.Response{
@@ -275,12 +277,23 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 		fmt.Println("========== Send Publisher ==========")
 
+		// pubreq := models.NotifPubreq{
+		// 	Type:          "Reversal",
+		// 	AccountNumber: param.AccountNumber,
+		// 	Institution:   param.InstitutionID,
+		// 	Point:         point,
+		// 	Product:       param.NamaVoucher,
+		// }
 		pubreq := models.NotifPubreq{
-			Type:          "Reversal",
-			AccountNumber: param.AccountNumber,
-			Institution:   param.InstitutionID,
-			Point:         point,
-			Product:       param.NamaVoucher,
+			Type:           constants.CODE_REVERSAL_POINT,
+			NotificationTo: param.AccountNumber,
+			Institution:    param.InstitutionID,
+			ReferenceId:    param.RRN,
+			TransactionId:  param.Reffnum,
+			Data: models.DataValue{
+				RewardValue: param.NamaVoucher,
+				Value:       strconv.Itoa(point),
+			},
 		}
 
 		bytePub, _ := json.Marshal(pubreq)
@@ -306,7 +319,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			coupon := redeem.Coupons[t].Id
 			param.CouponID = coupon
 
-			go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "01")
+			go SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
 		}
 
 		// res = utils.GetMessageResponse(res, 145, false, errors.New(fmt.Sprintf("Voucher yg tersedia %v", order.Data.VouchersAvailable)))
@@ -369,12 +382,23 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 		fmt.Println("========== Send Publisher ==========")
 
+		// pubreq := models.NotifPubreq{
+		// 	Type:          "Reversal",
+		// 	AccountNumber: param.AccountNumber,
+		// 	Institution:   param.InstitutionID,
+		// 	Point:         point,
+		// 	Product:       param.NamaVoucher,
+		// }
 		pubreq := models.NotifPubreq{
-			Type:          "Reversal",
-			AccountNumber: param.AccountNumber,
-			Institution:   param.InstitutionID,
-			Point:         point,
-			Product:       param.NamaVoucher,
+			Type:           constants.CODE_REVERSAL_POINT,
+			NotificationTo: param.AccountNumber,
+			Institution:    param.InstitutionID,
+			ReferenceId:    param.RRN,
+			TransactionId:  param.Reffnum,
+			Data: models.DataValue{
+				RewardValue: param.NamaVoucher,
+				Value:       strconv.Itoa(point),
+			},
 		}
 
 		bytePub, _ := json.Marshal(pubreq)
@@ -400,7 +424,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			coupon := redeem.Coupons[t].Id
 			param.CouponID = coupon
 
-			go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "01")
+			go SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
 		}
 
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
@@ -433,7 +457,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		id := utils.GenerateTokenUUID()
 		go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber, param.AccountId, req.CampaignID)
 
-		go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "00")
+		go SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00")
 	}
 
 	fmt.Println("Response UV : ", order)

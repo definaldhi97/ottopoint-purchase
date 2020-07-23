@@ -114,14 +114,15 @@ func VoucherComulativeController(ctx *gin.Context) {
 	// sugarLogger.Info("producrType : ", data.ProductType)
 
 	if data.SupplierID == "OttoAG" {
-		switch data.Category {
-		case constants.CategoryPulsa:
-			fmt.Println("Category Pulsa")
-		case constants.CategoryFreeFire, constants.CategoryMobileLegend:
-			fmt.Println("Category Game")
-		case constants.CategoryPLN:
-			fmt.Println("Category PLN")
-		default:
+		// switch data.Category {
+		// case constants.CategoryPulsa:
+		// 	fmt.Println("Category Pulsa")
+		// case constants.CategoryFreeFire, constants.CategoryMobileLegend:
+		// 	fmt.Println("Category Game")
+		// case constants.CategoryPLN:
+		// 	fmt.Println("Category PLN")
+		// default:
+		if data.Category == "" {
 			fmt.Println("Invalid Category")
 			res = utils.GetMessageResponse(res, 500, false, errors.New("Invalid BrandName"))
 			ctx.JSON(http.StatusOK, res)
