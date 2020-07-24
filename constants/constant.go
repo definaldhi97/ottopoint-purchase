@@ -41,7 +41,7 @@ const (
 
 const (
 	CategoryPulsa        = "pulsa"
-	CategoryPaketData    = "Paket Data"
+	CategoryPaketData    = "paket data"
 	CategoryFreeFire     = "free fire"
 	CategoryMobileLegend = "mobile legends"
 	CategoryPLN          = "pln"
@@ -156,6 +156,7 @@ const (
 	CODE_TRANSTYPE_INQUERY    = "TSP01"
 )
 
+// push notif general
 const (
 	CODE_EARNING_POINT         = "earning_voucher"
 	CODE_REVERSAL_POINT        = "reversal_point"
@@ -163,4 +164,5 @@ const (
 	CODE_EARNING_VOUCHER       = "earning_voucher"
 	CODE_VOUCHER_EXPIRED       = "voucher_expired"
 	CODE_GIFT_POINT_ACTIVATION = "gift_point_activation"
+	TOPIC_PUSHNOTIF_GENERAL    = "ottopoint-notification-topics"
 )

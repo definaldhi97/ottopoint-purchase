@@ -133,7 +133,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		bytePub, _ := json.Marshal(pubreq)
 
 		kafkaReq := kafka.PublishReq{
-			Topic: "ottopoint-notification-reversal",
+			Topic: constants.TOPIC_PUSHNOTIF_GENERAL,
 			Value: bytePub,
 		}
 
