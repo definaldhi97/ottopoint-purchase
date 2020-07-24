@@ -122,6 +122,13 @@ func VoucherComulativeController(ctx *gin.Context) {
 		// case constants.CategoryPLN:
 		// 	fmt.Println("Category PLN")
 		// default:
+		validateVerfix := ValidatePerfix(req.CustID, data.ProductCode, data.Category)
+		if validateVerfix == false {
+			fmt.Println("Invalid verfix")
+			res = utils.GetMessageResponse(res, 500, false, errors.New("Nomor akun ini tidak terdafatr"))
+			ctx.JSON(http.StatusOK, res)
+			return
+		}
 		if data.Category == "" {
 			fmt.Println("Invalid Category")
 			res = utils.GetMessageResponse(res, 500, false, errors.New("Invalid BrandName"))
@@ -200,4 +207,24 @@ func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 	}
 
 	return res
+}
+
+func ValidatePerfix(CustID, ProductCode, category string) bool {
+	// res := models.Response{Meta: utils.ResponseMetaOK()}
+	fmt.Println("[Category : " + category + " ]")
+	category1 := strings.ToLower(category)
+	if category1 == constants.CategoryPulsa || category1 == constants.CategoryPaketData {
+		// validate prefix
+		fmt.Println("Process validasi verfix : ", category1)
+		validate, _ := services.ValidatePrefixComulative(CustID, ProductCode, category1)
+		if validate == false {
+
+			fmt.Println("Invalid Prefix")
+			// res = utils.GetMessageResponse(res, 500, false, errors.New("Nomor akun ini tidak terdafatr"))
+			return false
+		}
+
+	}
+
+	return true
 }
