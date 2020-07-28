@@ -227,34 +227,6 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 			fmt.Println("Gagal Send Notif & Inbox")
 			fmt.Println("Error : ", errNotif)
 		}
-		// fmt.Println("========== Send Publisher ==========")
-
-		// pubreq := models.NotifPubreq{
-		// 	Type:           constants.CODE_REDEEM_PLN,
-		// 	NotificationTo: param.AccountNumber,
-		// 	Institution:    param.InstitutionID,
-		// 	ReferenceId:    param.RRN,
-		// 	TransactionId:  param.Reffnum,
-		// 	Data: models.DataValue{
-		// 		RewardValue: param.NamaVoucher,
-		// 		Value:       stroomToken,
-		// 	},
-		// }
-
-		// bytePub, _ := json.Marshal(pubreq)
-
-		// kafkaReq := kafka.PublishReq{
-		// 	Topic: "ottopoint-notification-topics",
-		// 	Value: bytePub,
-		// }
-
-		// kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
-		// if err != nil {
-		// 	fmt.Println("Gagal Send Publisher")
-		// 	fmt.Println("Error : ", err)
-		// }
-
-		// fmt.Println("Response Publisher : ", kafkaRes)
 
 	}
 
