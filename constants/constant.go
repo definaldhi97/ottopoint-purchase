@@ -165,4 +165,5 @@ const (
 	CODE_VOUCHER_EXPIRED       = "voucher_expired"
 	CODE_GIFT_POINT_ACTIVATION = "gift_point_activation"
 	TOPIC_PUSHNOTIF_GENERAL    = "ottopoint-notification-topics"
+	TOPIC_PUSHNOTIF_REVERSAL   = "ottopoint-notification-reversal"
 )

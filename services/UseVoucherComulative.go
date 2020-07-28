@@ -6,12 +6,13 @@ import (
 	"ottopoint-purchase/constants"
 	db "ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
-	kafka "ottopoint-purchase/hosts/publisher/host"
+	ottomartmodels "ottopoint-purchase/hosts/ottomart/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/utils"
+	"ottopoint-scheduler/host/ottomart"
 	"sync"
 )
 
@@ -208,52 +209,52 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		// Format Token
 		stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
 
-		// notifReq := ottomartmodels.NotifRequest{
-		// 	AccountNumber:    req.AccountNumber,
-		// 	Title:            "Transaksi Berhasil",
-		// 	Message:          fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
-		// 	NotificationType: 3,
-		// }
+		notifReq := ottomartmodels.NotifRequest{
+			AccountNumber:    req.AccountNumber,
+			Title:            "Transaksi Berhasil",
+			Message:          fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
+			NotificationType: 3,
+		}
 
 		// send notif & inbox
-		// dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
-		// if errNotif != nil {
-		// 	fmt.Println("Error to send Notif & Inbox")
+		dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
+		if errNotif != nil {
+			fmt.Println("Error to send Notif & Inbox")
+		}
+
+		if dataNotif.RC != "00" {
+			fmt.Println("[Response Notif PLN]")
+			fmt.Println("Gagal Send Notif & Inbox")
+			fmt.Println("Error : ", errNotif)
+		}
+		// fmt.Println("========== Send Publisher ==========")
+
+		// pubreq := models.NotifPubreq{
+		// 	Type:           constants.CODE_REDEEM_PLN,
+		// 	NotificationTo: param.AccountNumber,
+		// 	Institution:    param.InstitutionID,
+		// 	ReferenceId:    param.RRN,
+		// 	TransactionId:  param.Reffnum,
+		// 	Data: models.DataValue{
+		// 		RewardValue: param.NamaVoucher,
+		// 		Value:       stroomToken,
+		// 	},
 		// }
 
-		// if dataNotif.RC != "00" {
-		// 	fmt.Println("[Response Notif PLN]")
-		// 	fmt.Println("Gagal Send Notif & Inbox")
-		// 	fmt.Println("Error : ", errNotif)
+		// bytePub, _ := json.Marshal(pubreq)
+
+		// kafkaReq := kafka.PublishReq{
+		// 	Topic: "ottopoint-notification-topics",
+		// 	Value: bytePub,
 		// }
-		fmt.Println("========== Send Publisher ==========")
 
-		pubreq := models.NotifPubreq{
-			Type:           constants.CODE_REDEEM_PLN,
-			NotificationTo: param.AccountNumber,
-			Institution:    param.InstitutionID,
-			ReferenceId:    param.RRN,
-			TransactionId:  param.Reffnum,
-			Data: models.DataValue{
-				RewardValue: param.NamaVoucher,
-				Value:       stroomToken,
-			},
-		}
+		// kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+		// if err != nil {
+		// 	fmt.Println("Gagal Send Publisher")
+		// 	fmt.Println("Error : ", err)
+		// }
 
-		bytePub, _ := json.Marshal(pubreq)
-
-		kafkaReq := kafka.PublishReq{
-			Topic: "ottopoint-notification-topics",
-			Value: bytePub,
-		}
-
-		kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
-		if err != nil {
-			fmt.Println("Gagal Send Publisher")
-			fmt.Println("Error : ", err)
-		}
-
-		fmt.Println("Response Publisher : ", kafkaRes)
+		// fmt.Println("Response Publisher : ", kafkaRes)
 
 	}
 

@@ -15,13 +15,21 @@ type PublishEarningReq struct {
 	TransactionTime time.Time     `json:"transactionTime"`
 }
 
+// type NotifPubreq struct {
+// 	Type           string    `json:"notificationType"` // PLN, Earning, Reversal
+// 	NotificationTo string    `json:"notificationTo"`   // AccountNumber
+// 	Institution    string    `json:"institutionId"`
+// 	ReferenceId    string    `json:"referenceId"`
+// 	TransactionId  string    `json:"transactionId"`
+// 	Data           DataValue `json:"data"`
+// }
+
 type NotifPubreq struct {
-	Type           string    `json:"notificationType"` // PLN, Earning, Reversal
-	NotificationTo string    `json:"notificationTo"`   // AccountNumber
-	Institution    string    `json:"institutionId"`
-	ReferenceId    string    `json:"referenceId"`
-	TransactionId  string    `json:"transactionId"`
-	Data           DataValue `json:"data"`
+	Type          string `json:"type"`
+	AccountNumber string `json:"accountNumber"`
+	Institution   string `json:"institution"`
+	Point         int    `json:"point"`
+	Product       string `json:"product"`
 }
 
 type DataValue struct {

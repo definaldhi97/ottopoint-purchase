@@ -277,24 +277,24 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 		fmt.Println("========== Send Publisher ==========")
 
-		// pubreq := models.NotifPubreq{
-		// 	Type:          "Reversal",
-		// 	AccountNumber: param.AccountNumber,
-		// 	Institution:   param.InstitutionID,
-		// 	Point:         point,
-		// 	Product:       param.NamaVoucher,
-		// }
 		pubreq := models.NotifPubreq{
-			Type:           constants.CODE_REVERSAL_POINT,
-			NotificationTo: param.AccountNumber,
-			Institution:    param.InstitutionID,
-			ReferenceId:    param.RRN,
-			TransactionId:  param.Reffnum,
-			Data: models.DataValue{
-				RewardValue: param.NamaVoucher,
-				Value:       strconv.Itoa(point),
-			},
+			Type:          "Reversal",
+			AccountNumber: param.AccountNumber,
+			Institution:   param.InstitutionID,
+			Point:         point,
+			Product:       param.NamaVoucher,
 		}
+		// pubreq := models.NotifPubreq{
+		// 	Type:           constants.CODE_REVERSAL_POINT,
+		// 	NotificationTo: param.AccountNumber,
+		// 	Institution:    param.InstitutionID,
+		// 	ReferenceId:    param.RRN,
+		// 	TransactionId:  param.Reffnum,
+		// 	Data: models.DataValue{
+		// 		RewardValue: param.NamaVoucher,
+		// 		Value:       strconv.Itoa(point),
+		// 	},
+		// }
 
 		bytePub, _ := json.Marshal(pubreq)
 
@@ -382,24 +382,24 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 		fmt.Println("========== Send Publisher ==========")
 
-		// pubreq := models.NotifPubreq{
-		// 	Type:          "Reversal",
-		// 	AccountNumber: param.AccountNumber,
-		// 	Institution:   param.InstitutionID,
-		// 	Point:         point,
-		// 	Product:       param.NamaVoucher,
-		// }
 		pubreq := models.NotifPubreq{
-			Type:           constants.CODE_REVERSAL_POINT,
-			NotificationTo: param.AccountNumber,
-			Institution:    param.InstitutionID,
-			ReferenceId:    param.RRN,
-			TransactionId:  param.Reffnum,
-			Data: models.DataValue{
-				RewardValue: param.NamaVoucher,
-				Value:       strconv.Itoa(point),
-			},
+			Type:          "Reversal",
+			AccountNumber: param.AccountNumber,
+			Institution:   param.InstitutionID,
+			Point:         point,
+			Product:       param.NamaVoucher,
 		}
+		// pubreq := models.NotifPubreq{
+		// 	Type:           constants.CODE_REVERSAL_POINT,
+		// 	NotificationTo: param.AccountNumber,
+		// 	Institution:    param.InstitutionID,
+		// 	ReferenceId:    param.RRN,
+		// 	TransactionId:  param.Reffnum,
+		// 	Data: models.DataValue{
+		// 		RewardValue: param.NamaVoucher,
+		// 		Value:       strconv.Itoa(point),
+		// 	},
+		// }
 
 		bytePub, _ := json.Marshal(pubreq)
 

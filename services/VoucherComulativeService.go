@@ -118,22 +118,29 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 
 		fmt.Println("========== Send Publisher ==========")
 
+		// pubreq := models.NotifPubreq{
+		// 	Type:           constants.CODE_REVERSAL_POINT,
+		// 	NotificationTo: param.AccountNumber,
+		// 	Institution:    param.InstitutionID,
+		// 	ReferenceId:    param.RRN,
+		// 	TransactionId:  param.Reffnum,
+		// 	Data: models.DataValue{
+		// 		RewardValue: param.NamaVoucher,
+		// 		Value:       strconv.Itoa(rcUseVoucher.Count),
+		// 	},
+		// }
 		pubreq := models.NotifPubreq{
-			Type:           constants.CODE_REVERSAL_POINT,
-			NotificationTo: param.AccountNumber,
-			Institution:    param.InstitutionID,
-			ReferenceId:    param.RRN,
-			TransactionId:  param.Reffnum,
-			Data: models.DataValue{
-				RewardValue: param.NamaVoucher,
-				Value:       strconv.Itoa(rcUseVoucher.Count),
-			},
+			Type:          "Reversal",
+			AccountNumber: param.AccountNumber,
+			Institution:   param.InstitutionID,
+			Point:         rcUseVoucher.Count,
+			Product:       param.NamaVoucher,
 		}
 
 		bytePub, _ := json.Marshal(pubreq)
 
 		kafkaReq := kafka.PublishReq{
-			Topic: constants.TOPIC_PUSHNOTIF_GENERAL,
+			Topic: constants.TOPIC_PUSHNOTIF_REVERSAL,
 			Value: bytePub,
 		}
 
