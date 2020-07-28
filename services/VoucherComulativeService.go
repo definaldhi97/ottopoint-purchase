@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/hosts/opl/host"
 	kafka "ottopoint-purchase/hosts/publisher/host"
@@ -124,13 +125,13 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		fmt.Println("========== Send Publisher ==========")
 
 		pubreq := models.NotifPubreq{
-			Type:           "REVERSAL_POINT",
+			Type:           constants.CODE_REVERSAL_POINT,
 			NotificationTo: param.AccountNumber,
 			Institution:    param.InstitutionID,
 			ReferenceId:    param.RRN,
 			TransactionId:  param.Reffnum,
 			Data: models.DataValue{
-				RewardValue: param.NamaVoucher,
+				RewardValue: "point",
 				Value:       strconv.Itoa(rcUseVoucher.Count),
 			},
 		}

@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/hosts/opl/host"
 	opl "ottopoint-purchase/hosts/opl/host"
@@ -291,13 +292,13 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			fmt.Println("========== Send Publisher ==========")
 
 			pubreq := models.NotifPubreq{
-				Type:           "REVERSAL_POINT",
+				Type:           constants.CODE_REVERSAL_POINT,
 				NotificationTo: param.AccountNumber,
 				Institution:    param.InstitutionID,
 				ReferenceId:    param.RRN,
 				TransactionId:  param.Reffnum,
 				Data: models.DataValue{
-					RewardValue: param.NamaVoucher,
+					RewardValue: "point",
 					Value:       totalPoint,
 				},
 			}
@@ -421,13 +422,13 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		fmt.Println("========== Send Publisher ==========")
 
 		pubreq := models.NotifPubreq{
-			Type:           "REVERSAL_POINT",
+			Type:           constants.CODE_REVERSAL_POINT,
 			NotificationTo: param.AccountNumber,
 			Institution:    param.InstitutionID,
 			ReferenceId:    param.RRN,
 			TransactionId:  param.Reffnum,
 			Data: models.DataValue{
-				RewardValue: param.NamaVoucher,
+				RewardValue: "point",
 				Value:       totalPoint,
 			},
 		}
@@ -519,13 +520,13 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		fmt.Println("========== Send Publisher ==========")
 
 		pubreq := models.NotifPubreq{
-			Type:           "REVERSAL_POINT",
+			Type:           constants.CODE_REVERSAL_POINT,
 			NotificationTo: param.AccountNumber,
 			Institution:    param.InstitutionID,
 			ReferenceId:    param.RRN,
 			TransactionId:  param.Reffnum,
 			Data: models.DataValue{
-				RewardValue: param.NamaVoucher,
+				RewardValue: "point",
 				Value:       totalPoint,
 			},
 		}
