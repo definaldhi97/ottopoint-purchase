@@ -208,13 +208,6 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		// Format Token
 		stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
 
-		// notifReq := ottomartmodels.NotifRequest{
-		// 	AccountNumber:    req.AccountNumber,
-		// 	Title:            "Transaksi Berhasil",
-		// 	Message:          fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
-		// 	NotificationType: 3,
-		// }
-
 		fmt.Println("========== Send Publisher ==========")
 
 		pubreq := models.NotifPubreq{
