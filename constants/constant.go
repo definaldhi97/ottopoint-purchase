@@ -152,10 +152,18 @@ var (
 )
 
 const (
-	EarningPoint   = "earning_point"
-	EarningVoucher = "earning_voucher"
-	ReversalPoint  = "reversal_point"
-	VoucherExpired = "voucher_expired"
-	BonusPoint     = "gift_point_activation"
-	RedeemPLN      = "redeem_pln"
+	CODE_TRANSTYPE_REDEMPTION = "TSP02"
+	CODE_TRANSTYPE_INQUERY    = "TSP01"
+)
+
+// push notif general
+const (
+	CODE_EARNING_POINT         = "earning_voucher"
+	CODE_REVERSAL_POINT        = "reversal_point"
+	CODE_REDEEM_PLN            = "redeem_pln"
+	CODE_EARNING_VOUCHER       = "earning_voucher"
+	CODE_VOUCHER_EXPIRED       = "voucher_expired"
+	CODE_GIFT_POINT_ACTIVATION = "gift_point_activation"
+	TOPIC_PUSHNOTIF_GENERAL    = "ottopoint-notification-topics"
+	TOPIC_PUSHNOTIF_REVERSAL   = "ottopoint-notification-reversal"
 )
