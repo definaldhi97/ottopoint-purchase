@@ -150,3 +150,12 @@ var (
 	CONS_UNLINK_ACCOUNT     = "unlink"
 	CONS_USER_STATUS_ACTIVE = "active"
 )
+
+const (
+	EarningPoint   = "earning_point"
+	EarningVoucher = "earning_voucher"
+	ReversalPoint  = "reversal_point"
+	VoucherExpired = "voucher_expired"
+	BonusPoint     = "gift_point_activation"
+	RedeemPLN      = "redeem_pln"
+)

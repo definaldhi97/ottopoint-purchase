@@ -218,13 +218,13 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		fmt.Println("========== Send Publisher ==========")
 
 		pubreq := models.NotifPubreq{
-			Type:           "REDEEM_PLN",
+			Type:           constants.RedeemPLN,
 			NotificationTo: param.AccountNumber,
 			Institution:    param.InstitutionID,
 			ReferenceId:    param.RRN,
 			TransactionId:  param.Reffnum,
 			Data: models.DataValue{
-				RewardValue: param.NamaVoucher,
+				RewardValue: "pln",
 				Value:       stroomToken,
 			},
 		}
