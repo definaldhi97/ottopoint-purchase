@@ -149,7 +149,7 @@ func ProductPulsa(code string) string {
 	case "1080", "1250", "1251":
 		productCode = "Telkomsel"
 		break
-	case "1081", "1255", "1254":
+	case "1081", "1255", "1254", "":
 		productCode = "XL"
 		break
 	case "1082", "1253", "1252":
@@ -161,6 +161,29 @@ func ProductPulsa(code string) string {
 		// case "1084": //108400
 		// 	productCode = "three"
 		// 	break
+	}
+
+	return productCode
+}
+
+func ProductPaketData(code string) string {
+	var productCode string
+	switch code {
+	case "12560":
+		productCode = "Telkomsel"
+		break
+	case "12565":
+		productCode = "XL"
+		break
+	case "12570":
+		productCode = "Indosat"
+		break
+	case "12575": //108300
+		productCode = "Three"
+		break
+	case "12580": //108400
+		productCode = "Smartfren"
+		break
 	}
 
 	return productCode

@@ -11,7 +11,6 @@ import (
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/utils"
-	"strings"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -25,34 +24,34 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		Code: "00",
 	}
 
-	category := strings.ToLower(param.Category)
+	// category := strings.ToLower(param.Category)
 
 	fmt.Println("[Start][Inquiry]-[Package-Services]-[RedeemComulativeVoucher]")
 
-	if category == constants.CategoryPulsa {
-		// validate prefix
-		validate, errValidate := ValidatePrefixComulative(req.CustID, param.ProductCode)
-		if validate == false {
+	// if category == constants.CategoryPulsa || category == constants.CategoryPaketData {
+	// 	// validate prefix
+	// 	validate, errValidate := ValidatePrefixComulative(req.CustID, param.ProductCode)
+	// 	if validate == false {
 
-			fmt.Println("Invalid Prefix")
+	// 		fmt.Println("Invalid Prefix")
 
-			redeemRes = models.RedeemComuResp{
-				Code:    "01",
-				Message: "Invalid Prefix",
-			}
+	// 		redeemRes = models.RedeemComuResp{
+	// 			Code:    "01",
+	// 			Message: "Invalid Prefix",
+	// 		}
 
-			ErrRespRedeem <- errValidate
+	// 		ErrRespRedeem <- errValidate
 
-			resRedeemComu.Code = redeemRes.Code
-			resRedeemComu.Message = redeemRes.Message
-			resRedeemComu.Redeem.Rc = "16"
-			resRedeemComu.Redeem.Msg = "Nomor yang kamu masukkan salah"
+	// 		resRedeemComu.Code = redeemRes.Code
+	// 		resRedeemComu.Message = redeemRes.Message
+	// 		resRedeemComu.Redeem.Rc = "16"
+	// 		resRedeemComu.Redeem.Msg = "Nomor yang kamu masukkan salah"
 
-			getResp <- resRedeemComu
+	// 		getResp <- resRedeemComu
 
-			return
-		}
-	}
+	// 		return
+	// 	}
+	// }
 
 	// ==========Inquery OttoAG==========
 
@@ -109,6 +108,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		MerchantID:    param.MerchantID,
 		InstitutionID: param.InstitutionID,
 		CustID:        req.CustID,
+		TransType:     constants.CODE_TRANSTYPE_INQUERY,
 		Reffnum:       param.Reffnum, // internal
 		RRN:           dataInquery.Rrn,
 		Amount:        dataInquery.Amount,
@@ -119,6 +119,10 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		Point:         param.Point,
 		ExpDate:       param.ExpDate,
 		SupplierID:    param.SupplierID,
+		DataSupplier: models.Supplier{
+			Rc: dataInquery.Rc,
+			Rd: dataInquery.Msg,
+		},
 	}
 
 	if dataInquery.Rc != "00" {
@@ -129,7 +133,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 			Message: "Inquiry Failed",
 		}
 
-		go SaveTransactionInq(param.Category, paramInq, dataInquery, req, inqBiller, "Inquiry", "01", dataInquery.Rc)
+		go saveTransactionOttoAg(paramInq, dataInquery, reqInq, req, "01")
 
 		ErrRespRedeem <- errInquiry
 
@@ -164,7 +168,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 			Message: "Inquiry Failed",
 		}
 
-		go SaveTransactionInq(param.Category, paramInq, dataInquery, req, inqBiller, "Inquiry", "01", dataInquery.Rc)
+		go saveTransactionOttoAg(paramInq, dataInquery, req, inqBiller, "01")
 
 		ErrRespRedeem <- errInquiry
 
@@ -179,7 +183,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 	}
 
-	go SaveTransactionInq(param.ProductType, paramInq, dataInquery, req, inqBiller, "Inquiry", "00", dataInquery.Rc)
+	go saveTransactionOttoAg(paramInq, dataInquery, req, inqBiller, "00")
 
 	// coupon := []models.CouponsRedeem{}
 
@@ -252,9 +256,11 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 	// return
 }
 
-func ValidatePrefixComulative(custID, productCode string) (bool, error) {
+func ValidatePrefixComulative(custID, productCode, category string) (bool, error) {
 
 	var err error
+	var product string
+	var prefix string
 
 	// validate panjang nomor, Jika nomor kurang dari 4
 	if len(custID) < 4 {
@@ -287,9 +293,16 @@ func ValidatePrefixComulative(custID, productCode string) (bool, error) {
 	}
 
 	// check operator by OperatorCode
-	prefix := utils.Operator(dataPrefix.OperatorCode)
+	prefix = utils.Operator(dataPrefix.OperatorCode)
 	// check operator by ProductCode
-	product := utils.ProductPulsa(productCode[0:4])
+	// product = utils.ProductPulsa(productCode[0:4])
+
+	if category == constants.CategoryPulsa {
+		product = utils.ProductPulsa(productCode[0:4])
+	}
+	if category == constants.CategoryPaketData {
+		product = utils.ProductPaketData(productCode[0:5])
+	}
 
 	// Jika Nomor tidak sesuai dengan operator
 	if prefix != product {
@@ -339,7 +352,8 @@ func SaveTransactionInq(category string, param models.Params, res interface{}, r
 		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
 		ResponderData:   status,
 		Point:           param.Point,
-		ResponderRc:     rc,
+		ResponderRc:     param.DataSupplier.Rc,
+		ResponderRd:     param.DataSupplier.Rd,
 		RequestorData:   string(reqOttoag),
 		ResponderData2:  string(responseOttoag),
 		RequestorOPData: string(reqdataOP),

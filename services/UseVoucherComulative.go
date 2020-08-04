@@ -1,13 +1,18 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"ottopoint-purchase/constants"
 	db "ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
+	ottomartmodels "ottopoint-purchase/hosts/ottomart/models"
 	"ottopoint-purchase/models"
-	"ottopoint-purchase/services/voucher"
-	"strings"
+	"ottopoint-purchase/models/dbmodels"
+	ottoagmodels "ottopoint-purchase/models/ottoag"
+	biller "ottopoint-purchase/services/ottoag"
+	"ottopoint-purchase/utils"
+	"ottopoint-scheduler/host/ottomart"
 	"sync"
 )
 
@@ -55,8 +60,6 @@ func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Pa
 
 	fmt.Println("[RedeemUseVoucherComulative]-[Package-Services]")
 
-	category := strings.ToLower(param.Category)
-
 	reqRedeem := models.UseRedeemRequest{
 		AccountNumber: param.AccountNumber,
 		CustID:        req.CustID,
@@ -65,16 +68,17 @@ func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Pa
 		Jumlah:        param.Total,
 	}
 
-	resRedeem := models.UseRedeemResponse{}
+	// resRedeem := models.UseRedeemResponse{}
+	resRedeem := PaymentVoucherOttoAg(reqRedeem, req, param)
 
-	switch category {
-	case constants.CategoryPulsa:
-		resRedeem = voucher.RedeemPulsaComulative(reqRedeem, req, param)
-	case constants.CategoryPLN:
-		resRedeem = voucher.RedeemPLNComulative(reqRedeem, req, param)
-	case constants.CategoryMobileLegend, constants.CategoryFreeFire:
-		resRedeem = voucher.RedeemGameComulative(reqRedeem, req, param)
-	}
+	// switch category {
+	// case constants.CategoryPulsa:
+	// 	resRedeem = voucher.RedeemPulsaComulative(reqRedeem, req, param)
+	// case constants.CategoryPLN:
+	// 	resRedeem = voucher.RedeemPLNComulative(reqRedeem, req, param)
+	// case constants.CategoryMobileLegend, constants.CategoryFreeFire:
+	// 	resRedeem = voucher.RedeemGameComulative(reqRedeem, req, param)
+	// }
 
 	res = models.RedeemResponse{
 		Rc:          resRedeem.Rc,
@@ -90,4 +94,216 @@ func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Pa
 
 	return res
 
+}
+
+func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param models.Params) models.UseRedeemResponse {
+	res := models.UseRedeemResponse{}
+	// ===== Payment OttoAG =====
+	fmt.Println(fmt.Sprintf("[PAYMENT-%v][START]", param.ProductType))
+	// fmt.Println("Param : ", param)
+	// refnum := utils.GetRrn()
+
+	// payment to ottoag
+	billerReq := ottoagmodels.OttoAGPaymentReq{
+		Amount:      uint64(param.Amount),
+		CustID:      req.CustID,
+		MemberID:    utils.MemberID,
+		Period:      req.CustID2,
+		Productcode: req.ProductCode,
+		Rrn:         param.RRN,
+	}
+
+	var custId string
+
+	if param.Category == constants.CategoryGame {
+		if req.CustID2 != "" {
+			custId = req.CustID + " || " + req.CustID2
+		} else {
+			custId = req.CustID
+		}
+	} else {
+		custId = req.CustID
+	}
+
+	billerRes := biller.PaymentBiller(billerReq, reqOP, req, param)
+
+	fmt.Println(fmt.Sprintf("Response OttoAG %v Payment : %v", param.ProductType, billerRes))
+	paramPay := models.Params{
+		AccountNumber: param.AccountNumber,
+		MerchantID:    param.MerchantID,
+		InstitutionID: param.InstitutionID,
+		CustID:        custId,
+		TransType:     constants.CODE_TRANSTYPE_REDEMPTION,
+		Reffnum:       param.Reffnum, // Internal
+		RRN:           billerRes.Rrn,
+		Amount:        int64(billerRes.Amount),
+		NamaVoucher:   param.NamaVoucher,
+		ProductType:   param.ProductType,
+		ProductCode:   req.ProductCode,
+		Category:      param.Category,
+		Point:         param.Point,
+		ExpDate:       param.ExpDate,
+		SupplierID:    param.SupplierID,
+		DataSupplier: models.Supplier{
+			Rc: billerRes.Rc,
+			Rd: billerRes.Msg,
+		},
+	}
+
+	fmt.Println(fmt.Sprintf("[Payment Response : %v]", billerRes))
+
+	// Time Out
+	if billerRes.Rc == "" {
+		fmt.Println(fmt.Sprintf("[Payment %v Time Out]", param.ProductType))
+
+		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09")
+		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
+
+		res = models.UseRedeemResponse{
+			// Rc:  "09",
+			// Msg: "Request in progress",
+			Rc:    "68",
+			Msg:   "Timeout",
+			Uimsg: "Timeout",
+		}
+		return res
+	}
+
+	// Pending
+	if billerRes.Rc == "09" || billerRes.Rc == "68" {
+		fmt.Println(fmt.Sprintf("[Payment %v Pending]", param.ProductType))
+
+		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09")
+		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
+
+		res = models.UseRedeemResponse{
+			// Rc:  "09",
+			// Msg: "Request in progress",
+			Rc:    billerRes.Rc,
+			Msg:   billerRes.Msg,
+			Uimsg: "Request in progress",
+		}
+		return res
+	}
+
+	// Gagal
+	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
+		fmt.Println(fmt.Sprintf("[Payment %v Failed]", param.ProductType))
+
+		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "01")
+		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
+
+		res = models.UseRedeemResponse{
+			// Rc:  "01",
+			// Msg: "Payment Failed",
+			Rc:    billerRes.Rc,
+			Msg:   billerRes.Msg,
+			Uimsg: "Payment Failed",
+		}
+
+		return res
+	}
+
+	// Notif PLN
+	if param.Category == constants.CategoryPLN {
+		// Format Token
+		stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
+
+		notifReq := ottomartmodels.NotifRequest{
+			AccountNumber:    req.AccountNumber,
+			Title:            "Transaksi Berhasil",
+			Message:          fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
+			NotificationType: 3,
+		}
+
+		// send notif & inbox
+		dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
+		if errNotif != nil {
+			fmt.Println("Error to send Notif & Inbox")
+		}
+
+		if dataNotif.RC != "00" {
+			fmt.Println("[Response Notif PLN]")
+			fmt.Println("Gagal Send Notif & Inbox")
+			fmt.Println("Error : ", errNotif)
+		}
+
+	}
+
+	fmt.Println(fmt.Sprintf("[Payment %v Success]", param.ProductType))
+	save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "00")
+	fmt.Println(fmt.Sprintf("[Response Save Payment %v : %v]", param.ProductType, save))
+
+	res = models.UseRedeemResponse{
+		Rc:          billerRes.Rc,
+		Rrn:         billerRes.Rrn,
+		Category:    param.Category,
+		CustID:      billerReq.CustID,
+		ProductCode: billerReq.Productcode,
+		Amount:      int64(billerRes.Amount),
+		Msg:         billerRes.Msg,
+		Uimsg:       "SUCCESS",
+		Data:        billerRes.Data,
+		Datetime:    utils.GetTimeFormatYYMMDDHHMMSS(),
+	}
+
+	return res
+}
+
+func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, status string) string {
+
+	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[%v]", param.ProductType))
+
+	var saveStatus string
+	switch status {
+	case "00":
+		saveStatus = constants.Success
+	case "09":
+		saveStatus = constants.Pending
+	case "01":
+		saveStatus = constants.Failed
+	}
+
+	reqOttoag, _ := json.Marshal(&reqdata)  // Req Ottoag
+	responseOttoag, _ := json.Marshal(&res) // Response Ottoag
+	reqdataOP, _ := json.Marshal(&reqOP)    // Req Service
+
+	save := dbmodels.TransaksiRedeem{
+		AccountNumber: param.AccountNumber,
+		Voucher:       param.NamaVoucher,
+		MerchantID:    param.MerchantID,
+		CustID:        param.CustID,
+		RRN:           param.RRN,
+		ProductCode:   param.ProductCode,
+		Amount:        int64(param.Amount),
+		// TransType:       "Redeemtion",
+		TransType:       param.TransType,
+		IsUsed:          true,
+		ProductType:     param.ProductType,
+		Status:          saveStatus,
+		ExpDate:         param.ExpDate,
+		Institution:     param.InstitutionID,
+		CummulativeRef:  param.Reffnum,
+		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
+		ResponderData:   status,
+		Point:           param.Point,
+		ResponderRc:     param.DataSupplier.Rc,
+		ResponderRd:     param.DataSupplier.Rd,
+		RequestorData:   string(reqOttoag),
+		ResponderData2:  string(responseOttoag),
+		RequestorOPData: string(reqdataOP),
+		SupplierID:      param.SupplierID,
+	}
+
+	err := db.DbCon.Create(&save).Error
+	if err != nil {
+		fmt.Println(fmt.Sprintf("[Error : %v]", err))
+		fmt.Println("[Failed saveTransactionOttoAg to DB]")
+		fmt.Println(fmt.Sprintf("[TransType : %v || RRN : %v]", param.TransType, param.RRN))
+
+		return "Gagal Save"
+
+	}
+
+	return "Berhasil Save"
 }

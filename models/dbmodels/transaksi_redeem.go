@@ -9,9 +9,11 @@ type TransaksiRedeem struct {
 	MerchantID      string    `gorm:"merchant_id"`
 	CustID          string    `gorm:"cust_id"`
 	RRN             string    `gorm:"rrn"`
+	TransactionId   string    `grom:"column:transaction_id"`
 	ProductCode     string    `gorm:"product_code"`
 	Amount          int64     `gorm:"amount"`
 	TransType       string    `gorm:"trans_type"`
+	IsUsed          bool      `gorm:"is_used"`
 	ProductType     string    `gorm:"product_type"`
 	Status          string    `gorm:"status"`
 	ExpDate         string    `gorm:"exp_date"`
@@ -21,6 +23,7 @@ type TransaksiRedeem struct {
 	ResponderData   string    `gorm:"responder_data"`
 	Point           int       `gorm:"point"`
 	ResponderRc     string    `gorm:"responder_rc"`
+	ResponderRd     string    `gorm:"responder_rd"`
 	RequestorData   string    `gorm:"requestor_data"`
 	ResponderData2  string    `gorm:"responder_data"`
 	RequestorOPData string    `gorm:"requestor_op_data"`
