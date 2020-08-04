@@ -444,8 +444,6 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 	for i := req.Jumlah; i > 0; i-- {
 
-		fmt.Println(">>> Order Success <<<")
-
 		fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
 
 		t := i - 1
