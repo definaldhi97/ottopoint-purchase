@@ -114,14 +114,22 @@ func VoucherComulativeController(ctx *gin.Context) {
 	// sugarLogger.Info("producrType : ", data.ProductType)
 
 	if data.SupplierID == "OttoAG" {
-		switch data.Category {
-		case constants.CategoryPulsa:
-			fmt.Println("Category Pulsa")
-		case constants.CategoryFreeFire, constants.CategoryMobileLegend:
-			fmt.Println("Category Game")
-		case constants.CategoryPLN:
-			fmt.Println("Category PLN")
-		default:
+		// switch data.Category {
+		// case constants.CategoryPulsa:
+		// 	fmt.Println("Category Pulsa")
+		// case constants.CategoryFreeFire, constants.CategoryMobileLegend:
+		// 	fmt.Println("Category Game")
+		// case constants.CategoryPLN:
+		// 	fmt.Println("Category PLN")
+		// default:
+		validateVerfix := ValidatePerfix(req.CustID, data.ProductCode, data.Category)
+		if validateVerfix == false {
+			fmt.Println("Invalid verfix")
+			res = utils.GetMessageResponse(res, 500, false, errors.New("Nomor akun ini tidak terdafatr"))
+			ctx.JSON(http.StatusOK, res)
+			return
+		}
+		if data.Category == "" {
 			fmt.Println("Invalid Category")
 			res = utils.GetMessageResponse(res, 500, false, errors.New("Invalid BrandName"))
 			ctx.JSON(http.StatusOK, res)
@@ -181,12 +189,8 @@ func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 	var producrType string
 	t := strings.ToLower(data.BrandName)
 	switch t {
-	case constants.CategoryPulsa:
-		producrType = "Pulsa"
 	case constants.CategoryFreeFire, constants.CategoryMobileLegend:
 		producrType = "Game"
-	case constants.CategoryPLN:
-		producrType = "PLN"
 	default:
 		producrType = data.BrandName
 	}
@@ -198,9 +202,29 @@ func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 		SupplierID:  supplierID,
 		NamaVoucher: data.Name,
 		Point:       data.CostInPoints,
-		Category:    t,
+		Category:    strings.ToLower(producrType),
 		ExpDate:     data.CampaignActivity.ActiveTo,
 	}
 
 	return res
+}
+
+func ValidatePerfix(CustID, ProductCode, category string) bool {
+	// res := models.Response{Meta: utils.ResponseMetaOK()}
+	fmt.Println("[Category : " + category + " ]")
+	category1 := strings.ToLower(category)
+	if category1 == constants.CategoryPulsa || category1 == constants.CategoryPaketData {
+		// validate prefix
+		fmt.Println("Process validasi verfix : ", category1)
+		validate, _ := services.ValidatePrefixComulative(CustID, ProductCode, category1)
+		if validate == false {
+
+			fmt.Println("Invalid Prefix")
+			// res = utils.GetMessageResponse(res, 500, false, errors.New("Nomor akun ini tidak terdafatr"))
+			return false
+		}
+
+	}
+
+	return true
 }

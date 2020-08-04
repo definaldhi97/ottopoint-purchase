@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/hosts/opl/host"
 	kafka "ottopoint-purchase/hosts/publisher/host"
@@ -83,9 +84,8 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	wg.Wait()
 
 	fmt.Println("Response OttoAG Payment 2 : ", getResRedeem)
-	total := req.Jumlah * 2
 	countPayment, _ := db.GetCountPyenment(comulative_ref)
-	if countPayment.Count != total {
+	if countPayment.Count != req.Jumlah*2 {
 		countPayment, _ = db.GetCountPyenment(comulative_ref)
 	}
 
@@ -94,17 +94,12 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		countPending, _ = db.GetCountPending_Pyenment(comulative_ref)
 	}
 
-	// countFailed, _ := db.GetCountFailedPyenment(comulative_ref)
-	// if countFailed.Count == 0 {
-	// 	countFailed, _ = db.GetCountFailedPyenment(comulative_ref)
-	// }
-
 	countSuccess, _ := db.GetCountSucc_Pyenment(comulative_ref)
 	if countSuccess.Count == 0 {
 		countSuccess, _ = db.GetCountSucc_Pyenment(comulative_ref)
 	}
 
-	pyenmentFail := req.Jumlah - countSuccess.Count
+	pyenmentFail := req.Jumlah - countSuccess.Count - countPending.Count
 
 	/* ------ Reversal to Point ----- */
 	rcUseVoucher, _ := db.GetPyenmentFailed(comulative_ref)
@@ -123,6 +118,17 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 
 		fmt.Println("========== Send Publisher ==========")
 
+		// pubreq := models.NotifPubreq{
+		// 	Type:           constants.CODE_REVERSAL_POINT,
+		// 	NotificationTo: param.AccountNumber,
+		// 	Institution:    param.InstitutionID,
+		// 	ReferenceId:    param.RRN,
+		// 	TransactionId:  param.Reffnum,
+		// 	Data: models.DataValue{
+		// 		RewardValue: param.NamaVoucher,
+		// 		Value:       strconv.Itoa(rcUseVoucher.Count),
+		// 	},
+		// }
 		pubreq := models.NotifPubreq{
 			Type:          "Reversal",
 			AccountNumber: param.AccountNumber,
@@ -134,7 +140,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		bytePub, _ := json.Marshal(pubreq)
 
 		kafkaReq := kafka.PublishReq{
-			Topic: "ottopoint-notification-reversal",
+			Topic: constants.TOPIC_PUSHNOTIF_REVERSAL,
 			Value: bytePub,
 		}
 

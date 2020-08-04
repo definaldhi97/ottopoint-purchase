@@ -9,7 +9,7 @@ import (
 func UpdateVoucher(use, couponId string) (dbmodels.TransaksiRedeem, error) {
 	res := dbmodels.TransaksiRedeem{}
 
-	err := DbCon.Raw(`update redeem_transactions set trans_type = 'Used', used_at = ? where coupon_id = ?`, use, couponId).Scan(&res).Error
+	err := DbCon.Raw(`update redeem_transactions set is_used = true, used_at = ? where coupon_id = ?`, use, couponId).Scan(&res).Error
 	if err != nil {
 		logs.Info("Failed to UpdateVoucher from database", err)
 		return res, err
