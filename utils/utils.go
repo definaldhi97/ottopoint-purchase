@@ -26,6 +26,7 @@ var (
 	RedisKeyAuth      string
 	LimitTRXPoint     string
 	MemberID          string
+	TopicsNotif       string
 
 	ListErrorCode []models.MappingErrorCodes
 )
@@ -37,6 +38,7 @@ func init() {
 	RedisKeyAuth = ODU.GetEnv("redis.key.auth", "Ottopoint-Token-Admin :")
 	LimitTRXPoint = ODU.GetEnv("limit.trx.point", "999999999999999")
 	MemberID = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_MEMBERID", "OTPOINT")
+	TopicsNotif = ODU.GetEnv("TOPICS_NOTIF", "ottopoint-notification-topics")
 
 }
 

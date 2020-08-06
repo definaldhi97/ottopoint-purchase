@@ -306,7 +306,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			bytePub, _ := json.Marshal(pubreq)
 
 			kafkaReq := kafka.PublishReq{
-				Topic: "ottopoint-notification-topics",
+				Topic: utils.TopicsNotif,
 				Value: bytePub,
 			}
 
