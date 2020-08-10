@@ -12,6 +12,7 @@ import (
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/utils"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -208,6 +209,8 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		// Format Token
 		stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
 
+		denom := strconv.Itoa(billerRes.Data.Amount)
+
 		fmt.Println("========== Send Publisher ==========")
 
 		pubreq := models.NotifPubreq{
@@ -217,7 +220,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 			ReferenceId:    param.RRN,
 			TransactionId:  param.Reffnum,
 			Data: models.DataValue{
-				RewardValue: "pln",
+				RewardValue: denom,
 				Value:       stroomToken,
 			},
 		}
