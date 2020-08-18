@@ -31,3 +31,16 @@ func GetCheckStatusEarning(reff string, institution string) (dbmodels.TEarning, 
 
 	return res, nil
 }
+
+func GetErrorLogStatusEarning(reff string, institution string) (dbmodels.ErrLogEarning, error) {
+	res := dbmodels.ErrLogEarning{}
+
+	err := DbCon.Where("reference_id = ? and partner_id = ?", reff, institution).First(&res).Error
+	if err != nil {
+		logs.Info("Failed to get GetErrorLogStatusEarning from database", err)
+		return res, err
+	}
+	logs.Info("Data GetErrorLogStatusEarning :", res)
+
+	return res, nil
+}

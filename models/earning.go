@@ -59,6 +59,12 @@ type ResponseEarning struct {
 	AccountData    []DataEarning `json:"accountData"`
 }
 
+type ResponseEarningError struct {
+	ReferenceId string `json:"referenceId`
+	Code        string `json:"code"`
+	Message     string `json:"message"`
+}
+
 type DataEarning struct {
 	AccountNumber string `json:"accountNumber"`
 	Point         int64  `json:"point"`

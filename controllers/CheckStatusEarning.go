@@ -37,6 +37,8 @@ func CheckStatusEarningController(ctx *gin.Context) {
 	context := opentracing.ContextWithSpan(c, span)
 
 	// validate request
+	// header := models.RequestHeader{}
+	// header.InstitutionID = "PSM0003"
 	header, resultValidate := ValidateRequestWithoutAuth(ctx, req)
 	if !resultValidate.Meta.Status {
 		ctx.JSON(http.StatusOK, resultValidate)
