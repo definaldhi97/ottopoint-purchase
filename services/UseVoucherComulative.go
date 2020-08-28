@@ -114,15 +114,6 @@ func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Pa
 		Data:        resRedeem.Data,
 	}
 
-	fmt.Println("[Test vidio")
-	fmt.Println(res.Data)
-
-	fmt.Println("data vidio")
-	fmt.Println("StartDate : " + resRedeem.Data.StartDateVidio)
-	fmt.Println("EndDate : " + resRedeem.Data.EndDateVidio)
-	fmt.Println("code : " + resRedeem.Data.Code)
-	fmt.Println("description : " + resRedeem.Data.Description)
-
 	return res
 
 }
@@ -304,15 +295,8 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		codeVoucher = EncryptVoucherCode(param.VoucherCode, param.CouponID)
 	}
 
-	if param.Category == "vidio" && param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
+	if param.Category == constants.CategoryVidio && param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
 		isUsed = false // isUsed status untuk used
-
-		// a := []rune(param.CouponID)
-		// key32 := string(a[0:32])
-		// screetKey := []byte(key32)
-		// codeVidio := []byte(param.VoucherCode)
-		// chiperText, _ := utils.EncryptAES(codeVidio, screetKey)
-		// codeVoucher = string(chiperText)
 	}
 
 	var saveStatus string
