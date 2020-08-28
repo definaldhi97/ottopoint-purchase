@@ -38,6 +38,7 @@ func UseVoucherComulative(req models.VoucherComultaiveReq, redeemComu models.Red
 		fmt.Println("code : ", redeemComu.CouponCode)
 		fmt.Println("used : ", 1)
 		fmt.Println("customerId : ", dataUser.CustID)
+		fmt.Println("Category voucher : ", param.Category)
 
 		// _, err2 := opl.CouponVoucherCustomer(req.CampaignID, redeemComu.CouponID, redeemComu.CouponCode, dataUser.CustID, 1)
 		// fmt.Println("================ doing use voucher couponId : ", redeemComu.CouponID)
@@ -55,11 +56,12 @@ func UseVoucherComulative(req models.VoucherComultaiveReq, redeemComu models.Red
 		// 	getRespChan <- resRedeem
 		// }
 
-		if param.Category != "vidio" {
+		if param.Category != constants.CategoryVidio {
+			fmt.Println("[Use voucher to OPL : ", param.Category)
 			_, err2 := opl.CouponVoucherCustomer(req.CampaignID, redeemComu.CouponID, redeemComu.CouponCode, dataUser.CustID, 1)
-			fmt.Println("================ doing use voucher couponId : ", redeemComu.CouponID)
+			fmt.Println("================ result use voucher couponId : ", redeemComu.CouponID)
 			if err2 != nil {
-				fmt.Println("================ doing use voucher couponId Error: ", redeemComu.CouponID)
+				fmt.Println("================ result use voucher couponId Error: ", redeemComu.CouponID)
 			}
 		}
 
