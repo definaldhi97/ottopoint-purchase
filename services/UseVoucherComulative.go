@@ -39,20 +39,38 @@ func UseVoucherComulative(req models.VoucherComultaiveReq, redeemComu models.Red
 		fmt.Println("used : ", 1)
 		fmt.Println("customerId : ", dataUser.CustID)
 
-		_, err2 := opl.CouponVoucherCustomer(req.CampaignID, redeemComu.CouponID, redeemComu.CouponCode, dataUser.CustID, 1)
-		fmt.Println("================ doing use voucher couponId : ", redeemComu.CouponID)
-		if err2 != nil {
-			fmt.Println("================ doing use voucher couponId Error: ", redeemComu.CouponID)
+		// _, err2 := opl.CouponVoucherCustomer(req.CampaignID, redeemComu.CouponID, redeemComu.CouponCode, dataUser.CustID, 1)
+		// fmt.Println("================ doing use voucher couponId : ", redeemComu.CouponID)
+		// if err2 != nil {
+		// 	fmt.Println("================ doing use voucher couponId Error: ", redeemComu.CouponID)
 
-		} else {
+		// } else {
 
-			// Reedem Use Voucher
-			param.Amount = redeemComu.Redeem.Amount
-			param.RRN = redeemComu.Redeem.Rrn
-			resRedeem := RedeemUseVoucherComulative(req, param)
+		// 	// Reedem Use Voucher
+		// 	param.Amount = redeemComu.Redeem.Amount
+		// 	param.RRN = redeemComu.Redeem.Rrn
+		// 	param.CouponID = redeemComu.CouponID
+		// 	resRedeem := RedeemUseVoucherComulative(req, param)
 
-			getRespChan <- resRedeem
+		// 	getRespChan <- resRedeem
+		// }
+
+		if param.Category != "vidio" {
+			_, err2 := opl.CouponVoucherCustomer(req.CampaignID, redeemComu.CouponID, redeemComu.CouponCode, dataUser.CustID, 1)
+			fmt.Println("================ doing use voucher couponId : ", redeemComu.CouponID)
+			if err2 != nil {
+				fmt.Println("================ doing use voucher couponId Error: ", redeemComu.CouponID)
+			}
 		}
+
+		// Reedem Use Voucher
+		param.Amount = redeemComu.Redeem.Amount
+		param.RRN = redeemComu.Redeem.Rrn
+		param.CouponID = redeemComu.CouponID
+		resRedeem := RedeemUseVoucherComulative(req, param)
+
+		getRespChan <- resRedeem
+
 	}
 
 }
@@ -72,6 +90,7 @@ func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Pa
 	}
 
 	// resRedeem := models.UseRedeemResponse{}
+	param.CampaignID = req.CampaignID
 	resRedeem := PaymentVoucherOttoAg(reqRedeem, req, param)
 
 	// switch category {
@@ -94,6 +113,15 @@ func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Pa
 		Datetime:    resRedeem.Datetime,
 		Data:        resRedeem.Data,
 	}
+
+	fmt.Println("[Test vidio")
+	fmt.Println(res.Data)
+
+	fmt.Println("data vidio")
+	fmt.Println("StartDate : " + resRedeem.Data.StartDateVidio)
+	fmt.Println("EndDate : " + resRedeem.Data.EndDateVidio)
+	fmt.Println("code : " + resRedeem.Data.Code)
+	fmt.Println("description : " + resRedeem.Data.Description)
 
 	return res
 
@@ -147,6 +175,11 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		Point:         param.Point,
 		ExpDate:       param.ExpDate,
 		SupplierID:    param.SupplierID,
+
+		CampaignID:      param.CampaignID,
+		VoucherCode:     billerRes.Data.Code,
+		CouponID:        param.CouponID,
+		ExpireDateVidio: billerRes.Data.EndDateVidio,
 		DataSupplier: models.Supplier{
 			Rc: billerRes.Rc,
 			Rd: billerRes.Msg,
@@ -257,6 +290,31 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 
 	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[%v]", param.ProductType))
 
+	// validasi vidio is_used -> false
+	isUsed := true
+	// codeVoucher := param.VoucherCode
+	var codeVoucher string
+	ExpireDate := param.ExpDate
+	var redeemDate string
+
+	if param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
+		timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+		redeemDate = timeRedeem
+
+		codeVoucher = EncryptVoucherCode(param.VoucherCode, param.CouponID)
+	}
+
+	if param.Category == "vidio" && param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
+		isUsed = false // isUsed status untuk used
+
+		// a := []rune(param.CouponID)
+		// key32 := string(a[0:32])
+		// screetKey := []byte(key32)
+		// codeVidio := []byte(param.VoucherCode)
+		// chiperText, _ := utils.EncryptAES(codeVidio, screetKey)
+		// codeVoucher = string(chiperText)
+	}
+
 	var saveStatus string
 	switch status {
 	case "00":
@@ -279,12 +337,13 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		RRN:           param.RRN,
 		ProductCode:   param.ProductCode,
 		Amount:        int64(param.Amount),
-		// TransType:       "Redeemtion",
-		TransType:       param.TransType,
-		IsUsed:          true,
-		ProductType:     param.ProductType,
-		Status:          saveStatus,
-		ExpDate:         param.ExpDate,
+		TransType:     param.TransType,
+		// IsUsed:        true,
+		IsUsed:      isUsed,
+		ProductType: param.ProductType,
+		Status:      saveStatus,
+		// ExpDate:         param.ExpDate,
+		ExpDate:         ExpireDate,
 		Institution:     param.InstitutionID,
 		CummulativeRef:  param.Reffnum,
 		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
@@ -296,6 +355,10 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		ResponderData2:  string(responseOttoag),
 		RequestorOPData: string(reqdataOP),
 		SupplierID:      param.SupplierID,
+		RedeemAt:        redeemDate,
+		CampaignId:      param.CampaignID,
+		VoucherCode:     codeVoucher,
+		CouponId:        param.CouponID,
 	}
 
 	err := db.DbCon.Create(&save).Error
@@ -313,4 +376,20 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	}
 
 	return "Berhasil Save"
+}
+
+func EncryptVoucherCode(data, key string) string {
+
+	var codeVoucher string
+	if data == "" {
+		return codeVoucher
+	}
+
+	a := []rune(key)
+	key32 := string(a[0:32])
+	screetKey := []byte(key32)
+	codeByte := []byte(data)
+	chiperText, _ := utils.EncryptAES(codeByte, screetKey)
+	codeVoucher = string(chiperText)
+	return codeVoucher
 }

@@ -35,6 +35,7 @@ type TransaksiRedeem struct {
 	UsedAt          string    `gorm:"used_at"`
 	CreatedAT       time.Time `gorm:"created_at" json:"created_at"`
 	UpdatedAT       time.Time `gorm:"updated_at" json:"updated_at"`
+	VoucherCode     string    `gorm:"voucher_code"`
 }
 
 func (t *TransaksiRedeem) TableName() string {
