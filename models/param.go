@@ -15,7 +15,6 @@ type Params struct {
 	ProductType   string
 	ProductCode   string
 	Category      string
-	CategoryID    string
 	Point         int
 	ExpDate       string
 	CouponID      string
