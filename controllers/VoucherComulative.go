@@ -204,6 +204,7 @@ func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 		Point:       data.CostInPoints,
 		Category:    strings.ToLower(producrType),
 		ExpDate:     data.CampaignActivity.ActiveTo,
+		CategoryID:  data.Categories[0],
 	}
 
 	return res
