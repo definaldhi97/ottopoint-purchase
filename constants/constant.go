@@ -46,6 +46,7 @@ const (
 	CategoryMobileLegend = "mobile legends"
 	CategoryPLN          = "pln"
 	CategoryGame         = "game"
+	CategoryVidio        = "vidio"
 )
 
 const (

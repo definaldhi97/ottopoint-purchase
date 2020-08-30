@@ -48,6 +48,11 @@ type DataGabungan struct {
 	// Game
 	CustName string `json:"custname"`
 	BillRef  string `json:"billref"`
+	// vidio
+	StartDateVidio string `json:"startDate"`
+	EndDateVidio   string `json:"endDate"`
+	Code           string `json:"code"`
+	Description    string `json:"description"`
 }
 
 // Data Payment PLN Token
