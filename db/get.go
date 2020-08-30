@@ -104,3 +104,20 @@ func ParamData(code string) (dbmodels.MParameters, error) {
 
 	return res, nil
 }
+
+func GetVoucher(phone, couponID string) (dbmodels.TransaksiRedeem, error) {
+	fmt.Println("[ Get Voucher by Coupon Id ]")
+	result := dbmodels.TransaksiRedeem{}
+
+	err := DbCon.Where("account_number = ? and coupon_id = ?", phone, couponID).First(&result).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetVoucherUV]")
+		fmt.Println(fmt.Sprintf("Failed to connect database Voucher UV %v", err))
+
+		return result, err
+	}
+
+	return result, nil
+}
