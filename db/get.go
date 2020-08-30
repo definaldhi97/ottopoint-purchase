@@ -121,3 +121,22 @@ func GetVoucher(phone, couponID string) (dbmodels.TransaksiRedeem, error) {
 
 	return result, nil
 }
+
+func GetPathImageProduct(code string) (dbmodels.MProductBrand, error) {
+	fmt.Println("[ Get path image brand by  code ]")
+
+	result := dbmodels.MProductBrand{}
+
+	err := DbCon.Where("code = ? ", code).First(&result).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetPathProductBrand]")
+		fmt.Println(fmt.Sprintf("Failed to connect database", err))
+
+		return result, err
+	}
+
+	return result, nil
+
+}

@@ -32,6 +32,7 @@ var (
 	LimitTRXPoint     string
 	MemberID          string
 	PathCSV           string
+	UrlImage          string
 
 	ListErrorCode []models.MappingErrorCodes
 )
@@ -45,6 +46,7 @@ func init() {
 	MemberID = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_MEMBERID", "OTPOINT")
 	// PathCSV = ODU.GetEnv("PATH_CSV", "//Users/abdulrohmat/Documents/Golang/src/ottopoint-purchase/utils/")
 	PathCSV = ODU.GetEnv("PATH_CSV", "/opt/ottopoint-purchase/csv/")
+	UrlImage = ODU.GetEnv("URL_PHOTO", "https://apidev.ottopoint.id/product/v2.1/image/")
 
 }
 
