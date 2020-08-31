@@ -6,6 +6,8 @@ import (
 	"os"
 	"ottopoint-purchase/controllers"
 
+	controller_v2_1 "ottopoint-purchase/controllers/v2.1"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go"
@@ -29,6 +31,7 @@ var (
 	comulative         string
 	usevoucher_uv      string
 	checkStatusEarning string
+	use_voucher_vidio  string
 
 	csv string
 
@@ -53,6 +56,7 @@ func init() {
 	splitbill = utils.GetEnv("splitbill", "/transaction/v2/splitbill")
 	usevoucher_uv = utils.GetEnv("usevoucher_uv", "/transaction/v2/usevoucher_uv")
 	checkStatusEarning = utils.GetEnv("checkStatusEarning", "/transaction/v2/check-status-earning")
+	use_voucher_vidio = utils.GetEnv("use_voucher_vidio", "/transaction/v2.1/usevoucher")
 
 	csv = utils.GetEnv("csv", "/csv")
 
@@ -125,6 +129,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(splitbill, controllers.DeductSplitBillController)
 	router.POST(usevoucher_uv, controllers.UseVouhcerUVController)
 	router.POST(checkStatusEarning, controllers.CheckStatusEarningController)
+	router.GET(use_voucher_vidio, controller_v2_1.UseVoucherVidioController)
 
 	router.POST(csv, controllers.CreateFileCSVController)
 
