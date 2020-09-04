@@ -238,7 +238,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		// Format Token
 		stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
 
-		param.VoucherCode = stroomToken
+		paramPay.VoucherCode = stroomToken
 
 		notifReq := ottomartmodels.NotifRequest{
 			AccountNumber:    req.AccountNumber,
