@@ -4,10 +4,8 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"log"
 	"math/rand"
 	"os"
-	"os/exec"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/redis"
@@ -15,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/leekchan/accounting"
 	"github.com/vjeantet/jodaTime"
 
@@ -278,10 +277,9 @@ func GetFormattedToken(token string) string {
 // }
 
 func GenerateTokenUUID() string {
-	out, err := exec.Command("uuidgen").Output()
-	if err != nil {
-		log.Fatal(err)
-	}
+	value := uuid.Must(uuid.NewRandom())
+	fmt.Println("ini ID : ", value)
+	out := value.String()
 	fmt.Printf("%s", out)
 	tokenString := string(out)
 

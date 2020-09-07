@@ -52,7 +52,7 @@ func InquiryBiller(reqdata interface{}, reqOP interface{}, req models.UseRedeemR
 		// responseOttoag, _ := json.Marshal(&resOttAG)
 		// reqdataOP, _ := json.Marshal(&reqOP)
 
-		// saveInq := dbmodels.TransaksiRedeem{
+		// saveInq := dbmodels.TSpending{
 		// 	AccountNumber:   param.AccountNumber,
 		// 	Voucher:         param.NamaVoucher,
 		// 	MerchantID:      param.MerchantID,

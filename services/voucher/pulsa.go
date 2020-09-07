@@ -251,7 +251,7 @@ func SaveTransactionPulsa(param models.Params, res interface{}, reqdata interfac
 	responseOttoag, _ := json.Marshal(&res) // Response Ottoag
 	reqdataOP, _ := json.Marshal(&reqOP)    // Req Service
 
-	save := dbmodels.TransaksiRedeem{
+	save := dbmodels.TSpending{
 		AccountNumber:   param.AccountNumber,
 		Voucher:         param.NamaVoucher,
 		MerchantID:      param.MerchantID,
@@ -266,11 +266,10 @@ func SaveTransactionPulsa(param models.Params, res interface{}, reqdata interfac
 		Institution:     param.InstitutionID,
 		CummulativeRef:  param.Reffnum,
 		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
-		ResponderData:   status,
 		Point:           param.Point,
 		ResponderRc:     rc,
 		RequestorData:   string(reqOttoag),
-		ResponderData2:  string(responseOttoag),
+		ResponderData:   string(responseOttoag),
 		RequestorOPData: string(reqdataOP),
 		SupplierID:      param.SupplierID,
 	}
