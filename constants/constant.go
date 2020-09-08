@@ -49,9 +49,9 @@ const (
 )
 
 const (
-	Success = "00 (Success)"
-	Pending = "09 (Pending)"
-	Failed  = "01 (Failed)"
+	Success = "00"
+	Pending = "09"
+	Failed  = "01"
 )
 
 const (

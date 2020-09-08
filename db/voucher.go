@@ -13,7 +13,7 @@ func GetResposeInternal(rc string) (dbmodels.MResponseInternal, error) {
 		fmt.Println("[EEROR-DATABASE]")
 		fmt.Println("[GetResponseOttoag]")
 		fmt.Println("[Get Data Mapping Response]")
-		fmt.Println(fmt.Sprintf("Failed to connect redeem_transactions %v", err))
+		fmt.Println(fmt.Sprintf("Failed to connect t_spending %v", err))
 		return res, err
 	}
 

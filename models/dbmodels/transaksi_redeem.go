@@ -38,5 +38,5 @@ type TransaksiRedeem struct {
 }
 
 func (t *TransaksiRedeem) TableName() string {
-	return "public.redeem_transactions"
+	return "public.t_spending"
 }
