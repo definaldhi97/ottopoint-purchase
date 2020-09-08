@@ -109,6 +109,10 @@ func VoucherComulativeController(ctx *gin.Context) {
 
 	logs.Info("SupplierID : ", data.SupplierID)
 	logs.Info("producrType : ", data.ProductType)
+	// sepecial vidio
+	if data.Category == constants.CategoryVidio {
+		req.CustID = "0"
+	}
 
 	// sugarLogger.Info("SupplierID : ", data.SupplierID)
 	// sugarLogger.Info("producrType : ", data.ProductType)

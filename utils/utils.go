@@ -9,10 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"os"
-	"os/exec"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/redis"
@@ -20,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/leekchan/accounting"
 	"github.com/vjeantet/jodaTime"
 
@@ -282,19 +281,6 @@ func GetFormattedToken(token string) string {
 // 	return encode64Token
 // }
 
-func GenerateTokenUUID() string {
-	out, err := exec.Command("uuidgen").Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s", out)
-	tokenString := string(out)
-
-	tokenString = strings.ReplaceAll(tokenString, "\n", "")
-	tokenString = strings.ToLower(tokenString)
-	return tokenString
-}
-
 // ReffNumb
 func GenTransactionId() string {
 
@@ -431,4 +417,16 @@ func DecryptAES(ciphertext []byte, key []byte) ([]byte, error) {
 
 	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
 	return gcm.Open(nil, nonce, ciphertext, nil)
+}
+
+func GenerateTokenUUID() string {
+	value := uuid.Must(uuid.NewRandom())
+	fmt.Println("ini ID : ", value)
+	out := value.String()
+	fmt.Printf("%s", out)
+	tokenString := string(out)
+
+	tokenString = strings.ReplaceAll(tokenString, "\n", "")
+	tokenString = strings.ToLower(tokenString)
+	return tokenString
 }

@@ -335,7 +335,7 @@ func SaveTransactionInq(category string, param models.Params, res interface{}, r
 	responseOttoag, _ := json.Marshal(&res) // Response Ottoag
 	reqdataOP, _ := json.Marshal(&reqOP)    // Req Service
 
-	save := dbmodels.TransaksiRedeem{
+	save := dbmodels.TSpending{
 		AccountNumber:   param.AccountNumber,
 		Voucher:         param.NamaVoucher,
 		MerchantID:      param.MerchantID,

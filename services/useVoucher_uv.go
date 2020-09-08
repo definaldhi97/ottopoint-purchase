@@ -137,7 +137,7 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 
 	timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
 
-	save := dbmodels.TransaksiRedeem{
+	save := dbmodels.TSpending{
 		AccountNumber: param.AccountNumber,
 		Voucher:       param.NamaVoucher,
 		MerchantID:    param.MerchantID,

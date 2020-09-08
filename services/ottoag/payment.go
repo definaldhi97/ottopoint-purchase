@@ -45,7 +45,7 @@ func PaymentBiller(reqdata interface{}, reqOP interface{}, req models.UseRedeemR
 		// responseOttoag, _ := json.Marshal(&res)
 		// reqdataOP, _ := json.Marshal(&reqOP)
 
-		// savePay := dbmodels.TransaksiRedeem{
+		// savePay := dbmodels.TSpending{
 		// 	AccountNumber:   param.AccountNumber,
 		// 	Voucher:         param.NamaVoucher,
 		// 	MerchantID:      param.MerchantID,

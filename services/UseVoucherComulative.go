@@ -315,7 +315,8 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	responseOttoag, _ := json.Marshal(&res) // Response Ottoag
 	reqdataOP, _ := json.Marshal(&reqOP)    // Req Service
 
-	save := dbmodels.TransaksiRedeem{
+	save := dbmodels.TSpending{
+		ID:            utils.GenerateTokenUUID(),
 		AccountNumber: param.AccountNumber,
 		Voucher:       param.NamaVoucher,
 		MerchantID:    param.MerchantID,

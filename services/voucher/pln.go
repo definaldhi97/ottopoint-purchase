@@ -202,7 +202,7 @@ func SaveTransactionPLN(param models.Params, res interface{}, reqdata interface{
 	responseOttoag, _ := json.Marshal(&res)
 	reqdataOP, _ := json.Marshal(&reqOP)
 
-	save := dbmodels.TransaksiRedeem{
+	save := dbmodels.TSpending{
 		AccountNumber:   param.AccountNumber,
 		Voucher:         param.NamaVoucher,
 		MerchantID:      param.MerchantID,
