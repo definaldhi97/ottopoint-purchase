@@ -271,7 +271,8 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	responseOttoag, _ := json.Marshal(&res) // Response Ottoag
 	reqdataOP, _ := json.Marshal(&reqOP)    // Req Service
 
-	save := dbmodels.TransaksiRedeem{
+	save := dbmodels.TSpending{
+		ID:            utils.GenerateTokenUUID(),
 		AccountNumber: param.AccountNumber,
 		Voucher:       param.NamaVoucher,
 		MerchantID:    param.MerchantID,
@@ -280,22 +281,21 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		ProductCode:   param.ProductCode,
 		Amount:        int64(param.Amount),
 		// TransType:       "Redeemtion",
-		TransType:         param.TransType,
-		IsUsed:            true,
-		ProductType:       param.ProductType,
-		Status:            saveStatus,
-		ExpDate:           param.ExpDate,
-		Institution:       param.InstitutionID,
-		CummulativeRef:    param.Reffnum,
-		DateTime:          utils.GetTimeFormatYYMMDDHHMMSS(),
-		ResponderData:     status,
-		Point:             param.Point,
-		ResponderRc:       param.DataSupplier.Rc,
-		ResponderRd:       param.DataSupplier.Rd,
-		RequestorData:     string(reqOttoag),
-		ResponderData2:    string(responseOttoag),
-		RequestorOPData:   string(reqdataOP),
-		SupplierID:        param.SupplierID,
+		TransType:       param.TransType,
+		IsUsed:          true,
+		ProductType:     param.ProductType,
+		Status:          saveStatus,
+		ExpDate:         param.ExpDate,
+		Institution:     param.InstitutionID,
+		CummulativeRef:  param.Reffnum,
+		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
+		Point:           param.Point,
+		ResponderRc:     param.DataSupplier.Rc,
+		ResponderRd:     param.DataSupplier.Rd,
+		RequestorData:   string(reqOttoag),
+		ResponderData:   string(responseOttoag),
+		RequestorOPData: string(reqdataOP),
+		SupplierID:      param.SupplierID,
 		ProductCategoryId: param.CategoryID,
 	}
 
