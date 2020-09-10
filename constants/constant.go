@@ -168,3 +168,9 @@ const (
 	TOPIC_PUSHNOTIF_GENERAL    = "ottopoint-notification-topics"
 	TOPIC_PUSHNOTIF_REVERSAL   = "ottopoint-notification-reversal"
 )
+
+const (
+	CODE_APPS_NOTIF     = 1
+	CODE_SMS_NOTIF      = 2
+	CODE_SMS_APPS_NOTIF = 3
+)

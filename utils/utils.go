@@ -33,6 +33,8 @@ var (
 	LimitTRXPoint     string
 	MemberID          string
 	PathCSV           string
+	TopicsNotif       string
+	TopicNotifSMS     string
 
 	ListErrorCode []models.MappingErrorCodes
 )
@@ -46,6 +48,8 @@ func init() {
 	MemberID = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_MEMBERID", "OTPOINT")
 	// PathCSV = ODU.GetEnv("PATH_CSV", "//Users/abdulrohmat/Documents/Golang/src/ottopoint-purchase/utils/")
 	PathCSV = ODU.GetEnv("PATH_CSV", "/opt/ottopoint-purchase/csv/")
+	TopicsNotif = ODU.GetEnv("TOPICS_NOTIF", "ottopoint-notification-topics")
+	TopicNotifSMS = ODU.GetEnv("TOPIC_NOTIF_SMS", "ottopoint-sms-notification-topics")
 
 }
 

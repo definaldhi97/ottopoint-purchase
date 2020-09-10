@@ -6,13 +6,13 @@ import (
 	"ottopoint-purchase/constants"
 	db "ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
-	ottomart "ottopoint-purchase/hosts/ottomart/host"
-	ottomartmodels "ottopoint-purchase/hosts/ottomart/models"
+	kafka "ottopoint-purchase/hosts/publisher/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/utils"
+	"strconv"
 	"sync"
 	"time"
 
@@ -235,27 +235,83 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 
 	// Notif PLN
 	if param.Category == constants.CategoryPLN {
+
 		// Format Token
 		stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
 
-		notifReq := ottomartmodels.NotifRequest{
-			AccountNumber:    req.AccountNumber,
-			Title:            "Transaksi Berhasil",
-			Message:          fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
-			NotificationType: 3,
+		denom := strconv.Itoa(billerRes.Data.Amount)
+		paramPay.VoucherCode = stroomToken
+		// swtich notif app/sms
+		dtaIssuer, _ := db.GetDataInstitution(param.InstitutionID)
+		if dtaIssuer.NOtificationID == constants.CODE_SMS_NOTIF || dtaIssuer.NOtificationID == constants.CODE_SMS_APPS_NOTIF {
+			fmt.Println("SMS Notif : ", param.Category)
+			fmt.Println("Institution : ", param.InstitutionID)
+			fmt.Println("Notification ID : ", dtaIssuer.NOtificationID)
+			fmt.Println("========== Send Publisher ==========")
+			pubreqSMSNotif := []models.NotifPubreq{}
+			a := models.NotifPubreq{
+				Type:           constants.CODE_REDEEM_PLN,
+				NotificationTo: param.AccountNumber,
+				Institution:    param.InstitutionID,
+				ReferenceId:    param.RRN,
+				TransactionId:  param.Reffnum,
+				Data: models.DataValue{
+					RewardValue: denom,
+					Value:       stroomToken,
+				},
+			}
+			pubreqSMSNotif = append(pubreqSMSNotif, a)
+
+			go SendToPublisher(pubreqSMSNotif, utils.TopicNotifSMS)
+		}
+		if dtaIssuer.NOtificationID == constants.CODE_APPS_NOTIF || dtaIssuer.NOtificationID == constants.CODE_SMS_APPS_NOTIF {
+			fmt.Println("APP Notif : ", param.Category)
+			fmt.Println("Institution : ", param.InstitutionID)
+			fmt.Println("Notification ID : ", dtaIssuer.NOtificationID)
+			fmt.Println("========== Send Publisher ==========")
+
+			pubreq := models.NotifPubreq{
+				Type:           constants.CODE_REDEEM_PLN,
+				NotificationTo: param.AccountNumber,
+				Institution:    param.InstitutionID,
+				ReferenceId:    param.RRN,
+				TransactionId:  param.Reffnum,
+				Data: models.DataValue{
+					RewardValue: denom,
+					Value:       stroomToken,
+				},
+			}
+			go SendToPublisher(pubreq, utils.TopicsNotif)
 		}
 
-		// send notif & inbox
-		dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
-		if errNotif != nil {
-			fmt.Println("Error to send Notif & Inbox")
-		}
+		// fmt.Println("========== Send Publisher ==========")
 
-		if dataNotif.RC != "00" {
-			fmt.Println("[Response Notif PLN]")
-			fmt.Println("Gagal Send Notif & Inbox")
-			fmt.Println("Error : ", errNotif)
-		}
+		// pubreq := models.NotifPubreq{
+		// 	Type:           constants.CODE_REDEEM_PLN,
+		// 	NotificationTo: param.AccountNumber,
+		// 	Institution:    param.InstitutionID,
+		// 	ReferenceId:    param.RRN,
+		// 	TransactionId:  param.Reffnum,
+		// 	Data: models.DataValue{
+		// 		RewardValue: denom,
+		// 		Value:       stroomToken,
+		// 	},
+		// }
+
+		// bytePub, _ := json.Marshal(pubreq)
+
+		// kafkaReq := kafka.PublishReq{
+		// 	Topic: utils.TopicsNotif,
+		// 	Value: bytePub,
+		// }
+
+		// kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+		// if err != nil {
+		// 	fmt.Println("Gagal Send Publisher")
+		// 	fmt.Println("Error : ", err)
+		// }
+
+		// fmt.Println("Response Publisher : ", kafkaRes)
 
 	}
 
@@ -334,12 +390,11 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		Institution:     param.InstitutionID,
 		CummulativeRef:  param.Reffnum,
 		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
-		ResponderData:   status,
 		Point:           param.Point,
 		ResponderRc:     param.DataSupplier.Rc,
 		ResponderRd:     param.DataSupplier.Rd,
 		RequestorData:   string(reqOttoag),
-		ResponderData2:  string(responseOttoag),
+		ResponderData:   string(responseOttoag),
 		RequestorOPData: string(reqdataOP),
 		SupplierID:      param.SupplierID,
 		RedeemAt:        redeemDate,
@@ -379,4 +434,22 @@ func EncryptVoucherCode(data, key string) string {
 	chiperText, _ := utils.EncryptAES(codeByte, screetKey)
 	codeVoucher = string(chiperText)
 	return codeVoucher
+}
+
+func SendToPublisher(pubreq interface{}, topic string) {
+
+	bytePub, _ := json.Marshal(pubreq)
+
+	kafkaReq := kafka.PublishReq{
+		Topic: topic,
+		Value: bytePub,
+	}
+
+	kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+	if err != nil {
+		fmt.Println("Gagal Send Publisher")
+		fmt.Println("Error : ", err)
+	}
+
+	fmt.Println("Response Publisher : ", kafkaRes)
 }

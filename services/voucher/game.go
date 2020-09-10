@@ -189,11 +189,13 @@ func SaveTransactionGame(param models.Params, res interface{}, reqdata interface
 	reqdataOP, _ := json.Marshal(&reqOP)    // Req Service
 
 	save := dbmodels.TSpending{
+		ID:              utils.GenerateTokenUUID(),
 		AccountNumber:   param.AccountNumber,
 		Voucher:         param.NamaVoucher,
 		MerchantID:      param.MerchantID,
 		CustID:          param.CustID,
 		RRN:             param.RRN,
+		TransactionId:   utils.GenTransactionId(),
 		ProductCode:     param.ProductCode,
 		Amount:          int64(param.Amount),
 		TransType:       trasnType,
@@ -203,11 +205,10 @@ func SaveTransactionGame(param models.Params, res interface{}, reqdata interface
 		Institution:     param.InstitutionID,
 		CummulativeRef:  param.Reffnum,
 		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
-		ResponderData:   status,
 		Point:           param.Point,
 		ResponderRc:     rc,
 		RequestorData:   string(reqOttoag),
-		ResponderData2:  string(responseOttoag),
+		ResponderData:   string(responseOttoag),
 		RequestorOPData: string(reqdataOP),
 		SupplierID:      param.SupplierID,
 	}

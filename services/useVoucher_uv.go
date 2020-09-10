@@ -138,11 +138,13 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 	timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
 
 	save := dbmodels.TSpending{
+		ID:            utils.GenerateTokenUUID(),
 		AccountNumber: param.AccountNumber,
 		Voucher:       param.NamaVoucher,
 		MerchantID:    param.MerchantID,
 		// CustID:          param.CustID,
 		RRN:             param.RRN,
+		TransactionId:   utils.GenTransactionId(),
 		ProductCode:     param.ProductCode,
 		Amount:          int64(param.Amount),
 		TransType:       trasnType,
@@ -153,12 +155,11 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		Institution:     param.InstitutionID,
 		CummulativeRef:  param.CumReffnum,
 		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
-		ResponderData:   status,
 		Point:           param.Point,
 		ResponderRc:     param.DataSupplier.Rc,
 		ResponderRd:     param.DataSupplier.Rd,
 		RequestorData:   string(reqUV),
-		ResponderData2:  string(responseUV),
+		ResponderData:   string(responseUV),
 		RequestorOPData: string(reqdataOP),
 		SupplierID:      param.SupplierID,
 		CouponId:        param.CouponID,

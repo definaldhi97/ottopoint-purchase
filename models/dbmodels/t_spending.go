@@ -1,6 +1,8 @@
 package dbmodels
 
-import "time"
+import (
+	"time"
+)
 
 type TSpending struct {
 	ID              string    `gorm:"id"`
@@ -25,7 +27,6 @@ type TSpending struct {
 	ResponderRc     string    `gorm:"responder_rc"`
 	ResponderRd     string    `gorm:"responder_rd"`
 	RequestorData   string    `gorm:"requestor_data"`
-	ResponderData2  string    `gorm:"responder_data"`
 	RequestorOPData string    `gorm:"requestor_op_data"`
 	SupplierID      string    `gorm:"supplier_id"`
 	CouponId        string    `gorm:"coupon_id"`
