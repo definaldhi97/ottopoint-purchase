@@ -150,6 +150,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 		NamaVoucher:   data.NamaVoucher,
 		Point:         data.Point,
 		Category:      data.Category,
+		CategoryID:    data.CategoryID,
 	}
 
 	switch data.SupplierID {
