@@ -18,7 +18,7 @@ type MappingRc struct {
 
 func GetCountInquiryGagal(cummulative_ref string) (Count, error) {
 	res := Count{}
-	err := DbCon.Raw("SELECT count(*) as count FROM t_spending where cummulative_ref = ? and trans_type = 'Inquiry' and responder_data = '01'", cummulative_ref).Scan(&res).Error
+	err := DbCon.Raw("SELECT count(*) as count FROM t_spending where cummulative_ref = ? and trans_type = 'Inquiry' and status = '01'", cummulative_ref).Scan(&res).Error
 	if err != nil {
 		fmt.Println("[EEROR-DATABASE]")
 		fmt.Println("[GetCountInquiryGagal]")
@@ -33,7 +33,8 @@ func GetCountInquiryGagal(cummulative_ref string) (Count, error) {
 
 func GetCountSucc_Pyenment(cummulative_ref string) (Count, error) {
 	res := Count{}
-	err := DbCon.Raw("SELECT count(*) as count FROM t_spending where cummulative_ref = ? and trans_type = ? and responder_data = '00'", cummulative_ref, constants.CODE_TRANSTYPE_REDEMPTION).Scan(&res).Error
+
+	err := DbCon.Raw("SELECT count(*) as count FROM t_spending where cummulative_ref = ? and trans_type = ? and status = '00'", cummulative_ref, constants.CODE_TRANSTYPE_REDEMPTION).Scan(&res).Error
 	if err != nil {
 		fmt.Println("[EEROR-DATABASE]")
 		fmt.Println("[GetCountSucc_Pyenment]")
@@ -48,7 +49,8 @@ func GetCountSucc_Pyenment(cummulative_ref string) (Count, error) {
 
 func GetCountPending_Pyenment(cummulative_ref string) (Count, error) {
 	res := Count{}
-	err := DbCon.Raw("select count(*) as count from public.t_spending where responder_data = '09' and cummulative_ref = ? and trans_type = ?", cummulative_ref, constants.CODE_TRANSTYPE_REDEMPTION).Scan(&res).Error
+
+	err := DbCon.Raw("select count(*) as count from public.t_spending where status = '09' and cummulative_ref = ? and trans_type = ?", cummulative_ref, constants.CODE_TRANSTYPE_REDEMPTION).Scan(&res).Error
 	if err != nil {
 		fmt.Println("[EEROR-DATABASE]")
 		fmt.Println("[GetCountPending_Pyenment]")
@@ -63,7 +65,8 @@ func GetCountPending_Pyenment(cummulative_ref string) (Count, error) {
 
 func GetCountFailedPyenment(cummulative_ref string) (Count, error) {
 	res := Count{}
-	err := DbCon.Raw("select count(*) as count from public.t_spending where responder_data = '01' and cummulative_ref = ? and trans_type = ?", cummulative_ref, constants.CODE_TRANSTYPE_REDEMPTION).Scan(&res).Error
+
+	err := DbCon.Raw("select count(*) as count from public.t_spending where status = '01' and cummulative_ref = ? and trans_type = ?", cummulative_ref, constants.CODE_TRANSTYPE_REDEMPTION).Scan(&res).Error
 	if err != nil {
 		fmt.Println("[EEROR-DATABASE]")
 		fmt.Println("[GetCountFailedPyenment]")
@@ -95,7 +98,8 @@ func GetPyenmentFailed(cummulative_ref string) (Count, error) {
 	res := Count{}
 
 	// err := DbCon.Exec(`select * from users where phone = ?, status = true`, phone).Scan(&res).Error
-	err := DbCon.Raw("select account_number, sum(point) as count from t_spending where responder_data not in ('00','09','68') and cummulative_ref = ? and trans_type = ? group by account_number", cummulative_ref, constants.CODE_TRANSTYPE_REDEMPTION).Scan(&res).Error
+
+	err := DbCon.Raw("select account_number, sum(point) as count from t_spending where status not in ('00','09','68') and cummulative_ref = ? and trans_type = ? group by account_number", cummulative_ref, constants.CODE_TRANSTYPE_REDEMPTION).Scan(&res).Error
 	if err != nil {
 		fmt.Println("[EEROR-DATABASE]")
 		fmt.Println("[GetPyenmentFailed]")

@@ -153,22 +153,22 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 
 	fmt.Println(fmt.Sprintf("Response OttoAG %v Payment : %v", param.ProductType, billerRes))
 	paramPay := models.Params{
-		AccountNumber: param.AccountNumber,
-		MerchantID:    param.MerchantID,
-		InstitutionID: param.InstitutionID,
-		CustID:        custId,
-		TransType:     constants.CODE_TRANSTYPE_REDEMPTION,
-		Reffnum:       param.Reffnum, // Internal
-		RRN:           billerRes.Rrn,
-		Amount:        int64(billerRes.Amount),
-		NamaVoucher:   param.NamaVoucher,
-		ProductType:   param.ProductType,
-		ProductCode:   req.ProductCode,
-		Category:      param.Category,
-		Point:         param.Point,
-		ExpDate:       param.ExpDate,
-		SupplierID:    param.SupplierID,
-
+		AccountNumber:   param.AccountNumber,
+		MerchantID:      param.MerchantID,
+		InstitutionID:   param.InstitutionID,
+		CustID:          custId,
+		TransType:       constants.CODE_TRANSTYPE_REDEMPTION,
+		Reffnum:         param.Reffnum, // Internal
+		RRN:             billerRes.Rrn,
+		Amount:          int64(billerRes.Amount),
+		NamaVoucher:     param.NamaVoucher,
+		ProductType:     param.ProductType,
+		ProductCode:     req.ProductCode,
+		Category:        param.Category,
+		Point:           param.Point,
+		ExpDate:         param.ExpDate,
+		SupplierID:      param.SupplierID,
+		CategoryID:      param.CategoryID,
 		CampaignID:      param.CampaignID,
 		VoucherCode:     billerRes.Data.Code,
 		CouponID:        param.CouponID,
