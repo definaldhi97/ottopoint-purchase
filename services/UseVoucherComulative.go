@@ -234,12 +234,14 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	}
 
 	// Notif PLN
+
 	if param.Category == constants.CategoryPLN {
 
 		// Format Token
 		stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
-
 		denom := strconv.Itoa(billerRes.Data.Amount)
+
+		fmt.Println("data denom : ", denom)
 		paramPay.VoucherCode = stroomToken
 		// swtich notif app/sms
 		dtaIssuer, _ := db.GetDataInstitution(param.InstitutionID)
@@ -250,7 +252,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 			fmt.Println("========== Send Publisher ==========")
 			pubreqSMSNotif := []models.NotifPubreq{}
 			a := models.NotifPubreq{
-				Type:           constants.CODE_REDEEM_PLN,
+				Type:           constants.CODE_REDEEM_PLN_SMS,
 				NotificationTo: param.AccountNumber,
 				Institution:    param.InstitutionID,
 				ReferenceId:    param.RRN,
@@ -313,6 +315,29 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 
 		// fmt.Println("Response Publisher : ", kafkaRes)
 
+	}
+
+	// Notif Vidio
+	if param.Category == constants.CategoryVidio {
+
+		denom := strconv.FormatUint(billerRes.Amount, 10)
+		fmt.Println("APP Notif : ", param.Category)
+		fmt.Println("Institution : ", param.InstitutionID)
+		fmt.Println("data denom : ", denom)
+		fmt.Println("========== Send Publisher ==========")
+
+		pubreq := models.NotifPubreq{
+			Type:           constants.CODE_REDEEM_VIDIO,
+			NotificationTo: param.AccountNumber,
+			Institution:    param.InstitutionID,
+			ReferenceId:    param.RRN,
+			TransactionId:  param.Reffnum,
+			Data: models.DataValue{
+				RewardValue: denom,
+				Value:       billerRes.Data.Code,
+			},
+		}
+		go SendToPublisher(pubreq, utils.TopicsNotif)
 	}
 
 	fmt.Println(fmt.Sprintf("[Payment %v Success]", param.ProductType))
