@@ -3,7 +3,7 @@ package dbmodels
 import "time"
 
 type TransaksiRedeem struct {
-	ID              int       `gorm:"id";pk json:"id"`
+	ID              string    `gorm:"id"`
 	AccountNumber   string    `gorm:"account_number"`
 	Voucher         string    `gorm:"voucher"`
 	MerchantID      string    `gorm:"merchant_id"`
@@ -39,5 +39,5 @@ type TransaksiRedeem struct {
 }
 
 func (t *TransaksiRedeem) TableName() string {
-	return "public.redeem_transactions"
+	return "public.t_spending"
 }
