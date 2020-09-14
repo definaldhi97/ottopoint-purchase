@@ -8,12 +8,15 @@ import (
 	"ottopoint-purchase/hosts/opl/host"
 	kafka "ottopoint-purchase/hosts/publisher/host"
 	"ottopoint-purchase/models"
+	"ottopoint-purchase/models/dbmodels"
 	"ottopoint-purchase/utils"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/opentracing/opentracing-go"
+	"github.com/vjeantet/jodaTime"
 	"go.uber.org/zap"
 )
 
@@ -107,28 +110,53 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	if rcUseVoucher.AccountNumber != "" {
 		fmt.Println("============= Reversal to Point ===========")
 		// get Custid from user where acount nomor
-		dataUser, _ := db.CheckUser(rcUseVoucher.AccountNumber)
-		fmt.Println("CustId user OPL from tb user : ", dataUser.CustID)
+
 		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
-		_, errReversal := host.TransferPoint(dataUser.CustID, strconv.Itoa(rcUseVoucher.Count), Text)
+		sendReversal, errReversal := host.TransferPoint(param.AccountId, strconv.Itoa(rcUseVoucher.Count), Text)
 		if errReversal != nil {
 			fmt.Println("[ERROR DB]")
 			fmt.Println("[transfer point] : ", errReversal)
 		}
 
+		expired := ExpiredPointService()
+
+		saveReversal := dbmodels.TEarning{
+			ID: utils.GenerateTokenUUID(),
+			// EarningRule     :,
+			// EarningRuleAdd  :,
+			PartnerId: param.InstitutionID,
+			// ReferenceId     : ,
+			TransactionId: utils.GenTransactionId(),
+			// ProductCode     :,
+			// ProductName     :,
+			AccountNumber: param.AccountNumber,
+			// Amount          :,
+			Point: int64(rcUseVoucher.Count),
+			// Remark          :,
+			Status:           constants.Success,
+			StatusMessage:    "Success",
+			PointsTransferId: sendReversal.PointsTransferId,
+			// RequestorData   :,
+			// ResponderData   :,
+			TransType:    constants.CodeReversal,
+			AccountId:    param.AccountId,
+			ExpiredPoint: expired,
+		}
+
+		errSaveReversal := db.DbCon.Create(&saveReversal).Error
+		if errSaveReversal != nil {
+
+			fmt.Println(fmt.Sprintf("[Failed Save Reversal to DB]-[Error : %v]", errSaveReversal))
+			fmt.Println("[PackageServices]-[SaveEarning]")
+
+			fmt.Println(">>> Save CSV <<<")
+			name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
+			go utils.CreateCSVFile(saveReversal, name)
+
+		}
+
 		fmt.Println("========== Send Publisher ==========")
 
-		// pubreq := models.NotifPubreq{
-		// 	Type:           constants.CODE_REVERSAL_POINT,
-		// 	NotificationTo: param.AccountNumber,
-		// 	Institution:    param.InstitutionID,
-		// 	ReferenceId:    param.RRN,
-		// 	TransactionId:  param.Reffnum,
-		// 	Data: models.DataValue{
-		// 		RewardValue: param.NamaVoucher,
-		// 		Value:       strconv.Itoa(rcUseVoucher.Count),
-		// 	},
-		// }
 		pubreq := models.NotifPubreq{
 			Type:          "Reversal",
 			AccountNumber: param.AccountNumber,
@@ -364,4 +392,24 @@ func getMsgCummulative(rc, msg string) string {
 	codeMsg = getmsg.InternalRd
 
 	return codeMsg
+}
+
+func ExpiredPointService() string {
+
+	fmt.Println(">>> ExpiredPointService <<<")
+
+	get, err := host.SettingsOPL()
+	if err != nil || get.Settings.ProgramName == "" {
+
+		fmt.Println(fmt.Sprintf("[Error : %v]", err))
+		fmt.Println("[PackageBulkService]-[ExpiredPointService]")
+
+	}
+
+	data := get.Settings.PointsDaysActiveCount + 1
+
+	expired := utils.FormatTimeString(time.Now(), 0, 0, data)
+
+	return expired
+
 }

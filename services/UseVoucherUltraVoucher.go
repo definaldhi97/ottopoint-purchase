@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/opentracing/opentracing-go"
+	"github.com/vjeantet/jodaTime"
 	"go.uber.org/zap"
 )
 
@@ -268,11 +269,48 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		point := param.Point * req.Jumlah
 		totalPoint := strconv.Itoa(point)
-		_, errReversal := host.TransferPoint(param.AccountId, totalPoint, Text)
+		sendReversal, errReversal := host.TransferPoint(param.AccountId, totalPoint, Text)
 		if errReversal != nil {
 			fmt.Println("Internal Server Error : ", errReversal)
 			fmt.Println("[UltraVoucherServices]-[TransferPoint]")
 			fmt.Println("[Failed Order Voucher]-[Gagal Reversal Point]")
+		}
+
+		expired := ExpiredPointService()
+
+		saveReversal := dbmodels.TEarning{
+			ID: utils.GenerateTokenUUID(),
+			// EarningRule     :,
+			// EarningRuleAdd  :,
+			PartnerId: param.InstitutionID,
+			// ReferenceId     : ,
+			TransactionId: utils.GenTransactionId(),
+			// ProductCode     :,
+			// ProductName     :,
+			AccountNumber: param.AccountNumber,
+			// Amount          :,
+			Point: int64(point),
+			// Remark          :,
+			Status:           constants.Success,
+			StatusMessage:    "Success",
+			PointsTransferId: sendReversal.PointsTransferId,
+			// RequestorData   :,
+			// ResponderData   :,
+			TransType:    constants.CodeReversal,
+			AccountId:    param.AccountId,
+			ExpiredPoint: expired,
+		}
+
+		errSaveReversal := db.DbCon.Create(&saveReversal).Error
+		if errSaveReversal != nil {
+
+			fmt.Println(fmt.Sprintf("[Failed Save Reversal to DB]-[Error : %v]", errSaveReversal))
+			fmt.Println("[PackageServices]-[SaveEarning]")
+
+			fmt.Println(">>> Save CSV <<<")
+			name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
+			go utils.CreateCSVFile(saveReversal, name)
+
 		}
 
 		fmt.Println("========== Send Publisher ==========")
@@ -378,6 +416,43 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			fmt.Println("Internal Server Error : ", errReversal)
 			fmt.Println("[UltraVoucherServices]-[TransferPoint]")
 			fmt.Println("[Failed Order Voucher]-[Gagal Reversal Point]")
+		}
+
+		expired := ExpiredPointService()
+
+		saveReversal := dbmodels.TEarning{
+			ID: utils.GenerateTokenUUID(),
+			// EarningRule     :,
+			// EarningRuleAdd  :,
+			PartnerId: param.InstitutionID,
+			// ReferenceId     : ,
+			TransactionId: utils.GenTransactionId(),
+			// ProductCode     :,
+			// ProductName     :,
+			AccountNumber: param.AccountNumber,
+			// Amount          :,
+			Point: int64(point),
+			// Remark          :,
+			Status:           constants.Success,
+			StatusMessage:    "Success",
+			PointsTransferId: reversal.PointsTransferId,
+			// RequestorData   :,
+			// ResponderData   :,
+			TransType:    constants.CodeReversal,
+			AccountId:    param.AccountId,
+			ExpiredPoint: expired,
+		}
+
+		errSaveReversal := db.DbCon.Create(&saveReversal).Error
+		if errSaveReversal != nil {
+
+			fmt.Println(fmt.Sprintf("[Failed Save Reversal to DB]-[Error : %v]", errSaveReversal))
+			fmt.Println("[PackageServices]-[SaveEarning]")
+
+			fmt.Println(">>> Save CSV <<<")
+			name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
+			go utils.CreateCSVFile(saveReversal, name)
+
 		}
 
 		fmt.Println("========== Send Publisher ==========")

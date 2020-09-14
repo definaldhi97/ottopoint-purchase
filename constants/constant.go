@@ -33,6 +33,10 @@ const (
 )
 
 const (
+	CodeReversal = "TAD04"
+)
+
+const (
 	KeyResponsePending = "pending"
 	KeyResponseDefault = "default"
 	KeyResponseFailed  = "failed"

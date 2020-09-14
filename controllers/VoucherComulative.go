@@ -90,7 +90,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 		return
 	}
 
-	dataUser, errUser := db.CheckUser(dataToken.Data)
+	dataUser, errUser := db.UserWithInstitution(dataToken.Data, header.InstitutionID)
 	if errUser != nil || dataUser.CustID == "" {
 		logs.Info("Internal Server Error : ", errUser)
 		logs.Info("[VoucherComulativeController]-[CheckUser]")
