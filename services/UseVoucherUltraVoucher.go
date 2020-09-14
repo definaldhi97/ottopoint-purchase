@@ -296,9 +296,10 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			PointsTransferId: sendReversal.PointsTransferId,
 			// RequestorData   :,
 			// ResponderData   :,
-			TransType:    constants.CodeReversal,
-			AccountId:    param.AccountId,
-			ExpiredPoint: expired,
+			TransType:       constants.CodeReversal,
+			AccountId:       param.AccountId,
+			ExpiredPoint:    expired,
+			TransactionTime: time.Now(),
 		}
 
 		errSaveReversal := db.DbCon.Create(&saveReversal).Error
@@ -438,9 +439,10 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			PointsTransferId: reversal.PointsTransferId,
 			// RequestorData   :,
 			// ResponderData   :,
-			TransType:    constants.CodeReversal,
-			AccountId:    param.AccountId,
-			ExpiredPoint: expired,
+			TransType:       constants.CodeReversal,
+			AccountId:       param.AccountId,
+			ExpiredPoint:    expired,
+			TransactionTime: time.Now(),
 		}
 
 		errSaveReversal := db.DbCon.Create(&saveReversal).Error

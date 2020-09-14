@@ -138,9 +138,10 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 			PointsTransferId: sendReversal.PointsTransferId,
 			// RequestorData   :,
 			// ResponderData   :,
-			TransType:    constants.CodeReversal,
-			AccountId:    param.AccountId,
-			ExpiredPoint: expired,
+			TransType:       constants.CodeReversal,
+			AccountId:       param.AccountId,
+			ExpiredPoint:    expired,
+			TransactionTime: time.Now(),
 		}
 
 		errSaveReversal := db.DbCon.Create(&saveReversal).Error
