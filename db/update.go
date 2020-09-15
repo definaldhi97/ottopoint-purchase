@@ -18,3 +18,16 @@ func UpdateVoucher(use, couponId string) (dbmodels.TSpending, error) {
 
 	return res, nil
 }
+
+func UpdateTEarning(pointId, id string) (dbmodels.TEarning, error) {
+	res := dbmodels.TEarning{}
+
+	err := DbCon.Exec(`update t_earning set points_transfer_id = ? where id = ?`, pointId, id).Scan(&res).Error
+	if err != nil {
+		logs.Info("Failed to UpdateVoucher from database", err)
+
+		return res, err
+	}
+
+	return res, nil
+}

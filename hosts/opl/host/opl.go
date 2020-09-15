@@ -30,6 +30,8 @@ var (
 	endpointAddedPoint string
 	endpointSpendPoint string
 
+	endpointSetting string
+
 	// HealthCheckKey string
 )
 
@@ -50,6 +52,8 @@ func init() {
 
 	endpointAddedPoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_ADD_POINT", "/api/points/transfer/add")
 	endpointSpendPoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_SPEND_POINT", "/api/points/transfer/spend")
+
+	endpointSetting = ODU.GetEnv("OTTOPOINT_PURCHASE_SETTING_OPL", "/api/settings")
 
 	endpointGetBalance = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_GET_BALANCE", "/api/admin/customer")
 
@@ -330,6 +334,27 @@ func GetBalance(customer string) (*models.BalanceResponse, error) {
 		return &result, err
 	}
 	return &result, nil
+}
+
+// Settings ..
+func SettingsOPL() (*models.SettingOPL, error) {
+	var resp models.SettingOPL
+
+	fmt.Println("[Package Host OPL]-[SettingsOPL]")
+	urlSvr := host + endpointSetting
+
+	data, err := HTTPxFormGETAdmin(urlSvr)
+	if err != nil {
+		logs.Error("Check error ", err.Error())
+		return &resp, err
+	}
+
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+		logs.Error("Failed to unmarshaling response SettingsOPL from open-loyalty ", err.Error())
+		return &resp, err
+	}
+	return &resp, nil
 }
 
 // GetServiceHealthCheck ..
