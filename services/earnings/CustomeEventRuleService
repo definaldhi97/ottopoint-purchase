@@ -35,15 +35,15 @@ func (t EarningPointServices) CustomeEventRuleService(req models.EarningReq, ins
 
 	save := dbmodels.TEarning{
 		// ID             : ,
-		EarningRule:    req.Earning,
-		PartnerId: institutionID,
-		ReferenceId:    req.ReferenceId,
-		Transactionid:  utils.GenTransactionId(),
-		ProductCode:    req.ProductCode,
-		ProductName:    req.ProductName,
-		AccountNumber1: req.AccountNumber1,
-		AccountNumber2: req.AccountNumber2,
-		Amount:         req.Amount,
+		EarningRule: req.Earning,
+		PartnerId:   institutionID,
+		ReferenceId: req.ReferenceId,
+		// Transactionid:  utils.GenTransactionId(),
+		ProductCode: req.ProductCode,
+		ProductName: req.ProductName,
+		// AccountNumber1: req.AccountNumber1,
+		// AccountNumber2: req.AccountNumber2,
+		Amount: req.Amount,
 		// Point:          int64(earning.PointsAmount),
 		Remark: req.Remark,
 		// StatusCode     : ,
@@ -68,7 +68,7 @@ func (t EarningPointServices) CustomeEventRuleService(req models.EarningReq, ins
 
 		resData, _ := json.Marshal(&res)
 
-		save.StatusCode = "72"
+		// save.StatusCode = "72"
 		save.StatusMessage = constants.RD_ERROR_ACC_NOT_ELIGIBLE
 		save.ResponderData = string(resData)
 
@@ -92,7 +92,7 @@ func (t EarningPointServices) CustomeEventRuleService(req models.EarningReq, ins
 
 		resData, _ := json.Marshal(&res)
 
-		save.StatusCode = "178"
+		// save.StatusCode = "178"
 		save.StatusMessage = "Earning Rule not found"
 		save.ResponderData = string(resData)
 
@@ -109,7 +109,7 @@ func (t EarningPointServices) CustomeEventRuleService(req models.EarningReq, ins
 
 		resData, _ := json.Marshal(&res)
 
-		save.StatusCode = "183"
+		// save.StatusCode = "183"
 		save.StatusMessage = "Earning rule is not active"
 		save.ResponderData = string(resData)
 
@@ -136,7 +136,7 @@ func (t EarningPointServices) CustomeEventRuleService(req models.EarningReq, ins
 
 		resData, _ := json.Marshal(&res)
 
-		save.StatusCode = "80"
+		// save.StatusCode = "80"
 		save.StatusMessage = "Gagal Transfer Point"
 		save.ResponderData = string(resData)
 
@@ -155,10 +155,10 @@ func (t EarningPointServices) CustomeEventRuleService(req models.EarningReq, ins
 
 	resData, _ := json.Marshal(&res)
 
-	save.StatusCode = "200"
+	// save.StatusCode = "200"
 	save.StatusMessage = "Success"
 	save.ResponderData = string(resData)
-	save.PointTransferId = senPoint.PointsTransferId
+	// save.PointTransferId = senPoint.PointsTransferId
 	save.Point = int64(earning.PointsAmount)
 
 	go db.SaveEarning(save)
