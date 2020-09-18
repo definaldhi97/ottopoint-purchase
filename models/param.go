@@ -35,3 +35,7 @@ type Supplier struct {
 	Rd       string // msg response
 	Rc       string // rc response
 }
+
+type DataErrorOPL struct {
+	Error string `json:"error"`
+}
