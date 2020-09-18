@@ -203,11 +203,13 @@ func SaveTransactionPLN(param models.Params, res interface{}, reqdata interface{
 	reqdataOP, _ := json.Marshal(&reqOP)
 
 	save := dbmodels.TSpending{
+		ID:              utils.GenerateTokenUUID(),
 		AccountNumber:   param.AccountNumber,
 		Voucher:         param.NamaVoucher,
 		MerchantID:      param.MerchantID,
 		CustID:          param.CustID,
 		RRN:             param.RRN,
+		TransactionId:   utils.GenTransactionId(),
 		ProductCode:     param.ProductCode,
 		Amount:          int64(param.Amount),
 		TransType:       trasnType,

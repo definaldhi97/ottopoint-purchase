@@ -1,9 +1,14 @@
 package utils
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	cryptRand "crypto/rand"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"math/rand"
 	"os"
 	"ottopoint-purchase/constants"
@@ -28,6 +33,8 @@ var (
 	LimitTRXPoint     string
 	MemberID          string
 	PathCSV           string
+	TopicsNotif       string
+	TopicNotifSMS     string
 
 	ListErrorCode []models.MappingErrorCodes
 )
@@ -41,6 +48,8 @@ func init() {
 	MemberID = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_MEMBERID", "OTPOINT")
 	// PathCSV = ODU.GetEnv("PATH_CSV", "//Users/abdulrohmat/Documents/Golang/src/ottopoint-purchase/utils/")
 	PathCSV = ODU.GetEnv("PATH_CSV", "/opt/ottopoint-purchase/csv/")
+	TopicsNotif = ODU.GetEnv("TOPICS_NOTIF", "ottopoint-notification-topics")
+	TopicNotifSMS = ODU.GetEnv("TOPIC_NOTIF_SMS", "ottopoint-sms-notification-topics")
 
 }
 
@@ -385,4 +394,43 @@ func CreateCSVFile(data interface{}, name string) {
 
 	writer.Flush()
 
+}
+
+func EncryptAES(plaintext []byte, key []byte) ([]byte, error) {
+	c, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	gcm, err := cipher.NewGCM(c)
+	if err != nil {
+		return nil, err
+	}
+
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err = io.ReadFull(cryptRand.Reader, nonce); err != nil {
+		return nil, err
+	}
+
+	return gcm.Seal(nonce, nonce, plaintext, nil), nil
+}
+
+func DecryptAES(ciphertext []byte, key []byte) ([]byte, error) {
+	c, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	gcm, err := cipher.NewGCM(c)
+	if err != nil {
+		return nil, err
+	}
+
+	nonceSize := gcm.NonceSize()
+	if len(ciphertext) < nonceSize {
+		return nil, errors.New("ciphertext too short")
+	}
+
+	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
+	return gcm.Open(nil, nonce, ciphertext, nil)
 }

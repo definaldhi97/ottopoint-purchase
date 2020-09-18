@@ -109,6 +109,10 @@ func VoucherComulativeController(ctx *gin.Context) {
 
 	logs.Info("SupplierID : ", data.SupplierID)
 	logs.Info("producrType : ", data.ProductType)
+	// sepecial vidio
+	if data.Category == constants.CategoryVidio {
+		req.CustID = "0"
+	}
 
 	// sugarLogger.Info("SupplierID : ", data.SupplierID)
 	// sugarLogger.Info("producrType : ", data.ProductType)
@@ -157,6 +161,8 @@ func VoucherComulativeController(ctx *gin.Context) {
 		res = ultraVoucher.UltraVoucherServices(req, param)
 	case constants.OttoAG:
 		res = voucherComulative.VoucherComulative(req, param)
+		// default: // transaction tanpa use hanya redeemtion
+		// res =
 	}
 
 	sugarLogger.Info("RESPONSE : ", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
@@ -204,6 +210,7 @@ func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 		Point:       data.CostInPoints,
 		Category:    strings.ToLower(producrType),
 		ExpDate:     data.CampaignActivity.ActiveTo,
+		CategoryID:  data.Categories[0],
 	}
 
 	return res

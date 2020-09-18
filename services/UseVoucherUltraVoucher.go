@@ -317,11 +317,15 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		fmt.Println("========== Send Publisher ==========")
 
 		pubreq := models.NotifPubreq{
-			Type:          "Reversal",
-			AccountNumber: param.AccountNumber,
-			Institution:   param.InstitutionID,
-			Point:         point,
-			Product:       param.NamaVoucher,
+			Type:           constants.CODE_REVERSAL_POINT,
+			NotificationTo: param.AccountNumber,
+			Institution:    param.InstitutionID,
+			ReferenceId:    param.RRN,
+			TransactionId:  param.Reffnum,
+			Data: models.DataValue{
+				RewardValue: "point",
+				Value:       totalPoint,
+			},
 		}
 		// pubreq := models.NotifPubreq{
 		// 	Type:           constants.CODE_REVERSAL_POINT,
@@ -338,7 +342,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		bytePub, _ := json.Marshal(pubreq)
 
 		kafkaReq := kafka.PublishReq{
-			Topic: constants.TOPIC_PUSHNOTIF_GENERAL,
+			Topic: utils.TopicsNotif,
 			Value: bytePub,
 		}
 
@@ -460,11 +464,15 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		fmt.Println("========== Send Publisher ==========")
 
 		pubreq := models.NotifPubreq{
-			Type:          "Reversal",
-			AccountNumber: param.AccountNumber,
-			Institution:   param.InstitutionID,
-			Point:         point,
-			Product:       param.NamaVoucher,
+			Type:           constants.CODE_REVERSAL_POINT,
+			NotificationTo: param.AccountNumber,
+			Institution:    param.InstitutionID,
+			ReferenceId:    param.RRN,
+			TransactionId:  param.Reffnum,
+			Data: models.DataValue{
+				RewardValue: "point",
+				Value:       totalPoint,
+			},
 		}
 		// pubreq := models.NotifPubreq{
 		// 	Type:           constants.CODE_REVERSAL_POINT,

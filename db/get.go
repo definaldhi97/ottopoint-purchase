@@ -104,3 +104,19 @@ func ParamData(code string) (dbmodels.MParameters, error) {
 
 	return res, nil
 }
+
+func GetDataInstitution(Institution string) (dbmodels.MInstution, error) {
+	result := dbmodels.MInstution{}
+
+	err := DbCon.Raw(`select * from public.m_institution where partner_id = ?`, Institution).Scan(&result).Error
+	if err != nil {
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]")
+		fmt.Println("[Get Instution / Issuer in database]")
+		fmt.Println(fmt.Sprintf("Failed to connect database %v", err))
+
+		return result, err
+	}
+	return result, nil
+
+}

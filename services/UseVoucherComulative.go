@@ -6,13 +6,13 @@ import (
 	"ottopoint-purchase/constants"
 	db "ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
-	ottomart "ottopoint-purchase/hosts/ottomart/host"
-	ottomartmodels "ottopoint-purchase/hosts/ottomart/models"
+	kafka "ottopoint-purchase/hosts/publisher/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/utils"
+	"strconv"
 	"sync"
 	"time"
 
@@ -38,21 +38,41 @@ func UseVoucherComulative(req models.VoucherComultaiveReq, redeemComu models.Red
 		fmt.Println("code : ", redeemComu.CouponCode)
 		fmt.Println("used : ", 1)
 		fmt.Println("customerId : ", dataUser.CustID)
+		fmt.Println("Category voucher : ", param.Category)
 
-		_, err2 := opl.CouponVoucherCustomer(req.CampaignID, redeemComu.CouponID, redeemComu.CouponCode, dataUser.CustID, 1)
-		fmt.Println("================ doing use voucher couponId : ", redeemComu.CouponID)
-		if err2 != nil {
-			fmt.Println("================ doing use voucher couponId Error: ", redeemComu.CouponID)
+		// _, err2 := opl.CouponVoucherCustomer(req.CampaignID, redeemComu.CouponID, redeemComu.CouponCode, dataUser.CustID, 1)
+		// fmt.Println("================ doing use voucher couponId : ", redeemComu.CouponID)
+		// if err2 != nil {
+		// 	fmt.Println("================ doing use voucher couponId Error: ", redeemComu.CouponID)
 
-		} else {
+		// } else {
 
-			// Reedem Use Voucher
-			param.Amount = redeemComu.Redeem.Amount
-			param.RRN = redeemComu.Redeem.Rrn
-			resRedeem := RedeemUseVoucherComulative(req, param)
+		// 	// Reedem Use Voucher
+		// 	param.Amount = redeemComu.Redeem.Amount
+		// 	param.RRN = redeemComu.Redeem.Rrn
+		// 	param.CouponID = redeemComu.CouponID
+		// 	resRedeem := RedeemUseVoucherComulative(req, param)
 
-			getRespChan <- resRedeem
+		// 	getRespChan <- resRedeem
+		// }
+
+		if param.Category != constants.CategoryVidio {
+			fmt.Println("[Use voucher to OPL : ", param.Category)
+			_, err2 := opl.CouponVoucherCustomer(req.CampaignID, redeemComu.CouponID, redeemComu.CouponCode, dataUser.CustID, 1)
+			fmt.Println("================ result use voucher couponId : ", redeemComu.CouponID)
+			if err2 != nil {
+				fmt.Println("================ result use voucher couponId Error: ", redeemComu.CouponID)
+			}
 		}
+
+		// Reedem Use Voucher
+		param.Amount = redeemComu.Redeem.Amount
+		param.RRN = redeemComu.Redeem.Rrn
+		param.CouponID = redeemComu.CouponID
+		resRedeem := RedeemUseVoucherComulative(req, param)
+
+		getRespChan <- resRedeem
+
 	}
 
 }
@@ -72,6 +92,7 @@ func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Pa
 	}
 
 	// resRedeem := models.UseRedeemResponse{}
+	param.CampaignID = req.CampaignID
 	resRedeem := PaymentVoucherOttoAg(reqRedeem, req, param)
 
 	// switch category {
@@ -132,21 +153,26 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 
 	fmt.Println(fmt.Sprintf("Response OttoAG %v Payment : %v", param.ProductType, billerRes))
 	paramPay := models.Params{
-		AccountNumber: param.AccountNumber,
-		MerchantID:    param.MerchantID,
-		InstitutionID: param.InstitutionID,
-		CustID:        custId,
-		TransType:     constants.CODE_TRANSTYPE_REDEMPTION,
-		Reffnum:       param.Reffnum, // Internal
-		RRN:           billerRes.Rrn,
-		Amount:        int64(billerRes.Amount),
-		NamaVoucher:   param.NamaVoucher,
-		ProductType:   param.ProductType,
-		ProductCode:   req.ProductCode,
-		Category:      param.Category,
-		Point:         param.Point,
-		ExpDate:       param.ExpDate,
-		SupplierID:    param.SupplierID,
+		AccountNumber:   param.AccountNumber,
+		MerchantID:      param.MerchantID,
+		InstitutionID:   param.InstitutionID,
+		CustID:          custId,
+		TransType:       constants.CODE_TRANSTYPE_REDEMPTION,
+		Reffnum:         param.Reffnum, // Internal
+		RRN:             billerRes.Rrn,
+		Amount:          int64(billerRes.Amount),
+		NamaVoucher:     param.NamaVoucher,
+		ProductType:     param.ProductType,
+		ProductCode:     req.ProductCode,
+		Category:        param.Category,
+		Point:           param.Point,
+		ExpDate:         param.ExpDate,
+		SupplierID:      param.SupplierID,
+		CategoryID:      param.CategoryID,
+		CampaignID:      param.CampaignID,
+		VoucherCode:     billerRes.Data.Code,
+		CouponID:        param.CouponID,
+		ExpireDateVidio: billerRes.Data.EndDateVidio,
 		DataSupplier: models.Supplier{
 			Rc: billerRes.Rc,
 			Rd: billerRes.Msg,
@@ -208,29 +234,110 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	}
 
 	// Notif PLN
+
 	if param.Category == constants.CategoryPLN {
+
 		// Format Token
 		stroomToken := utils.GetFormattedToken(billerRes.Data.Tokenno)
+		denom := strconv.Itoa(billerRes.Data.Amount)
 
-		notifReq := ottomartmodels.NotifRequest{
-			AccountNumber:    req.AccountNumber,
-			Title:            "Transaksi Berhasil",
-			Message:          fmt.Sprintf("Mitra OttoPay, transaksi pembelian voucher PLN telah berhasil. Silakan masukan kode berikut %v ke meteran listrik kamu. Nilai kwh yang diperoleh sesuai dengan PLN. Terima kasih.", stroomToken),
-			NotificationType: 3,
+		fmt.Println("data denom : ", denom)
+		paramPay.VoucherCode = stroomToken
+		// swtich notif app/sms
+		dtaIssuer, _ := db.GetDataInstitution(param.InstitutionID)
+		if dtaIssuer.NOtificationID == constants.CODE_SMS_NOTIF || dtaIssuer.NOtificationID == constants.CODE_SMS_APPS_NOTIF {
+			fmt.Println("SMS Notif : ", param.Category)
+			fmt.Println("Institution : ", param.InstitutionID)
+			fmt.Println("Notification ID : ", dtaIssuer.NOtificationID)
+			fmt.Println("========== Send Publisher ==========")
+			pubreqSMSNotif := []models.NotifPubreq{}
+			a := models.NotifPubreq{
+				Type:           constants.CODE_REDEEM_PLN_SMS,
+				NotificationTo: param.AccountNumber,
+				Institution:    param.InstitutionID,
+				ReferenceId:    param.RRN,
+				TransactionId:  param.Reffnum,
+				Data: models.DataValue{
+					RewardValue: denom,
+					Value:       stroomToken,
+				},
+			}
+			pubreqSMSNotif = append(pubreqSMSNotif, a)
+
+			go SendToPublisher(pubreqSMSNotif, utils.TopicNotifSMS)
+		}
+		if dtaIssuer.NOtificationID == constants.CODE_APPS_NOTIF || dtaIssuer.NOtificationID == constants.CODE_SMS_APPS_NOTIF {
+			fmt.Println("APP Notif : ", param.Category)
+			fmt.Println("Institution : ", param.InstitutionID)
+			fmt.Println("Notification ID : ", dtaIssuer.NOtificationID)
+			fmt.Println("========== Send Publisher ==========")
+
+			pubreq := models.NotifPubreq{
+				Type:           constants.CODE_REDEEM_PLN,
+				NotificationTo: param.AccountNumber,
+				Institution:    param.InstitutionID,
+				ReferenceId:    param.RRN,
+				TransactionId:  param.Reffnum,
+				Data: models.DataValue{
+					RewardValue: denom,
+					Value:       stroomToken,
+				},
+			}
+			go SendToPublisher(pubreq, utils.TopicsNotif)
 		}
 
-		// send notif & inbox
-		dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
-		if errNotif != nil {
-			fmt.Println("Error to send Notif & Inbox")
-		}
+		// fmt.Println("========== Send Publisher ==========")
 
-		if dataNotif.RC != "00" {
-			fmt.Println("[Response Notif PLN]")
-			fmt.Println("Gagal Send Notif & Inbox")
-			fmt.Println("Error : ", errNotif)
-		}
+		// pubreq := models.NotifPubreq{
+		// 	Type:           constants.CODE_REDEEM_PLN,
+		// 	NotificationTo: param.AccountNumber,
+		// 	Institution:    param.InstitutionID,
+		// 	ReferenceId:    param.RRN,
+		// 	TransactionId:  param.Reffnum,
+		// 	Data: models.DataValue{
+		// 		RewardValue: denom,
+		// 		Value:       stroomToken,
+		// 	},
+		// }
 
+		// bytePub, _ := json.Marshal(pubreq)
+
+		// kafkaReq := kafka.PublishReq{
+		// 	Topic: utils.TopicsNotif,
+		// 	Value: bytePub,
+		// }
+
+		// kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+		// if err != nil {
+		// 	fmt.Println("Gagal Send Publisher")
+		// 	fmt.Println("Error : ", err)
+		// }
+
+		// fmt.Println("Response Publisher : ", kafkaRes)
+
+	}
+
+	// Notif Vidio
+	if param.Category == constants.CategoryVidio {
+
+		denom := strconv.FormatUint(billerRes.Amount, 10)
+		fmt.Println("APP Notif : ", param.Category)
+		fmt.Println("Institution : ", param.InstitutionID)
+		fmt.Println("data denom : ", denom)
+		fmt.Println("========== Send Publisher ==========")
+
+		pubreq := models.NotifPubreq{
+			Type:           constants.CODE_REDEEM_VIDIO,
+			NotificationTo: param.AccountNumber,
+			Institution:    param.InstitutionID,
+			ReferenceId:    param.RRN,
+			TransactionId:  param.Reffnum,
+			Data: models.DataValue{
+				RewardValue: denom,
+				Value:       billerRes.Data.Code,
+			},
+		}
+		go SendToPublisher(pubreq, utils.TopicsNotif)
 	}
 
 	fmt.Println(fmt.Sprintf("[Payment %v Success]", param.ProductType))
@@ -257,6 +364,24 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 
 	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[%v]", param.ProductType))
 
+	// validasi vidio is_used -> false
+	isUsed := true
+	// codeVoucher := param.VoucherCode
+	var codeVoucher string
+	ExpireDate := param.ExpDate
+	var redeemDate string
+
+	if param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
+		timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+		redeemDate = timeRedeem
+
+		codeVoucher = EncryptVoucherCode(param.VoucherCode, param.CouponID)
+	}
+
+	if param.Category == constants.CategoryVidio && param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
+		isUsed = false // isUsed status untuk used
+	}
+
 	var saveStatus string
 	switch status {
 	case "00":
@@ -280,12 +405,13 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		RRN:           param.RRN,
 		ProductCode:   param.ProductCode,
 		Amount:        int64(param.Amount),
-		// TransType:       "Redeemtion",
-		TransType:       param.TransType,
-		IsUsed:          true,
-		ProductType:     param.ProductType,
-		Status:          saveStatus,
-		ExpDate:         param.ExpDate,
+		TransType:     param.TransType,
+		// IsUsed:        true,
+		IsUsed:      isUsed,
+		ProductType: param.ProductType,
+		Status:      saveStatus,
+		// ExpDate:         param.ExpDate,
+		ExpDate:         ExpireDate,
 		Institution:     param.InstitutionID,
 		CummulativeRef:  param.Reffnum,
 		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
@@ -296,6 +422,10 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		ResponderData:   string(responseOttoag),
 		RequestorOPData: string(reqdataOP),
 		SupplierID:      param.SupplierID,
+		RedeemAt:        redeemDate,
+		CampaignId:      param.CampaignID,
+		VoucherCode:     codeVoucher,
+		CouponId:        param.CouponID,
 	}
 
 	err := db.DbCon.Create(&save).Error
@@ -313,4 +443,38 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	}
 
 	return "Berhasil Save"
+}
+
+func EncryptVoucherCode(data, key string) string {
+
+	var codeVoucher string
+	if data == "" {
+		return codeVoucher
+	}
+
+	a := []rune(key)
+	key32 := string(a[0:32])
+	screetKey := []byte(key32)
+	codeByte := []byte(data)
+	chiperText, _ := utils.EncryptAES(codeByte, screetKey)
+	codeVoucher = string(chiperText)
+	return codeVoucher
+}
+
+func SendToPublisher(pubreq interface{}, topic string) {
+
+	bytePub, _ := json.Marshal(pubreq)
+
+	kafkaReq := kafka.PublishReq{
+		Topic: topic,
+		Value: bytePub,
+	}
+
+	kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+	if err != nil {
+		fmt.Println("Gagal Send Publisher")
+		fmt.Println("Error : ", err)
+	}
+
+	fmt.Println("Response Publisher : ", kafkaRes)
 }

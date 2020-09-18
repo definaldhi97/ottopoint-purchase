@@ -144,6 +144,7 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		MerchantID:    param.MerchantID,
 		// CustID:          param.CustID,
 		RRN:             param.RRN,
+		TransactionId:   utils.GenTransactionId(),
 		ProductCode:     param.ProductCode,
 		Amount:          int64(param.Amount),
 		TransType:       trasnType,

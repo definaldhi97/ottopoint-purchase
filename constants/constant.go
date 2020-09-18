@@ -50,6 +50,7 @@ const (
 	CategoryMobileLegend = "mobile legends"
 	CategoryPLN          = "pln"
 	CategoryGame         = "game"
+	CategoryVidio        = "vidio"
 )
 
 const (
@@ -170,4 +171,12 @@ const (
 	CODE_GIFT_POINT_ACTIVATION = "gift_point_activation"
 	TOPIC_PUSHNOTIF_GENERAL    = "ottopoint-notification-topics"
 	TOPIC_PUSHNOTIF_REVERSAL   = "ottopoint-notification-reversal"
+	CODE_REDEEM_VIDIO          = "redeem_vidio"
+	CODE_REDEEM_PLN_SMS        = "sms_pln"
+)
+
+const (
+	CODE_APPS_NOTIF     = 1
+	CODE_SMS_NOTIF      = 2
+	CODE_SMS_APPS_NOTIF = 3
 )
