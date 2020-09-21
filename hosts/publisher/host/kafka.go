@@ -3,6 +3,7 @@ package publisher
 import (
 	"fmt"
 
+	"github.com/astaxie/beego/logs"
 	jsoniter "github.com/json-iterator/go"
 	ODU "ottodigital.id/library/utils"
 )
@@ -10,6 +11,11 @@ import (
 type PublishReq struct {
 	Topic string `json:"topic"`
 	Value []byte `json:"value"`
+}
+
+type PublisherResp struct {
+	ResponseCode string `json:"responseCode"`
+	ResponseDesc string `json:"responseDesc"`
 }
 
 var (
@@ -23,7 +29,10 @@ func init() {
 }
 
 // SendPublishKafka ...
-func SendPublishKafka(request PublishReq) ([]byte, error) {
+func SendPublishKafka(request PublishReq) (PublisherResp, error) {
+
+	var resp PublisherResp
+
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 	datareq, _ := json.Marshal(request)
@@ -38,5 +47,12 @@ func SendPublishKafka(request PublishReq) ([]byte, error) {
 	fmt.Println("err", err)
 	fmt.Println("xxxx-----------xxxx")
 
-	return data, err
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+		logs.Error("Failed to unmarshaling response SendPublishKafka from Publisher ", err.Error())
+
+		return resp, err
+	}
+
+	return resp, err
 }
