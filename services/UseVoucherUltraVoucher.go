@@ -204,6 +204,9 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 		for i := req.Jumlah; i > 0; i-- {
 
+			// TrxId
+			param.TrxID = utils.GenTransactionId()
+
 			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
 
 			t := i - 1
@@ -266,10 +269,15 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			}
 		}
 
-		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
+		// TrxID
+		param.TrxID = utils.GenTransactionId()
+
+		text := param.TrxID + param.InstitutionID + constants.CodeReversal + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
+		// Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		point := param.Point * req.Jumlah
 		totalPoint := strconv.Itoa(point)
-		sendReversal, errReversal := host.TransferPoint(param.AccountId, totalPoint, Text)
+		param.TrxID = utils.GenTransactionId()
+		sendReversal, errReversal := host.TransferPoint(param.AccountId, totalPoint, text)
 		if errReversal != nil {
 			fmt.Println("Internal Server Error : ", errReversal)
 			fmt.Println("[UltraVoucherServices]-[TransferPoint]")
@@ -284,7 +292,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			// EarningRuleAdd  :,
 			PartnerId: param.InstitutionID,
 			// ReferenceId     : ,
-			TransactionId: utils.GenTransactionId(),
+			TransactionId: param.TrxID,
 			// ProductCode     :,
 			// ProductName     :,
 			AccountNumber: param.AccountNumber,
@@ -351,6 +359,9 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		fmt.Println("Response Publisher : ", kafkaRes)
 
 		for i := req.Jumlah; i > 0; i-- {
+
+			// TrxID
+			param.TrxID = utils.GenTransactionId()
 
 			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
 
@@ -497,6 +508,9 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
 
+			// TrxID
+			param.TrxID = utils.GenTransactionId()
+
 			t := i - 1
 			coupon := redeem.Coupons[t].Id
 			param.CouponID = coupon
@@ -522,6 +536,9 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 	for i := req.Jumlah; i > 0; i-- {
 
 		fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
+
+		// TrxID
+		param.TrxID = utils.GenTransactionId()
 
 		t := i - 1
 		coupon := redeem.Coupons[t].Id

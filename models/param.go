@@ -21,6 +21,7 @@ type Params struct {
 	CouponCode    string
 	CampaignID    string
 	SupplierID    string
+	TrxID         string
 	// percobaan
 	Total        int
 	DataSupplier Supplier
