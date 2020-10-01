@@ -54,6 +54,9 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	for i := 0; i < req.Jumlah; i++ {
 		// wg.Add(2)
 
+		// TrxID
+		param.TrxID = utils.GenTransactionId()
+
 		param.Total = i + 1
 		getRespChan := make(chan models.RedeemComuResp)
 		getErrChan := make(chan error)
@@ -111,7 +114,8 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		fmt.Println("============= Reversal to Point ===========")
 		// get Custid from user where acount nomor
 
-		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
+		Text := param.TrxID + param.InstitutionID + constants.CodeReversal + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
+		// Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		sendReversal, errReversal := host.TransferPoint(param.AccountId, strconv.Itoa(rcUseVoucher.Count), Text)
 		if errReversal != nil {
 			fmt.Println("[ERROR DB]")
@@ -126,7 +130,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 			// EarningRuleAdd  :,
 			PartnerId: param.InstitutionID,
 			// ReferenceId     : ,
-			TransactionId: utils.GenTransactionId(),
+			TransactionId: param.TrxID,
 			// ProductCode     :,
 			// ProductName     :,
 			AccountNumber: param.AccountNumber,
