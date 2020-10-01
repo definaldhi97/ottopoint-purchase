@@ -272,7 +272,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		// TrxID
 		param.TrxID = utils.GenTransactionId()
 
-		text := param.TrxID + param.InstitutionID + constants.CodeReversal + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
+		text := param.TrxID + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		// Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		point := param.Point * req.Jumlah
 		totalPoint := strconv.Itoa(point)
@@ -427,7 +427,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		// TrxID
 		param.TrxID = utils.GenTransactionId()
 
-		text := param.TrxID + param.InstitutionID + constants.CodeReversal + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
+		text := param.TrxID + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
 
 		// Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		point := param.Point * req.Jumlah
