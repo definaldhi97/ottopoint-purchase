@@ -420,10 +420,15 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			}
 		}
 
-		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
+		// TrxID
+		param.TrxID = utils.GenTransactionId()
+
+		text := param.TrxID + param.InstitutionID + constants.CodeReversal + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
+
+		// Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		point := param.Point * req.Jumlah
 		totalPoint := strconv.Itoa(point)
-		reversal, errReversal := host.TransferPoint(param.AccountId, totalPoint, Text)
+		reversal, errReversal := host.TransferPoint(param.AccountId, totalPoint, text)
 		if errReversal != nil || reversal.PointsTransferId == "" {
 			fmt.Println("Internal Server Error : ", errReversal)
 			fmt.Println("[UltraVoucherServices]-[TransferPoint]")
@@ -438,7 +443,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			// EarningRuleAdd  :,
 			PartnerId: param.InstitutionID,
 			// ReferenceId     : ,
-			TransactionId: utils.GenTransactionId(),
+			TransactionId: param.TrxID,
 			// ProductCode     :,
 			// ProductName     :,
 			AccountNumber: param.AccountNumber,
