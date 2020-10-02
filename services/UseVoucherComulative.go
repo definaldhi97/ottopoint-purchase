@@ -173,6 +173,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		VoucherCode:     billerRes.Data.Code,
 		CouponID:        param.CouponID,
 		ExpireDateVidio: billerRes.Data.EndDateVidio,
+		TrxID:         param.TrxID,
 		DataSupplier: models.Supplier{
 			Rc: billerRes.Rc,
 			Rd: billerRes.Msg,
