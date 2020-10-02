@@ -2,9 +2,7 @@ package host
 
 import (
 	"encoding/json"
-	"net/http"
 	authModel "ottopoint-purchase/hosts/auth/models"
-	"ottopoint-purchase/models"
 
 	"github.com/astaxie/beego/logs"
 	ODU "ottodigital.id/library/utils"
@@ -22,21 +20,21 @@ func init() {
 	// HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_REDIS_TOKEN", "OTTOPOINT-PURCHASE:REDIS_TOKEN_OTTOPOINT")
 }
 
-func ClearCacheBalance(headerReq models.RequestHeader) (authModel.RespClearCacheBalance, error) {
+func ClearCacheBalance(phone string) (authModel.RespClearCacheBalance, error) {
 	var result authModel.RespClearCacheBalance
 
-	urlSvr := host + endpointClearCacheGetBalance
+	urlSvr := host + endpointClearCacheGetBalance + "?phone=" + phone
 
-	header := make(http.Header)
-	header.Set("DeviceId", headerReq.DeviceID)
-	header.Set("InstitutionId", headerReq.InstitutionID)
-	header.Set("Geolocation", headerReq.Geolocation)
-	header.Set("ChannelId", headerReq.ChannelID)
-	header.Set("AppsId", headerReq.AppsID)
-	header.Set("Timestamp", headerReq.Timestamp)
-	header.Set("Authorization", headerReq.Authorization)
+	// header := make(http.Header)
+	// header.Set("DeviceId", headerReq.DeviceID)
+	// header.Set("InstitutionId", headerReq.InstitutionID)
+	// header.Set("Geolocation", headerReq.Geolocation)
+	// header.Set("ChannelId", headerReq.ChannelID)
+	// header.Set("AppsId", headerReq.AppsID)
+	// header.Set("Timestamp", headerReq.Timestamp)
+	// header.Set("Authorization", headerReq.Authorization)
 
-	data, err := HTTPGet(urlSvr, header)
+	data, err := HTTPGet(urlSvr, nil)
 	if err != nil {
 		logs.Error("Check error", err.Error())
 

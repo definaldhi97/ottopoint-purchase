@@ -162,7 +162,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 	}
 
 	// clear cache getBalnce redis
-	go ClearCaceheBalancePoint(header)
+	go ClearCaceheBalancePoint(param.AccountNumber)
 
 	sugarLogger.Info("RESPONSE : ", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY : ", res))
@@ -234,9 +234,9 @@ func ValidatePerfix(CustID, ProductCode, category string) bool {
 	return true
 }
 
-func ClearCaceheBalancePoint(header models.RequestHeader) {
+func ClearCaceheBalancePoint(phone string) {
 	fmt.Println(">>>>>>> Clear Cache Get Balance <<<<<<")
-	clearCacheBalance, err := hostAuth.ClearCacheBalance(header)
+	clearCacheBalance, err := hostAuth.ClearCacheBalance(phone)
 	if err != nil {
 		fmt.Println("Clear Cache Balance Error : ", err)
 		return
