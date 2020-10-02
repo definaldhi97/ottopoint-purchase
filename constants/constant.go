@@ -56,6 +56,7 @@ const (
 	Success = "00"
 	Pending = "09"
 	Failed  = "01"
+	TimeOut = "68"
 )
 
 const (
@@ -170,4 +171,12 @@ const (
 	CODE_GIFT_POINT_ACTIVATION = "gift_point_activation"
 	TOPIC_PUSHNOTIF_GENERAL    = "ottopoint-notification-topics"
 	TOPIC_PUSHNOTIF_REVERSAL   = "ottopoint-notification-reversal"
+)
+
+const (
+	MsgSuccess = "Success"
+)
+
+const (
+	CodeScheduler = "SC001"
 )
