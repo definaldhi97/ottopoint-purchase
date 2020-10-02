@@ -41,14 +41,12 @@ func EarningsPointController(ctx *gin.Context) {
 	// c := ctx.Request.Context()
 	// context := opentracing.ContextWithSpan(c, span)
 
-	header := models.RequestHeader{}
-	header.InstitutionID = "PSM0001"
 	// validate request
-	// header, resultValidate := ValidateRequestWithoutAuth(ctx, req)
-	// if !resultValidate.Meta.Status {
-	// 	ctx.JSON(http.StatusOK, resultValidate)
-	// 	return
-	// }
+	header, resultValidate := ValidateRequestWithoutAuth(ctx, req)
+	if !resultValidate.Meta.Status {
+		ctx.JSON(http.StatusOK, resultValidate)
+		return
+	}
 
 	// dataToken, _ := token.CheckToken(header)
 	// fmt.Println(dataToken)
