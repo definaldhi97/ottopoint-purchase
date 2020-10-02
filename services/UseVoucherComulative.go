@@ -139,6 +139,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		TransType:     constants.CODE_TRANSTYPE_REDEMPTION,
 		Reffnum:       param.Reffnum, // Internal
 		RRN:           billerRes.Rrn,
+		TrxID:         param.TrxID,
 		Amount:        int64(billerRes.Amount),
 		NamaVoucher:   param.NamaVoucher,
 		ProductType:   param.ProductType,
