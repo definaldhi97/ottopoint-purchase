@@ -272,7 +272,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		// TrxID
 		param.TrxID = utils.GenTransactionId()
 
-		text := param.TrxID + param.InstitutionID + constants.CodeReversal + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
+		text := param.TrxID + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
 
 		// save to scheduler
 		schedulerData := dbmodels.TSchedulerRetry{
@@ -477,7 +477,12 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			}
 		}
 
-		Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
+		// TrxID
+		param.TrxID = utils.GenTransactionId()
+
+		text := param.TrxID + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
+
+		// Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		point := param.Point * req.Jumlah
 		totalPoint := strconv.Itoa(point)
 
@@ -485,14 +490,14 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		schedulerData := dbmodels.TSchedulerRetry{
 			// ID
 			Code:          constants.CodeScheduler,
-			TransactionID: utils.Before(Text, "#"),
+			TransactionID: utils.Before(text, "#"),
 			Count:         0,
 			IsDone:        false,
 			CreatedAT:     time.Now(),
 			// UpdatedAT
 		}
 
-		reversal, errReversal := host.TransferPoint(param.AccountId, totalPoint, Text)
+		reversal, errReversal := host.TransferPoint(param.AccountId, totalPoint, text)
 
 		statusEarning := constants.Success
 		msgEarning := constants.MsgSuccess
@@ -552,7 +557,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			// EarningRuleAdd  :,
 			PartnerId: param.InstitutionID,
 			// ReferenceId     : ,
-			TransactionId: utils.GenTransactionId(),
+			TransactionId: param.TrxID,
 			// ProductCode     :,
 			// ProductName     :,
 			AccountNumber: param.AccountNumber,

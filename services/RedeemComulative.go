@@ -111,6 +111,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		TransType:     constants.CODE_TRANSTYPE_INQUERY,
 		Reffnum:       param.Reffnum, // internal
 		RRN:           dataInquery.Rrn,
+		TrxID:         param.TrxID,
 		Amount:        dataInquery.Amount,
 		NamaVoucher:   param.NamaVoucher,
 		ProductType:   param.ProductType,
