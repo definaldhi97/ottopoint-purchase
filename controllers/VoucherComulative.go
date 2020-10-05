@@ -15,8 +15,6 @@ import (
 	"ottopoint-purchase/utils"
 	"time"
 
-	hostAuth "ottopoint-purchase/hosts/auth/host"
-
 	"github.com/astaxie/beego/logs"
 	"github.com/gin-gonic/gin"
 	zaplog "github.com/opentracing-contrib/go-zap/log"
@@ -48,7 +46,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 	context := opentracing.ContextWithSpan(c, span)
 
 	//validate request
-	header, resultValidate := ValidateRequest(ctx, true, req)
+	header, resultValidate := ValidateRequest(ctx, true, req, true)
 	if !resultValidate.Meta.Status {
 		ctx.JSON(http.StatusOK, resultValidate)
 		return
@@ -161,9 +159,6 @@ func VoucherComulativeController(ctx *gin.Context) {
 		res = voucherComulative.VoucherComulative(req, param)
 	}
 
-	// clear cache getBalnce redis
-	go ClearCaceheBalancePoint(param.AccountNumber)
-
 	sugarLogger.Info("RESPONSE : ", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY : ", res))
 
@@ -232,21 +227,4 @@ func ValidatePerfix(CustID, ProductCode, category string) bool {
 	}
 
 	return true
-}
-
-func ClearCaceheBalancePoint(phone string) {
-	fmt.Println(">>>>>>> Clear Cache Get Balance <<<<<<")
-	clearCacheBalance, err := hostAuth.ClearCacheBalance(phone)
-	if err != nil {
-		fmt.Println("Clear Cache Balance Error : ", err)
-		return
-	}
-	if clearCacheBalance.ResponseCode != "00" {
-		fmt.Println("Message : ", clearCacheBalance.Messages)
-		fmt.Println("Response Code : ", clearCacheBalance.ResponseCode)
-		return
-	}
-	fmt.Println("Clear Cache Get Balance: ", clearCacheBalance.Messages)
-	return
-
 }

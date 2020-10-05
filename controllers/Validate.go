@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"ottopoint-purchase/constants"
+	hostAuth "ottopoint-purchase/hosts/auth/host"
 	signature "ottopoint-purchase/hosts/signature/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/services"
@@ -13,7 +14,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ValidateRequest(ctx *gin.Context, isCheckAuth bool, reqBody interface{}) (models.RequestHeader, models.Response) {
+func ValidateRequest(ctx *gin.Context, isCheckAuth bool, reqBody interface{}, isCacheBalance bool) (models.RequestHeader, models.Response) {
+
+	var phone string
 
 	header := models.RequestHeader{
 		DeviceID:      ctx.Request.Header.Get("DeviceId"),
@@ -47,6 +50,8 @@ func ValidateRequest(ctx *gin.Context, isCheckAuth bool, reqBody interface{}) (m
 			return header, result
 		}
 
+		phone = dataRedis.Value
+
 		// result := ValidateUser(ctx, dataRedis.Value, result, header)
 
 		// if !result.Meta.Status {
@@ -63,6 +68,11 @@ func ValidateRequest(ctx *gin.Context, isCheckAuth bool, reqBody interface{}) (m
 		logs.Info(fmt.Sprintf("Error when validation request header"))
 		result = utils.GetMessageFailedErrorNew(result, constants.RC_ERROR_INVALID_SIGNATURE, constants.RD_ERROR_INVALID_SIGNATURE)
 		return header, result
+	}
+
+	// Clear Cache Balance Point
+	if isCacheBalance {
+		go ClearCaceheBalancePoint(phone)
 	}
 
 	return header, result
@@ -100,4 +110,21 @@ func ValidateRequestWithoutAuth(ctx *gin.Context, reqBody interface{}) (models.R
 	}
 
 	return header, result
+}
+
+func ClearCaceheBalancePoint(phone string) {
+	fmt.Println(">>>>>>> Clear Cache Get Balance <<<<<<")
+	clearCacheBalance, err := hostAuth.ClearCacheBalance(phone)
+	if err != nil {
+		fmt.Println("Clear Cache Balance Error : ", err)
+		return
+	}
+	if clearCacheBalance.ResponseCode != "00" {
+		fmt.Println("Message : ", clearCacheBalance.Messages)
+		fmt.Println("Response Code : ", clearCacheBalance.ResponseCode)
+		return
+	}
+	fmt.Println("Clear Cache Get Balance: ", clearCacheBalance.Messages)
+	return
+
 }

@@ -39,7 +39,7 @@ func EarningRuleController(ctx *gin.Context) {
 	context := opentracing.ContextWithSpan(c, span)
 
 	//validate request
-	header, resultValidate := ValidateRequest(ctx, true, req)
+	header, resultValidate := ValidateRequest(ctx, true, req, true)
 	if !resultValidate.Meta.Status {
 		ctx.JSON(http.StatusOK, resultValidate)
 		return
