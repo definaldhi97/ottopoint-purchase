@@ -22,7 +22,7 @@ type UseVoucherVidioService struct {
 func (t UseVoucherVidioService) UseVoucherVidio(couponId string) models.Response {
 	fmt.Println("[ Use Voucher Vidio Service ]")
 
-	resp := models.Response{Meta: utils.ResponseMetaOK()}
+	resp := models.Response{}
 
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[ViewVoucher-Services]",
@@ -82,6 +82,7 @@ func (t UseVoucherVidioService) UseVoucherVidio(couponId string) models.Response
 	respVouch.CustomerID = dtaUseVouc.Coupons[0].CustomerID
 
 	resp = models.Response{
+		Meta: utils.ResponseMetaOK(),
 		Data: respVouch,
 	}
 
