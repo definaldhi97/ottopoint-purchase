@@ -74,6 +74,17 @@ func (t UseVoucherVidioService) UseVoucherVidio(couponId string) models.Response
 	fmt.Println("Success Use Voucher ....")
 	fmt.Println(dtaUseVouc)
 
+	respVouch := models.RespUseVoucher{}
+	respVouch.Code = dtaUseVouc.Coupons[0].Code
+	respVouch.CouponID = dtaUseVouc.Coupons[0].CouponID
+	respVouch.Used = dtaUseVouc.Coupons[0].Used
+	respVouch.CampaignID = dtaUseVouc.Coupons[0].CampaignID
+	respVouch.CustomerID = dtaUseVouc.Coupons[0].CustomerID
+
+	resp = models.Response{
+		Data: respVouch,
+	}
+
 	return resp
 
 }
