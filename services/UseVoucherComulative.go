@@ -257,9 +257,9 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 				Institution:    param.InstitutionID,
 				ReferenceId:    param.RRN,
 				TransactionId:  param.Reffnum,
-				Data: models.DataValue{
-					RewardValue: denom,
-					Value:       stroomToken,
+				Data: models.DataValueSMS{
+					ProductName: denom,
+					Token:       stroomToken,
 				},
 			}
 			pubreqSMSNotif = append(pubreqSMSNotif, a)
