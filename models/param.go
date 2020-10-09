@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type Params struct {
 	AccountNumber   string
 	MerchantID      string
@@ -25,6 +27,7 @@ type Params struct {
 	ExpireDateVidio string // Expire date Voucher Vidio
 	CategoryID      string
 	TrxID         string
+	TrxTime       time.Time
 	// percobaan
 	Total        int
 	DataSupplier Supplier

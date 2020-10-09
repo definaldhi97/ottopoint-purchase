@@ -46,6 +46,8 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 	// for i := req.Jumlah; i >= 1; i-- {
 
+	param.TrxTime = time.Now()
+
 	dataorder := DataParameterOrder()
 
 	// param.Reffnum = utils.GenTransactionId()
@@ -274,9 +276,6 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 		text := param.TrxID + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
 
-		// sleep 5 detik
-		time.Sleep(5 * time.Second)
-
 		// save to scheduler
 		schedulerData := dbmodels.TSchedulerRetry{
 			// ID
@@ -346,6 +345,11 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 		expired := ExpiredPointService()
 
+		// sleep 10 detik
+		time.Sleep(10 * time.Second)
+
+		fmt.Println("[Delay 10 detik]")
+
 		saveReversal := dbmodels.TEarning{
 			ID: utils.GenerateTokenUUID(),
 			// EarningRule     :,
@@ -368,6 +372,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			AccountId:       param.AccountId,
 			ExpiredPoint:    expired,
 			TransactionTime: time.Now(),
+			CreatedAt:       time.Now(),
 		}
 
 		errSaveReversal := db.DbCon.Create(&saveReversal).Error
@@ -493,9 +498,6 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		point := param.Point * req.Jumlah
 		totalPoint := strconv.Itoa(point)
 
-		// sleep 5 detik
-		time.Sleep(5 * time.Second)
-
 		// save to scheduler
 		schedulerData := dbmodels.TSchedulerRetry{
 			// ID
@@ -561,6 +563,11 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 		expired := ExpiredPointService()
 
+		// sleep 10 detik
+		time.Sleep(10 * time.Second)
+
+		fmt.Println("[Delay 10 detik]")
+
 		saveReversal := dbmodels.TEarning{
 			ID: utils.GenerateTokenUUID(),
 			// EarningRule     :,
@@ -583,6 +590,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			AccountId:       param.AccountId,
 			ExpiredPoint:    expired,
 			TransactionTime: time.Now(),
+			CreatedAt:       time.Now(),
 		}
 
 		errSaveReversal := db.DbCon.Create(&saveReversal).Error
