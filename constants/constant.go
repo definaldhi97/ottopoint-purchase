@@ -57,6 +57,7 @@ const (
 	Success = "00"
 	Pending = "09"
 	Failed  = "01"
+	TimeOut = "68"
 )
 
 const (
@@ -188,4 +189,12 @@ const (
 	CODE_APPS_NOTIF     = 1
 	CODE_SMS_NOTIF      = 2
 	CODE_SMS_APPS_NOTIF = 3
+)
+
+const (
+	MsgSuccess = "Success"
+)
+
+const (
+	CodeScheduler = "SC001"
 )

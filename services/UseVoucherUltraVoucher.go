@@ -273,15 +273,75 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		param.TrxID = utils.GenTransactionId()
 
 		text := param.TrxID + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
+
+		// sleep 5 detik
+		time.Sleep(5 * time.Second)
+
+		// save to scheduler
+		schedulerData := dbmodels.TSchedulerRetry{
+			// ID
+			Code:          constants.CodeScheduler,
+			TransactionID: utils.Before(text, "#"),
+			Count:         0,
+			IsDone:        false,
+			CreatedAT:     time.Now(),
+			// UpdatedAT
+		}
+
 		// Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		point := param.Point * req.Jumlah
 		totalPoint := strconv.Itoa(point)
 		param.TrxID = utils.GenTransactionId()
 		sendReversal, errReversal := host.TransferPoint(param.AccountId, totalPoint, text)
-		if errReversal != nil {
-			fmt.Println("Internal Server Error : ", errReversal)
-			fmt.Println("[UltraVoucherServices]-[TransferPoint]")
-			fmt.Println("[Failed Order Voucher]-[Gagal Reversal Point]")
+
+		statusEarning := constants.Success
+		msgEarning := constants.MsgSuccess
+
+		if errReversal != nil || sendReversal.PointsTransferId == "" {
+
+			statusEarning = constants.TimeOut
+
+			fmt.Println(fmt.Sprintf("===== Failed TransferPointOPL to %v || RRN : %v =====", param.AccountNumber, param.RRN))
+
+			statusEarning = constants.TimeOut
+
+			for _, val1 := range sendReversal.Form.Children.Customer.Errors {
+				if val1 != "" {
+					msgEarning = val1
+					statusEarning = constants.Failed
+				}
+			}
+
+			for _, val2 := range sendReversal.Form.Children.Points.Errors {
+				if val2 != "" {
+					msgEarning = val2
+					statusEarning = constants.Failed
+				}
+			}
+
+			if sendReversal.Message != "" {
+				msgEarning = sendReversal.Message
+				statusEarning = constants.Failed
+			}
+
+			if sendReversal.Error.Message != "" {
+				msgEarning = sendReversal.Error.Message
+				statusEarning = constants.Failed
+			}
+
+			if statusEarning == constants.TimeOut {
+				errSaveScheduler := db.DbCon.Create(&schedulerData).Error
+				if errSaveScheduler != nil {
+
+					fmt.Println("===== Gagal SaveScheduler ke DB =====")
+					fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
+					fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", param.AccountNumber, param.RRN))
+
+					// return
+				}
+
+			}
+
 		}
 
 		expired := ExpiredPointService()
@@ -299,8 +359,8 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			// Amount          :,
 			Point: int64(point),
 			// Remark          :,
-			Status:           constants.Success,
-			StatusMessage:    "Success",
+			Status:           statusEarning,
+			StatusMessage:    msgEarning,
 			PointsTransferId: sendReversal.PointsTransferId,
 			// RequestorData   :,
 			// ResponderData   :,
@@ -432,11 +492,71 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		// Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		point := param.Point * req.Jumlah
 		totalPoint := strconv.Itoa(point)
+
+		// sleep 5 detik
+		time.Sleep(5 * time.Second)
+
+		// save to scheduler
+		schedulerData := dbmodels.TSchedulerRetry{
+			// ID
+			Code:          constants.CodeScheduler,
+			TransactionID: utils.Before(text, "#"),
+			Count:         0,
+			IsDone:        false,
+			CreatedAT:     time.Now(),
+			// UpdatedAT
+		}
+
 		reversal, errReversal := host.TransferPoint(param.AccountId, totalPoint, text)
+
+		statusEarning := constants.Success
+		msgEarning := constants.MsgSuccess
+
 		if errReversal != nil || reversal.PointsTransferId == "" {
-			fmt.Println("Internal Server Error : ", errReversal)
-			fmt.Println("[UltraVoucherServices]-[TransferPoint]")
-			fmt.Println("[Failed Order Voucher]-[Gagal Reversal Point]")
+
+			statusEarning = constants.TimeOut
+
+			fmt.Println(fmt.Sprintf("===== Failed TransferPointOPL to %v || RRN : %v =====", param.AccountNumber, param.RRN))
+
+			statusEarning = constants.TimeOut
+
+			for _, val1 := range reversal.Form.Children.Customer.Errors {
+				if val1 != "" {
+					msgEarning = val1
+					statusEarning = constants.Failed
+				}
+			}
+
+			for _, val2 := range reversal.Form.Children.Points.Errors {
+				if val2 != "" {
+					msgEarning = val2
+					statusEarning = constants.Failed
+				}
+			}
+
+			if reversal.Message != "" {
+				msgEarning = reversal.Message
+				statusEarning = constants.Failed
+			}
+
+			if reversal.Error.Message != "" {
+				msgEarning = reversal.Error.Message
+				statusEarning = constants.Failed
+			}
+
+			if statusEarning == constants.TimeOut {
+				errSaveScheduler := db.DbCon.Create(&schedulerData).Error
+				if errSaveScheduler != nil {
+
+					fmt.Println("===== Gagal SaveScheduler ke DB =====")
+					fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
+					fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", param.AccountNumber, param.RRN))
+
+					// return
+				}
+
+			}
+
 		}
 
 		expired := ExpiredPointService()
@@ -454,8 +574,8 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			// Amount          :,
 			Point: int64(point),
 			// Remark          :,
-			Status:           constants.Success,
-			StatusMessage:    "Success",
+			Status:           statusEarning,
+			StatusMessage:    msgEarning,
 			PointsTransferId: reversal.PointsTransferId,
 			// RequestorData   :,
 			// ResponderData   :,

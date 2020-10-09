@@ -114,12 +114,73 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		fmt.Println("============= Reversal to Point ===========")
 		// get Custid from user where acount nomor
 
-		Text := param.TrxID + param.InstitutionID + constants.CodeReversal + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
+		Text := param.TrxID + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		// Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
+
+		// sleep 5 detik
+		time.Sleep(5 * time.Second)
+
+		// save to scheduler
+		schedulerData := dbmodels.TSchedulerRetry{
+			// ID
+			Code:          constants.CodeScheduler,
+			TransactionID: utils.Before(Text, "#"),
+			Count:         0,
+			IsDone:        false,
+			CreatedAT:     time.Now(),
+			// UpdatedAT
+		}
+
 		sendReversal, errReversal := host.TransferPoint(param.AccountId, strconv.Itoa(rcUseVoucher.Count), Text)
-		if errReversal != nil {
-			fmt.Println("[ERROR DB]")
-			fmt.Println("[transfer point] : ", errReversal)
+
+		statusEarning := constants.Success
+		msgEarning := constants.MsgSuccess
+
+		if errReversal != nil || sendReversal.PointsTransferId == "" {
+
+			statusEarning = constants.TimeOut
+
+			fmt.Println(fmt.Sprintf("===== Failed TransferPointOPL to %v || RRN : %v =====", param.AccountNumber, param.RRN))
+
+			statusEarning = constants.TimeOut
+
+			for _, val1 := range sendReversal.Form.Children.Customer.Errors {
+				if val1 != "" {
+					msgEarning = val1
+					statusEarning = constants.Failed
+				}
+			}
+
+			for _, val2 := range sendReversal.Form.Children.Points.Errors {
+				if val2 != "" {
+					msgEarning = val2
+					statusEarning = constants.Failed
+				}
+			}
+
+			if sendReversal.Message != "" {
+				msgEarning = sendReversal.Message
+				statusEarning = constants.Failed
+			}
+
+			if sendReversal.Error.Message != "" {
+				msgEarning = sendReversal.Error.Message
+				statusEarning = constants.Failed
+			}
+
+			if statusEarning == constants.TimeOut {
+				errSaveScheduler := db.DbCon.Create(&schedulerData).Error
+				if errSaveScheduler != nil {
+
+					fmt.Println("===== Gagal SaveScheduler ke DB =====")
+					fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
+					fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", param.AccountNumber, param.RRN))
+
+					// return
+				}
+
+			}
+
 		}
 
 		expired := ExpiredPointService()
@@ -137,8 +198,8 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 			// Amount          :,
 			Point: int64(rcUseVoucher.Count),
 			// Remark          :,
-			Status:           constants.Success,
-			StatusMessage:    "Success",
+			Status:           statusEarning,
+			StatusMessage:    msgEarning,
 			PointsTransferId: sendReversal.PointsTransferId,
 			// RequestorData   :,
 			// ResponderData   :,
