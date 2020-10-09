@@ -117,9 +117,6 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 		Text := param.TrxID + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
 		// Text := "OP009 - " + "Reversal point cause transaction " + param.NamaVoucher + " is failed"
 
-		// sleep 5 detik
-		time.Sleep(5 * time.Second)
-
 		// save to scheduler
 		schedulerData := dbmodels.TSchedulerRetry{
 			// ID
@@ -185,6 +182,13 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 
 		expired := ExpiredPointService()
 
+		trxtime := time.Now()
+
+		// sleep 5 detik
+		time.Sleep(10 * time.Second)
+
+		crtime := time.Now()
+
 		saveReversal := dbmodels.TEarning{
 			ID: utils.GenerateTokenUUID(),
 			// EarningRule     :,
@@ -206,7 +210,8 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 			TransType:       constants.CodeReversal,
 			AccountId:       param.AccountId,
 			ExpiredPoint:    expired,
-			TransactionTime: time.Now(),
+			TransactionTime: trxtime,
+			CreatedAt:       crtime,
 		}
 
 		errSaveReversal := db.DbCon.Create(&saveReversal).Error

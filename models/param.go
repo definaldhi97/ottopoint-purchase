@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type Params struct {
 	AccountNumber string
 	MerchantID    string
@@ -22,6 +24,7 @@ type Params struct {
 	CampaignID    string
 	SupplierID    string
 	TrxID         string
+	TrxTime       time.Time
 	// percobaan
 	Total        int
 	DataSupplier Supplier

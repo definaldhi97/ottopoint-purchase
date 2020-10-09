@@ -135,7 +135,7 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 	responseUV, _ := json.Marshal(&res)  // Response UV
 	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
 
-	timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+	timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", param.TrxTime)
 
 	save := dbmodels.TSpending{
 		ID:            utils.GenerateTokenUUID(),
@@ -166,6 +166,7 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		CampaignId:      param.CampaignID,
 		AccountId:       param.AccountId,
 		RedeemAt:        timeRedeem,
+		CreatedAT:       param.TrxTime,
 	}
 
 	err := db.DbCon.Create(&save).Error
