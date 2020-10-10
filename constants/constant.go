@@ -60,8 +60,9 @@ const (
 )
 
 const (
-	UV     = "Ultra Voucher"
-	OttoAG = "OttoAG"
+	UV      = "Ultra Voucher"
+	OttoAG  = "OttoAG"
+	Sepulsa = "Sepulsa"
 )
 
 const (
