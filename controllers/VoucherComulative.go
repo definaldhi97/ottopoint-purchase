@@ -77,6 +77,15 @@ func VoucherComulativeController(ctx *gin.Context) {
 		},
 	}
 
+	sepulsaSvc := services.UseSepulsaService{
+		General: models.GeneralModel{
+			ParentSpan: span,
+			OttoZaplog: sugarLogger,
+			SpanId: spanid,
+			Context: context,
+		},
+	}
+
 	cekVoucher, errVoucher := opl.VoucherDetail(req.CampaignID)
 	if errVoucher != nil || cekVoucher.CampaignID == "" {
 		sugarLogger.Info("[VoucherComulativeController]-[VoucherDetail]")
@@ -155,6 +164,8 @@ func VoucherComulativeController(ctx *gin.Context) {
 	switch data.SupplierID {
 	case constants.UV:
 		res = ultraVoucher.UltraVoucherServices(req, param)
+	case constants.Sepulsa:
+		res = sepulsaSvc.SepulsaServices(req, param)
 	case constants.OttoAG:
 		res = voucherComulative.VoucherComulative(req, param)
 	}
@@ -181,6 +192,9 @@ func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 	var supplierID string
 	if supplierid == "UV" {
 		supplierID = "Ultra Voucher"
+		coupon = coupon[3:]
+	} if else supplierID == "SP" {
+		supplierID = "Sepulsa"
 		coupon = coupon[3:]
 	} else {
 		supplierID = "OttoAG"
