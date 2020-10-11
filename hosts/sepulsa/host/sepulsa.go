@@ -26,7 +26,7 @@ func init() {
 }
 
 func EwalletInsertTransaction(req models.EwalletInsertTrxReq) (*models.EwalletInsertTrxRes, error) {
-	var resp EwalletInsertTrxRes
+	var resp models.EwalletInsertTrxRes
 
 	urlSvr := host + ewalletInsertTransaction
 
