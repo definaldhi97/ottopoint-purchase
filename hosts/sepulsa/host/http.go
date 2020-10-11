@@ -2,10 +2,12 @@ package host
 
 import (
 	"crypto/tls"
+	"errors"
 	"strings"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/parnurzeal/gorequest"
+	"github.com/prometheus/common/log"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -34,13 +36,19 @@ func HTTPxFormPostSepulsa(url string, jsonReq interface{}) ([]byte, error) {
 	reqagent.Header.Set("Content-Type", "application/json")
 	reqagent.SetBasicAuth(username, password)
 
-	_, body, errs := reqagent.
+	resp, body, errs := reqagent.
 		Send(jsonReq).
 		End()
 	if errs != nil {
 		logs.Error("Error Sending ", errs)
 		return nil, errs[0]
 	}
+
+	if resp.StatusCode != 201 {
+		log.Errorf("Failed Create Trx: %v", resp.Status)
+		return nil, errors.New(resp.Status)
+	}
+
 	return []byte(body), nil
 }
 
