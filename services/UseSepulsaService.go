@@ -1,11 +1,14 @@
 package services
 
 import (
+	"fmt"
+	"ottopoint-purchase/constants"
 	"ottopoint-purchase/hosts/opl/host"
 	sepulsa "ottopoint-purchase/hosts/sepulsa/host"
 	sepulsamodels "ottopoint-purchase/hosts/sepulsa/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
+	"strconv"
 
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
@@ -15,8 +18,8 @@ type UseSepulsaService struct {
 	General models.GeneralModel
 }
 
-func (t SepulsaService) SepulsaServices(req models.VoucherComultaiveReq, param model.Params) models.Response {
-	var res model.Response
+func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, param models.Params) models.Response {
+	var res models.Response
 
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[SepulsaServices]",
@@ -29,7 +32,7 @@ func (t SepulsaService) SepulsaServices(req models.VoucherComultaiveReq, param m
 	defer span.Finish()
 
 	total := strconv.Itoa(req.Jumlah)
-	param.CumReffNum = utils.GenTransactionId()
+	param.CumReffnum = utils.GenTransactionId()
 	param.Amount = int64(param.Point)
 
 	redeem, errredeem := host.RedeemVoucherCumulative(req.CampaignID, param.AccountId, total, "0")
@@ -44,12 +47,12 @@ func (t SepulsaService) SepulsaServices(req models.VoucherComultaiveReq, param m
 		res := models.Response{
 			Meta: utils.ResponseMetaOK(),
 			Data: models.SepulsaRes{
-				Code: "65",
-				Msg: "Token or session Expired Please Login Again",
+				Code:    "65",
+				Msg:     "Token or session Expired Please Login Again",
 				Success: 0,
-				Failed: req.Jumlah,
+				Failed:  req.Jumlah,
 				Pending: 0,
-			}
+			},
 		}
 
 		return res
@@ -66,12 +69,12 @@ func (t SepulsaService) SepulsaServices(req models.VoucherComultaiveReq, param m
 		res := models.Response{
 			Meta: utils.ResponseMetaOK(),
 			Data: models.SepulsaRes{
-				Code: "27",
-				Msg: "Point Tidak Mencukupi",
+				Code:    "27",
+				Msg:     "Point Tidak Mencukupi",
 				Success: 0,
-				Failed: req.Jumlah,
+				Failed:  req.Jumlah,
 				Pending: 0,
-			}
+			},
 		}
 
 		return res
@@ -88,12 +91,12 @@ func (t SepulsaService) SepulsaServices(req models.VoucherComultaiveReq, param m
 		res := models.Response{
 			Meta: utils.ResponseMetaOK(),
 			Data: models.SepulsaRes{
-				Code: "65",
-				Msg: "Payment count limit exceed",
+				Code:    "65",
+				Msg:     "Payment count limit exceed",
 				Success: 0,
-				Failed: req.Jumlah,
+				Failed:  req.Jumlah,
 				Pending: 0,
-			}
+			},
 		}
 
 		return res
@@ -101,7 +104,7 @@ func (t SepulsaService) SepulsaServices(req models.VoucherComultaiveReq, param m
 
 	var coupon string
 	for _, val := range redeem.Coupons {
-		c = val.Code
+		coupon = val.Code
 	}
 
 	if errredeem != nil || redeem.Error != "" || coupon == "" {
@@ -115,10 +118,10 @@ func (t SepulsaService) SepulsaServices(req models.VoucherComultaiveReq, param m
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
 			Data: models.SepulsaRes{
-				Code: "01",
-				Msg: "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya",
+				Code:    "01",
+				Msg:     "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya",
 				Success: 0,
-				Failed: req.Jumlah,
+				Failed:  req.Jumlah,
 				Pending: 0,
 			},
 		}
@@ -135,43 +138,47 @@ func (t SepulsaService) SepulsaServices(req models.VoucherComultaiveReq, param m
 		coupon := redeem.Coupons[t].Id
 		param.CouponID = coupon
 
+		productID, _ := strconv.Atoi(param.CouponCode)
 		reqOrder := sepulsamodels.EwalletInsertTrxReq{
-			CustomerNumber: req.CustomerNumber,
-			OrderID: param.TrxID,
-			ProductID: param.CouponCode,
+			CustomerNumber: param.AccountNumber,
+			OrderID:        param.TrxID,
+			ProductID:      productID,
 		}
 
 		// Create Transaction Ewallet
 		sepulsaRes, err := sepulsa.EwalletInsertTransaction(reqOrder)
 		if err != nil {
-			fmt.Println("[SepulsaService]-[OrderVoucher]")
+			fmt.Println("[SepulsaService]-[InsertTransaction]")
 			res = models.Response{
-				Code: "",
-				Msg: err.Error(),
-				Success: 0,
-				Failed: req.Jumlah,
-				Pending: 0,
+				Meta: utils.ResponseMetaOK(),
+				Data: models.SepulsaRes{
+					Code:    "",
+					Msg:     err.Error(),
+					Success: 0,
+					Failed:  req.Jumlah,
+					Pending: 0,
+				},
 			}
 			return res
 		}
 
 		param.DataSupplier.Rd = sepulsaRes.Status
-		param.DataSupplier.Rc = 201
-		param.RRN = sepulsa.TransactionID
+		param.DataSupplier.Rc = "201"
+		param.RRN = param.TrxID
 
-		go SaveTransactionUV(param, sepulsaRes, reqOrder, req, constanst.CODE_TRANSTYPE_REDEMPTION, "09")
+		go SaveTransactionUV(param, sepulsaRes, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09")
 
 	}
 
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
-		Data: sepulsamodels.SepulsaRes{
-			Code: "00",
-			Msg: "Success",
-			Succes: 0,
-			Failed: 0,
+		Data: models.SepulsaRes{
+			Code:    "00",
+			Msg:     "Success",
+			Success: 0,
+			Failed:  0,
 			Pending: req.Jumlah,
-		}
+		},
 	}
 
 	return res
