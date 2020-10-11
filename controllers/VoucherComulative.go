@@ -81,8 +81,8 @@ func VoucherComulativeController(ctx *gin.Context) {
 		General: models.GeneralModel{
 			ParentSpan: span,
 			OttoZaplog: sugarLogger,
-			SpanId: spanid,
-			Context: context,
+			SpanId:     spanid,
+			Context:    context,
 		},
 	}
 
@@ -193,7 +193,7 @@ func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 	if supplierid == "UV" {
 		supplierID = "Ultra Voucher"
 		coupon = coupon[3:]
-	} if else supplierID == "SP" {
+	} else if supplierID == "SP" {
 		supplierID = "Sepulsa"
 		coupon = coupon[3:]
 	} else {
