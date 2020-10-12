@@ -37,6 +37,6 @@ type Product struct {
 	Label     string `json:"label"`
 	Operator  string `json:"operator"`
 	Nominal   string `json:"nominal"`
-	Price     string `json:"price"`
+	Price     int    `json:"price"`
 	Enabled   string `json:"enabled"`
 }
