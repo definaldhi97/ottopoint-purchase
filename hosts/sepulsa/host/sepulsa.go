@@ -20,7 +20,7 @@ func init() {
 	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_SEPULSA", "https://horven-api.sumpahpalapa.com/api")
 	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_SEPULSA", "SEPULSA")
 
-	ewalletInsertTransaction = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_EWALLET_INSERT_TRANSACTION", "/transaction/ewallet")
+	ewalletInsertTransaction = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_EWALLET_INSERT_TRANSACTION", "/transaction/ewallet.json")
 	ewalletDetailTransaction = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_EWALLET_DETAIL_TRANSACTION", "/transaction/ewallet/")
 
 }
@@ -29,7 +29,6 @@ func EwalletInsertTransaction(req models.EwalletInsertTrxReq) (*models.EwalletIn
 	var resp models.EwalletInsertTrxRes
 
 	urlSvr := host + ewalletInsertTransaction
-
 	data, err := HTTPxFormPostSepulsa(urlSvr, req)
 	if err != nil {
 		logs.Error("Check error : ", err.Error())
