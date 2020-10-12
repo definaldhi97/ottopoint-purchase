@@ -29,6 +29,7 @@ var (
 	comulative         string
 	usevoucher_uv      string
 	checkStatusEarning string
+	callbackSepulsa    string
 
 	csv string
 
@@ -53,6 +54,7 @@ func init() {
 	splitbill = utils.GetEnv("splitbill", "/transaction/v2/splitbill")
 	usevoucher_uv = utils.GetEnv("usevoucher_uv", "/transaction/v2/usevoucher_uv")
 	checkStatusEarning = utils.GetEnv("checkStatusEarning", "/transaction/v2/check-status-earning")
+	callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/callback/sepulsa")
 
 	csv = utils.GetEnv("csv", "/csv")
 
@@ -125,6 +127,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(splitbill, controllers.DeductSplitBillController)
 	router.POST(usevoucher_uv, controllers.UseVouhcerUVController)
 	router.POST(checkStatusEarning, controllers.CheckStatusEarningController)
+	router.POST(callbackSepulsa, controllers.HandleCallbackSepulsa)
 
 	router.POST(csv, controllers.CreateFileCSVController)
 
