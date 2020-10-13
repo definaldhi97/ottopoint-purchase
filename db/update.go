@@ -19,6 +19,19 @@ func UpdateVoucher(use, couponId string) (dbmodels.TSpending, error) {
 	return res, nil
 }
 
+func UpdateVoucherSepulsa(status, respDesc, reqData, transactionID, orderID string) (dbmodels.TSpending, error) {
+	res := dbmodels.TSpending{}
+
+	err := DbCon.Raw(`update t_spending set responder_rd = ?, responder_rc = ?, responder_data = ? where rrn = ? and transaction_id = ?`, status, respDesc, reqData, transactionID, orderID).Scan(&res).Error
+	if err != nil {
+		logs.Info("Failed to UpdateVoucherSepulsa from database", err)
+		return res, err
+	}
+	logs.Info("Update Voucher :", res)
+
+	return res, nil
+}
+
 func UpdateTEarning(pointId, id string) (dbmodels.TEarning, error) {
 	res := dbmodels.TEarning{}
 

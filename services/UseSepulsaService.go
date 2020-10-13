@@ -279,7 +279,6 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 			}
 
 			// Save Error Transaction
-			go CouponVoucherCustomer(req.CampaignID, couponID, couponCode, param.AccountId, 1)
 			go SaveTransactionUV(param, errTransaction.Error(), reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
 
 			fmt.Println("Response Publisher : ", kafkaRes)
@@ -298,7 +297,7 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 		}
 
 		param.DataSupplier.Rd = sepulsaRes.Status
-		param.DataSupplier.Rc = "201"
+		param.DataSupplier.Rc = sepulsaRes.ResponseCode
 		param.RRN = sepulsaRes.TransactionID
 
 		// Use Voucher to OpenLoyalty
@@ -325,7 +324,170 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 }
 
 func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxReq) models.Response {
-	return models.Response{}
+	var res models.Response
+
+	sugarLogger := t.General.OttoZaplog
+	sugarLogger.Info("[SepulsaService]",
+		zap.String("TransactionID : ", req.TransactionID), zap.String("OrderID : ", req.OrderID),
+		zap.String("Status : ", req.Status), zap.String("Desc : ", req.ResponseCode),
+	)
+
+	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[SepulsaService]")
+	defer span.Finish()
+
+	go func(args sepulsaModels.CallbackTrxReq) {
+
+		// Get Spending By TransactionID and OrderID
+		spending, err := db.GetSpendingSepulsa(args.TransactionID, args.OrderID)
+		if err != nil {
+			logs.Info(err.Error())
+		}
+
+		if args.Status == "failed" {
+
+			text := spending.TransactionId + spending.Institution + constants.CodeReversal + "#" + "OP09 - Reversal point cause transaction " + spending.Voucher + " is failed"
+
+			schedulerData := dbmodels.TSchedulerRetry{
+				Code:          constants.CodeScheduler,
+				TransactionID: utils.Before(text, "#"),
+				Count:         0,
+				IsDone:        false,
+				CreatedAT:     time.Now(),
+			}
+
+			// Start Reversal Point
+			point := strconv.Itoa(spending.Point)
+			sendReversal, errReversal := host.TransferPoint(spending.AccountId, point, text)
+
+			statusEarning := constants.Success
+			msgEarning := constants.MsgSuccess
+
+			if errReversal != nil || sendReversal.PointsTransferId == "" {
+
+				statusEarning = constants.TimeOut
+
+				fmt.Println(fmt.Sprintf("===== Failed TransferPointOPL to %v || RRN : %v =====", spending.AccountNumber, spending.RRN))
+
+				for _, val1 := range sendReversal.Form.Children.Customer.Errors {
+					if val1 != "" {
+						msgEarning = val1
+						statusEarning = constants.Failed
+					}
+				}
+
+				for _, val2 := range sendReversal.Form.Children.Points.Errors {
+					if val2 != "" {
+						msgEarning = val2
+						statusEarning = constants.Failed
+					}
+				}
+
+				if sendReversal.Message != "" {
+					msgEarning = sendReversal.Message
+					statusEarning = constants.Failed
+				}
+
+				if sendReversal.Error.Message != "" {
+					msgEarning = sendReversal.Error.Message
+					statusEarning = constants.Failed
+				}
+
+				if statusEarning == constants.TimeOut {
+					errSaveScheduler := db.DbCon.Create(&schedulerData).Error
+					if errSaveScheduler != nil {
+
+						fmt.Println("===== Gagal SaveScheduler ke DB =====")
+						fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
+						fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", spending.AccountNumber, spending.RRN))
+
+						// return
+					}
+
+				}
+
+			}
+
+			expired := ExpiredPointService()
+
+			saveReversal := dbmodels.TEarning{
+				ID: utils.GenerateTokenUUID(),
+				// EarningRule     :,
+				// EarningRuleAdd  :,
+				PartnerId: spending.Institution,
+				// ReferenceId     : ,
+				TransactionId: spending.TransactionId,
+				// ProductCode     :,
+				// ProductName     :,
+				AccountNumber: spending.AccountNumber,
+				// Amount          :,
+				Point: int64(spending.Point),
+				// Remark          :,
+				Status:           statusEarning,
+				StatusMessage:    msgEarning,
+				PointsTransferId: sendReversal.PointsTransferId,
+				// RequestorData   :,
+				// ResponderData   :,
+				TransType:       constants.CodeReversal,
+				AccountId:       spending.AccountId,
+				ExpiredPoint:    expired,
+				TransactionTime: time.Now(),
+			}
+
+			errSaveReversal := db.DbCon.Create(&saveReversal).Error
+			if errSaveReversal != nil {
+
+				fmt.Println(fmt.Sprintf("[Failed Save Reversal to DB]-[Error : %v]", errSaveReversal))
+				fmt.Println("[PackageServices]-[SaveEarning]")
+
+				fmt.Println(">>> Save CSV <<<")
+				name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
+				go utils.CreateCSVFile(saveReversal, name)
+
+			}
+
+			fmt.Println("========== Send Publisher ==========")
+
+			pubreq := models.NotifPubreq{
+				Type:          "Reversal",
+				AccountNumber: spending.AccountNumber,
+				Institution:   spending.Institution,
+				Point:         spending.Point,
+				Product:       spending.Voucher,
+			}
+
+			bytePub, _ := json.Marshal(pubreq)
+
+			kafkaReq := kafka.PublishReq{
+				Topic: constants.TOPIC_PUSHNOTIF_GENERAL,
+				Value: bytePub,
+			}
+
+			kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+			if err != nil {
+				fmt.Println("Gagal Send Publisher")
+				fmt.Println("Error : ", err)
+			}
+
+			fmt.Println("Response Publisher : ", kafkaRes)
+
+		}
+
+		responseSepulsa, _ := json.Marshal(args)
+
+		// Update TSpending
+		_, err = db.UpdateVoucherSepulsa(args.Status, args.ResponseCode, string(responseSepulsa), args.TransactionID, args.OrderID)
+		if err != nil {
+			logs.Info(err.Error())
+		}
+
+	}(req)
+
+	res = models.Response{
+		Meta: utils.ResponseMetaOK(),
+		Data: nil,
+	}
+
+	return res
 }
 
 func SaveDBSepulsa(id, institution, coupon, vouchercode, phone, custIdOPL, campaignID string) {

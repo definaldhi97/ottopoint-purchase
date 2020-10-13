@@ -49,7 +49,7 @@ func HandleCallbackSepulsa(ctx *gin.Context) {
 
 	res = sepulsaSvc.HandleCallbackRequest(req)
 
-	sugarLogger.Info("RESPONSE : ", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
+	sugarLogger.Info("RESPONSE : ", zap.String("SPANID", spanId), zap.String("CTRL", namectrl),
 		zap.Any("BODY : ", res))
 
 	datalog := utils.LogSpanMax(res)

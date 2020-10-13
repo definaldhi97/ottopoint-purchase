@@ -11,7 +11,20 @@ type EwalletInsertTrxRes struct {
 }
 
 type CallbackTrxReq struct {
-	Transaction
+	TransactionID  string `json:"transaction_id"`
+	Type           string `json:"type"`
+	Created        string `json:"created"`
+	Changed        string `json:"changed"`
+	CustomerNumber string `json:"customer_number"`
+	OrderID        string `json:"order_id"`
+	Price          string `json:"price"`
+	Status         string `json:"status"`
+	ResponseCode   string `json:"response_code"`
+	SerialNumber   string `json:"serial_number"`
+	Amount         string `json:"amount"`
+	ProductID      string `json:"product_id"`
+	Token          string `json:"token"`
+	Data           string `json:"data"`
 }
 
 type Transaction struct {
