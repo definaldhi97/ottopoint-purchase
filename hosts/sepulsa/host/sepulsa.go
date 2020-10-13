@@ -46,7 +46,7 @@ func EwalletInsertTransaction(req models.EwalletInsertTrxReq) (*models.EwalletIn
 func EwalletDetailTransaction(trxID string) (map[string]interface{}, error) {
 	var resp map[string]interface{}
 
-	urlSvr := host + ewalletDetailTransaction + trxID
+	urlSvr := host + ewalletDetailTransaction + trxID + ".json"
 
 	data, err := HTTPxFormGETSepulsa(urlSvr, nil)
 	if err != nil {
