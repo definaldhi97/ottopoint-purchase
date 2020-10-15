@@ -287,7 +287,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 			go SendToPublisher(pubreq, utils.TopicsNotif)
 		}
 
-		// fmt.Println("========== Send Publisher ==========")
+		// fmt.Println("========== Send Publisher =========")
 
 		// pubreq := models.NotifPubreq{
 		// 	Type:           constants.CODE_REDEEM_PLN,
