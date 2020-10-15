@@ -343,7 +343,9 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 			logs.Info(err.Error())
 		}
 
-		if args.Status == "failed" {
+		responseCode := models.GetErrorMsg(args.ResponseCode)
+		if (responseCode != "Success") &&
+			(responseCode != "Pending") {
 
 			text := spending.TransactionId + spending.Institution + constants.CodeReversal + "#" + "OP09 - Reversal point cause transaction " + spending.Voucher + " is failed"
 
@@ -475,7 +477,7 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 		responseSepulsa, _ := json.Marshal(args)
 
 		// Update TSpending
-		_, err = db.UpdateVoucherSepulsa(args.Status, args.ResponseCode, string(responseSepulsa), args.TransactionID, args.OrderID)
+		_, err = db.UpdateVoucherSepulsa(responseCode, args.ResponseCode, string(responseSepulsa), args.TransactionID, args.OrderID)
 		if err != nil {
 			logs.Info(err.Error())
 		}
