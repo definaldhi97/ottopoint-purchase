@@ -24,6 +24,8 @@ type MInstution struct {
 	UpdatedAt        time.Time `gorm:"column:updated_at" json:"updatedAt"`
 	UpdatedBy        string    `gorm:"column:updated_by" json:"updatedBy"`
 	IsActive         bool      `gorm:"column:is_active" json:"isActive"`
+	CallBackUrl      string    `gorm:"column:callback_url"`
+	NOtificationID   int       `gorm:"column:notification_id"`
 }
 
 func (t *MInstution) TableName() string {

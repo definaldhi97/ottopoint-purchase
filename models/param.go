@@ -22,6 +22,9 @@ type Params struct {
 	CampaignID    string
 	SupplierID    string
 	TrxID         string
+	VoucherCode     string // voucher code vidio
+	ExpireDateVidio string // Expire date Voucher Vidio
+	CategoryID      string
 	// percobaan
 	Total        int
 	DataSupplier Supplier

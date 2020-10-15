@@ -120,6 +120,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 		Point:         param.Point,
 		ExpDate:       param.ExpDate,
 		SupplierID:    param.SupplierID,
+		CategoryID:    param.CategoryID,
 		DataSupplier: models.Supplier{
 			Rc: dataInquery.Rc,
 			Rd: dataInquery.Msg,

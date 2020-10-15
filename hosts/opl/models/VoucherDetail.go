@@ -7,6 +7,7 @@ type VoucherDetailResp struct {
 	CampaignID       string                 `json:"campaignId"`
 	Coupons          []string               `json:"coupons"`
 	CategoryNames    interface{}            `json:"categoryNames"`
+	Categories       []string               `json:"categories"`
 	CostInPoints     int                    `json:"costInPoints"`
 	RewardValue      int                    `json:"rewardValue,omitempty"`
 	CampaignActivity CampaignActivityDetail `json:"campaignActivity"`
