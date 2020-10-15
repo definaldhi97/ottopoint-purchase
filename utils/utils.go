@@ -285,18 +285,6 @@ func GetFormattedToken(token string) string {
 // 	return encode64Token
 // }
 
-func GenerateTokenUUID() string {
-	value := uuid.Must(uuid.NewRandom())
-	fmt.Println("ini ID : ", value)
-	out := value.String()
-	fmt.Printf("%s", out)
-	tokenString := string(out)
-
-	tokenString = strings.ReplaceAll(tokenString, "\n", "")
-	tokenString = strings.ToLower(tokenString)
-	return tokenString
-}
-
 // ReffNumb
 func GenTransactionId() string {
 
