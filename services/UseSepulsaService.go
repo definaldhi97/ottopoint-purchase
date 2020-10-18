@@ -492,6 +492,24 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 	return res
 }
 
+func (t UseSepulsaService) CheckStatusTrx(transactionID string) models.Response {
+	var res models.Response
+
+	resp, err := sepulsa.EwalletDetailTransaction(transactionID)
+	if err != nil {
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+		}
+	}
+
+	res = models.Response{
+		Meta: utils.ResponseMetaOK(),
+		Data: resp,
+	}
+
+	return res
+}
+
 func SaveDBSepulsa(id, institution, coupon, vouchercode, phone, custIdOPL, campaignID string) {
 	fmt.Println("[SaveDB]-[SepulsaVoucherService]")
 	save := dbmodels.UserMyVocuher{
