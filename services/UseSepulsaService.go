@@ -344,6 +344,10 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 		}
 
 		responseCode := models.GetErrorMsg(args.ResponseCode)
+
+		logs.Info("[HandleCallbackSepulsa] - [ResponseCode] : ", args.ResponseCode)
+		logs.Info("[HandleCallbackSepulsa] - [ResponseDesc] : ", responseCode)
+
 		if (responseCode != "Success") &&
 			(responseCode != "Pending") {
 
@@ -480,6 +484,16 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 		_, err = db.UpdateVoucherSepulsa(responseCode, args.ResponseCode, string(responseSepulsa), args.TransactionID, args.OrderID)
 		if err != nil {
 			logs.Info(err.Error())
+		}
+
+		if responseCode == "Success" {
+
+			// Update TSchedulerRetry
+			_, err = db.UpdateTSchedulerRetry(args.TransactionID)
+			if err != nil {
+				logs.Info(err.Error())
+			}
+
 		}
 
 	}(req)

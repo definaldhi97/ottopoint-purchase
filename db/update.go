@@ -32,6 +32,18 @@ func UpdateVoucherSepulsa(status, respDesc, reqData, transactionID, orderID stri
 	return res, nil
 }
 
+func UpdateTSchedulerRetry(transactionID string) (dbmodels.TSchedulerRetry, error) {
+	res := dbmodels.TSchedulerRetry{}
+
+	err := DbCon.Raw(`update t_scheduler_retry set is_done = true where transaction_id = ?`, transactionID).Scan(&res).Error
+	if err != nil {
+		logs.Info("Failed to UpdateTSchedulerRetry from database", err)
+		return res, err
+	}
+	logs.Info("Update Scheduler Retry :", res)
+	return res, nil
+}
+
 func UpdateTEarning(pointId, id string) (dbmodels.TEarning, error) {
 	res := dbmodels.TEarning{}
 
