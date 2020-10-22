@@ -163,6 +163,7 @@ func VoucherComulativeController(ctx *gin.Context) {
 		res = voucherComulative.VoucherComulative(req, param)
 		// default: // transaction tanpa use hanya redeemtion
 		// res =
+
 	}
 
 	sugarLogger.Info("RESPONSE : ", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
