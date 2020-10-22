@@ -170,7 +170,7 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 			text := param.TrxID + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point couse transaction " + param.NamaVoucher + " is failed"
 
 			schedulerData := dbmodels.TSchedulerRetry{
-				Code:          constants.CodeScheduler,
+				Code:          constants.CodeSchedulerSepulsa,
 				TransactionID: utils.Before(text, "#"),
 				Count:         0,
 				IsDone:        false,
@@ -279,7 +279,7 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 			}
 
 			// Save Error Transaction
-			go SaveTransactionUV(param, errTransaction.Error(), reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
+			go SaveTransactionSepulsa(param, errTransaction.Error(), reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
 
 			fmt.Println("Response Publisher : ", kafkaRes)
 			res = models.Response{
@@ -305,7 +305,7 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 
 		id := utils.GenerateTokenUUID()
 		go SaveDBSepulsa(id, param.InstitutionID, coupon, param.CouponCode, param.AccountNumber, param.AccountId, req.CampaignID)
-		go SaveTransactionSepulsa(param, sepulsaRes, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00")
+		go SaveTransactionSepulsa(param, sepulsaRes, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
 
 	}
 
@@ -340,26 +340,32 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 		// Get Spending By TransactionID and OrderID
 		spending, err := db.GetSpendingSepulsa(args.TransactionID, args.OrderID)
 		if err != nil {
-			logs.Info(err.Error())
+			fmt.Println("[GetSpendingSepulsa] : ", err.Error())
+
+			sugarLogger.Info("[SepulsaService]-[GetSpendingSepulsa]")
+			sugarLogger.Info(fmt.Sprintf("[SepulsaService]-[FailedGetSpendingSepulsa]-[%v", err.Error()))
 		}
 
 		responseCode := models.GetErrorMsg(args.ResponseCode)
 
-		logs.Info("[HandleCallbackSepulsa] - [ResponseCode] : ", args.ResponseCode)
-		logs.Info("[HandleCallbackSepulsa] - [ResponseDesc] : ", responseCode)
+		fmt.Println("[HandleCallbackSepulsa] - [ResponseCode] : ", args.ResponseCode)
+		fmt.Println("[HandleCallbackSepulsa] - [ResponseDesc] : ", responseCode)
 
 		if (responseCode != "Success") &&
 			(responseCode != "Pending") {
 
-			text := spending.TransactionId + spending.Institution + constants.CodeReversal + "#" + "OP09 - Reversal point cause transaction " + spending.Voucher + " is failed"
+			text := args.OrderID + spending.Institution + constants.CodeSchedulerSepulsa + "#" + "OP09 - Reversal point cause transaction " + spending.Voucher + " is failed"
 
 			schedulerData := dbmodels.TSchedulerRetry{
-				Code:          constants.CodeScheduler,
+				Code:          constants.CodeSchedulerSepulsa,
 				TransactionID: utils.Before(text, "#"),
 				Count:         0,
 				IsDone:        false,
 				CreatedAT:     time.Now(),
 			}
+
+			fmt.Sprintln("[HandleCallbackSepulsa]-[CreateScheduler] : ", schedulerData)
+			sugarLogger.Info(fmt.Sprintf("[HandleCallbackSepulsa]-[CreateScheduler] : %v", schedulerData))
 
 			// Start Reversal Point
 			point := strconv.Itoa(spending.Point)
@@ -481,17 +487,26 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 		responseSepulsa, _ := json.Marshal(args)
 
 		// Update TSpending
-		_, err = db.UpdateVoucherSepulsa(responseCode, args.ResponseCode, string(responseSepulsa), args.TransactionID, args.OrderID)
-		if err != nil {
-			logs.Info(err.Error())
+		res, errUpdate := db.UpdateVoucherSepulsa(responseCode, args.ResponseCode, string(responseSepulsa), args.TransactionID, args.OrderID)
+		if errUpdate != nil {
+			fmt.Println("[UpdateVoucherSepulsa] : ", errUpdate.Error())
+
+			sugarLogger.Info("[SepulsaService]-[UpdateVoucherSepulsa]")
+			sugarLogger.Info(fmt.Sprintf("[SepulsaService]-[FailedUpdateVoucherSepulsa]-[%v", errUpdate.Error()))
 		}
+
+		fmt.Sprintln("[SuccessUpdateVoucherSepulsa] : ", res)
+		sugarLogger.Info("[SepulsaService]-[SuccessUpdateVoucherSepulsa]")
 
 		if responseCode == "Success" {
 
 			// Update TSchedulerRetry
-			_, err = db.UpdateTSchedulerRetry(args.TransactionID)
+			_, err = db.UpdateTSchedulerRetry(args.OrderID)
 			if err != nil {
-				logs.Info(err.Error())
+				fmt.Println("[UpdateTSchedulerRetry] : ", err.Error())
+
+				sugarLogger.Info("[SepulsaService]-[UpdateTSchedulerRetry]")
+				sugarLogger.Info(fmt.Sprintf("[SepulsaService]-[FailedUpdateTSchedulerRetry]-[%v", err.Error()))
 			}
 
 		}
