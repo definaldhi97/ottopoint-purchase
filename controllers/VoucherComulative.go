@@ -10,6 +10,7 @@ import (
 	opl "ottopoint-purchase/hosts/opl/host"
 	modelsopl "ottopoint-purchase/hosts/opl/models"
 	token "ottopoint-purchase/hosts/redis_token/host"
+	vgmodels "ottopoint-purchase/hosts/voucher_aggregator/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/services"
 	"ottopoint-purchase/utils"
@@ -69,6 +70,15 @@ func VoucherComulativeController(ctx *gin.Context) {
 	}
 
 	ultraVoucher := services.UseVoucherUltraVoucher{
+		General: models.GeneralModel{
+			ParentSpan: span,
+			OttoZaplog: sugarLogger,
+			SpanId:     spanid,
+			Context:    context,
+		},
+	}
+
+	voucherAg := services.VoucherAgServices{
 		General: models.GeneralModel{
 			ParentSpan: span,
 			OttoZaplog: sugarLogger,
@@ -163,6 +173,14 @@ func VoucherComulativeController(ctx *gin.Context) {
 		res = voucherComulative.VoucherComulative(req, param)
 		// default: // transaction tanpa use hanya redeemtion
 		// res =
+	case constants.VoucherAg:
+		head := vgmodels.HeaderHTTP{
+			Institution: header.InstitutionID,
+			DeviceID:    header.DeviceID,
+			Geolocation: header.Geolocation,
+			AppsID:      header.AppsID,
+		}
+		res = voucherAg.RedeemVoucher(req, param, head)
 	}
 
 	sugarLogger.Info("RESPONSE : ", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
@@ -187,6 +205,9 @@ func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 	var supplierID string
 	if supplierid == "UV" {
 		supplierID = "Ultra Voucher"
+		coupon = coupon[3:]
+	} else if supplierid == "VG" {
+		supplierID = "Voucher Aggregator"
 		coupon = coupon[3:]
 	} else {
 		supplierID = "OttoAG"
