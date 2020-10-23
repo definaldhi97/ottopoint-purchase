@@ -186,15 +186,15 @@ const (
 )
 
 const (
-	CODE_APPS_NOTIF     = 1
-	CODE_SMS_NOTIF      = 2
-	CODE_SMS_APPS_NOTIF = 3
-)
-
-const (
 	MsgSuccess = "Success"
 )
 
 const (
 	CodeScheduler = "SC001"
+)
+
+const (
+	CODE_APPS_NOTIF     = 1
+	CODE_SMS_NOTIF      = 2
+	CODE_SMS_APPS_NOTIF = 3
 )

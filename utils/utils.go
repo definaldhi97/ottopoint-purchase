@@ -15,7 +15,6 @@ import (
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/redis"
-	"strconv"
 	"strings"
 	"time"
 
@@ -274,44 +273,37 @@ func GetFormattedToken(token string) string {
 	return formattedToken
 }
 
-// // generate token using UUID and base64
-// func GenerateTokenUUID() string {
-// 	out, err := exec.Command("uuidgen").Output()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	fmt.Printf("%s", out)
-// 	tokenString := string(out)
-
-// 	tokenString = strings.ReplaceAll(tokenString, "\n", "")
-
-// 	encode64Token := base64.StdEncoding.EncodeToString([]byte(tokenString))
-// 	log.Print(encode64Token)
-// 	return encode64Token
-// }
-
-func GenerateTokenUUID() string {
-	value := uuid.Must(uuid.NewRandom())
-	fmt.Println("ini ID : ", value)
-	out := value.String()
-	fmt.Printf("%s", out)
-	tokenString := string(out)
-
-	tokenString = strings.ReplaceAll(tokenString, "\n", "")
-	tokenString = strings.ToLower(tokenString)
-	return tokenString
-}
-
 // ReffNumb
 func GenTransactionId() string {
 
 	currentTime := fmt.Sprintf(time.Now().Format("060102"))
-	currentMilitmp := strconv.FormatInt(time.Now().UnixNano()/int64(time.Millisecond), 10)
-	currentMili := currentMilitmp[8:len(currentMilitmp)]
-	randomvalue := strconv.Itoa(Random(11111, 99999))
-	transactionID := currentTime + currentMili + randomvalue
+	randomString, _ := GenerateRandomString(12)
+	transactionID := currentTime + randomString
 
 	return transactionID
+}
+
+func GenerateRandomString(n int) (string, error) {
+	const letters = "0123456789"
+	bytes, err := GenerateRandomBytes(n)
+	if err != nil {
+		return "", err
+	}
+	for i, b := range bytes {
+		bytes[i] = letters[b%byte(len(letters))]
+	}
+	return string(bytes), nil
+}
+
+func GenerateRandomBytes(n int) ([]byte, error) {
+	b := make([]byte, n)
+	_, err := cryptRand.Read(b)
+	// Note that err == nil only if we read len(b) bytes.
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
 }
 
 func Random(min, max int) int {
@@ -401,6 +393,28 @@ func CreateCSVFile(data interface{}, name string) {
 
 }
 
+func Before(value string, a string) string {
+	// Get substring before a string.
+	pos := strings.Index(value, a)
+	if pos == -1 {
+		return ""
+	}
+	return value[0:pos]
+}
+
+func After(value string, a string) string {
+	// Get substring after a string.
+	pos := strings.LastIndex(value, a)
+	if pos == -1 {
+		return ""
+	}
+	adjustedPos := pos + len(a)
+	if adjustedPos >= len(value) {
+		return ""
+	}
+	return value[adjustedPos:len(value)]
+}
+
 func EncryptAES(plaintext []byte, key []byte) ([]byte, error) {
 	c, err := aes.NewCipher(key)
 	if err != nil {
@@ -449,15 +463,7 @@ func Before(value string, a string) string {
 	return value[0:pos]
 }
 
-func After(value string, a string) string {
-	// Get substring after a string.
-	pos := strings.LastIndex(value, a)
-	if pos == -1 {
-		return ""
-	}
-	adjustedPos := pos + len(a)
-	if adjustedPos >= len(value) {
-		return ""
-	}
-	return value[adjustedPos:len(value)]
+	tokenString = strings.ReplaceAll(tokenString, "\n", "")
+	tokenString = strings.ToLower(tokenString)
+	return tokenString
 }
