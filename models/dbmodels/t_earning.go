@@ -14,6 +14,7 @@ type TEarning struct {
 	AccountNumber    string    `gorm:"column:account_number"`
 	Amount           int64     `gorm:"column:amount"`
 	Point            int64     `gorm:"column:point"`
+	Commnet          string    `gorm:"column:comment"`
 	Remark           string    `gorm:"column:remark"`
 	Status           string    `gorm:"column:status"`
 	StatusMessage    string    `gorm:"column:status_message"`
