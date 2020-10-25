@@ -68,3 +68,37 @@ func HTTPxFormPostVoucherAg(url string, head models.HeaderHTTP, jsonReq interfac
 	return []byte(body), nil
 
 }
+
+func HTTPxFormGetVoucherAg(url string, head models.HeaderHTTP) ([]byte, error) {
+
+	request := gorequest.New()
+
+	request.SetDebug(debugClientHTTP)
+
+	timeout, _ := time.ParseDuration(timeout)
+	if strings.HasPrefix(url, "https") {
+		request.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	}
+
+	reqagent := request.Get(url)
+
+	reqagent.Header.Set("Content-Type", "application/json")
+	reqagent.Header.Set("InstitutionId", head.Institution)
+	reqagent.Header.Set("DeviceId", head.DeviceID)
+	reqagent.Header.Set("Geolocation", head.Geolocation)
+	reqagent.Header.Set("ChannelId", "H2H")
+	reqagent.Header.Set("Signature", head.Signature)
+	reqagent.Header.Set("AppsId", head.AppsID)
+	reqagent.Header.Set("Timestamp", head.Timestamp)
+
+	_, body, errs := reqagent.
+		Timeout(timeout).
+		Retry(retrybad, time.Second, http.StatusInternalServerError).
+		End()
+	if errs != nil {
+		logs.Error("Error Sending ", errs)
+		return nil, errs[0]
+	}
+	return []byte(body), nil
+
+}
