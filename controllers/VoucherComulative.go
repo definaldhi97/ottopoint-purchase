@@ -10,7 +10,6 @@ import (
 	opl "ottopoint-purchase/hosts/opl/host"
 	modelsopl "ottopoint-purchase/hosts/opl/models"
 	token "ottopoint-purchase/hosts/redis_token/host"
-	vgmodels "ottopoint-purchase/hosts/voucher_aggregator/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/services"
 	"ottopoint-purchase/utils"
@@ -174,13 +173,8 @@ func VoucherComulativeController(ctx *gin.Context) {
 		// default: // transaction tanpa use hanya redeemtion
 		// res =
 	case constants.VoucherAg:
-		head := vgmodels.HeaderHTTP{
-			Institution: header.InstitutionID,
-			DeviceID:    header.DeviceID,
-			Geolocation: header.Geolocation,
-			AppsID:      header.AppsID,
-		}
-		res = voucherAg.RedeemVoucher(req, param, head)
+		header.DeviceID = "H2H"
+		res = voucherAg.RedeemVoucher(req, param, header)
 	}
 
 	sugarLogger.Info("RESPONSE : ", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),

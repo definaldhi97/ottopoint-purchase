@@ -3,7 +3,7 @@ package host
 import (
 	"crypto/tls"
 	"net/http"
-	"ottopoint-purchase/hosts/voucher_aggregator/models"
+	"ottopoint-purchase/models"
 	"strconv"
 	"strings"
 	"time"
@@ -34,7 +34,7 @@ func init() {
 
 }
 
-func HTTPxFormPostVoucherAg(url string, head models.HeaderHTTP, jsonReq interface{}) ([]byte, error) {
+func HTTPxFormPostVoucherAg(url string, head models.RequestHeader, jsonReq interface{}) ([]byte, error) {
 
 	request := gorequest.New()
 
@@ -48,10 +48,10 @@ func HTTPxFormPostVoucherAg(url string, head models.HeaderHTTP, jsonReq interfac
 	reqagent := request.Post(url)
 
 	reqagent.Header.Set("Content-Type", "application/json")
-	reqagent.Header.Set("InstitutionId", head.Institution)
+	reqagent.Header.Set("InstitutionId", head.InstitutionID)
 	reqagent.Header.Set("DeviceId", head.DeviceID)
 	reqagent.Header.Set("Geolocation", head.Geolocation)
-	reqagent.Header.Set("ChannelId", "H2H")
+	reqagent.Header.Set("ChannelId", head.ChannelID)
 	reqagent.Header.Set("Signature", head.Signature)
 	reqagent.Header.Set("AppsId", head.AppsID)
 	reqagent.Header.Set("Timestamp", head.Timestamp)
@@ -69,7 +69,7 @@ func HTTPxFormPostVoucherAg(url string, head models.HeaderHTTP, jsonReq interfac
 
 }
 
-func HTTPxFormGetVoucherAg(url string, head models.HeaderHTTP) ([]byte, error) {
+func HTTPxFormGetVoucherAg(url string, head models.RequestHeader) ([]byte, error) {
 
 	request := gorequest.New()
 
@@ -83,10 +83,10 @@ func HTTPxFormGetVoucherAg(url string, head models.HeaderHTTP) ([]byte, error) {
 	reqagent := request.Get(url)
 
 	reqagent.Header.Set("Content-Type", "application/json")
-	reqagent.Header.Set("InstitutionId", head.Institution)
+	reqagent.Header.Set("InstitutionId", head.InstitutionID)
 	reqagent.Header.Set("DeviceId", head.DeviceID)
 	reqagent.Header.Set("Geolocation", head.Geolocation)
-	reqagent.Header.Set("ChannelId", "H2H")
+	reqagent.Header.Set("ChannelId", head.ChannelID)
 	reqagent.Header.Set("Signature", head.Signature)
 	reqagent.Header.Set("AppsId", head.AppsID)
 	reqagent.Header.Set("Timestamp", head.Timestamp)

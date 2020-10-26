@@ -3,11 +3,11 @@ package host
 import (
 	"encoding/json"
 	"fmt"
-	"ottopoint-purchase/hosts/voucher_aggregator/models"
-
-	"github.com/google/go-querystring/query"
+	vgmodel "ottopoint-purchase/hosts/voucher_aggregator/models"
+	"ottopoint-purchase/models"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/google/go-querystring/query"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -28,14 +28,12 @@ func init() {
 
 }
 
-func OrderVoucher(req models.RequestOrderVoucherAg, head models.HeaderHTTP) (*models.ResponseOrderVoucherAg, error) {
-	var resp models.ResponseOrderVoucherAg
+func OrderVoucher(req vgmodel.RequestOrderVoucherAg, head models.RequestHeader) (*vgmodel.ResponseOrderVoucherAg, error) {
+	var resp vgmodel.ResponseOrderVoucherAg
 
 	logs.Info("[PackageHostUV]-[OrderVoucher]")
 
 	urlSvr := host + endpointOrderVoucher
-
-	head.GenerateSignature(req)
 
 	data, err := HTTPxFormPostVoucherAg(urlSvr, head, req)
 	if err != nil {
@@ -54,8 +52,8 @@ func OrderVoucher(req models.RequestOrderVoucherAg, head models.HeaderHTTP) (*mo
 	return &resp, nil
 }
 
-func CheckStatusOrder(req models.RequestCheckOrderStatus, head models.HeaderHTTP) (*models.ResponseCheckOrderStatus, error) {
-	var resp models.ResponseCheckOrderStatus
+func CheckStatusOrder(req vgmodel.RequestCheckOrderStatus, head models.RequestHeader) (*vgmodel.ResponseCheckOrderStatus, error) {
+	var resp vgmodel.ResponseCheckOrderStatus
 
 	logs.Info("[PackageHostVoucherAg]-[CheckStatusOrder]")
 

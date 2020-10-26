@@ -37,6 +37,7 @@ type TSpending struct {
 	CreatedAT       time.Time `gorm:"created_at" json:"created_at"`
 	UpdatedAT       time.Time `gorm:"updated_at" json:"updated_at"`
 	VoucherCode     string    `gorm:"voucher_code"`
+	VoucherLink     string    `gorm:"voucher_link"`
 }
 
 func (t *TSpending) TableName() string {

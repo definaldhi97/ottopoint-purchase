@@ -8,10 +8,12 @@ import (
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	"ottopoint-purchase/utils"
+	"reflect"
 	"strconv"
 	"time"
 
 	"ottopoint-purchase/hosts/opl/host"
+	signature "ottopoint-purchase/hosts/signature/host"
 	vg "ottopoint-purchase/hosts/voucher_aggregator/host"
 	vgmodels "ottopoint-purchase/hosts/voucher_aggregator/models"
 
@@ -31,7 +33,7 @@ type VoucherAgServices struct {
 	General models.GeneralModel
 }
 
-func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param models.Params, head vgmodels.HeaderHTTP) models.Response {
+func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param models.Params, head models.RequestHeader) models.Response {
 
 	var res models.Response
 
@@ -167,6 +169,26 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 
 	fmt.Println("Start - OrderVoucherAggregator")
 	sugarLogger.Info("[VoucherAgService]-[OrderVoucher]")
+
+	// Generate Signature
+	sign, err := signature.Signature(reqOrder, head)
+	if err != nil {
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: utils.GetMessageFailedErrorNew(
+				res,
+				constants.RC_ERROR_INVALID_SIGNATURE,
+				constants.RD_ERROR_INVALID_SIGNATURE,
+			),
+		}
+	}
+
+	// Get Signature from interface{}
+	s := reflect.ValueOf(sign.Data)
+	for _, k := range s.MapKeys() {
+		head.Signature = fmt.Sprintf("%s", s.MapIndex(k))
+	}
+
 	order, errorder := vg.OrderVoucher(reqOrder, head)
 
 	param.DataSupplier.Rd = order.ResponseDesc
@@ -277,6 +299,86 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 	}
 
 	// Check Order Status
+	statusOrder, errStatus := vg.CheckStatusOrder(vgmodels.RequestCheckOrderStatus{
+		OrderID:       param.CumReffnum,
+		RecordPerPage: fmt.Sprintf("%d", req.Jumlah),
+		CurrentPage:   "1",
+	}, head)
+	if errStatus != nil {
+
+		// Handle Error Here
+
+	}
+
+	param.RRN = statusOrder.Data.TransactionID
+
+	fmt.Println("[OrderStatus] : ", statusOrder)
+	// Handle General Error
+	if order.ResponseCode != "00" {
+
+		// Reversal Start Here
+
+		for i := req.Jumlah; i > 0; i-- {
+
+			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
+
+			// Generate TransactionID
+			param.TrxID = utils.GenTransactionId()
+
+			go SaveTransactionVoucherAg(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
+
+		}
+
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: vgmodels.ResponseVoucherAg{
+				Code:    "01",
+				Msg:     "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya.",
+				Success: 0,
+				Failed:  req.Jumlah,
+				Pending: 0,
+			},
+		}
+
+		return res
+
+	}
+
+	// Handle Pending Status
+	if order.ResponseCode == "09" {
+
+		fmt.Println("Error : ", errorder)
+		fmt.Println("Response OrderVoucher : ", order)
+		fmt.Println("[VoucherAggregator]-[OrderVoucher]")
+		fmt.Println("[Failed Order Voucher]-[Gagal Order Voucher]")
+
+		// sugarLogger.Info("Internal Server Error : ", errOrder)
+		sugarLogger.Info("[VoucherAggregator]-[OrderVoucher]")
+		sugarLogger.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
+
+		for i := req.Jumlah; i > 0; i-- {
+
+			// TrxId
+			param.TrxID = utils.GenTransactionId()
+
+			go SaveTransactionVoucherAg(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09")
+
+		}
+
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: models.UltraVoucherResp{
+				Code:    "68",
+				Msg:     "Transaksi Anda sedang dalam proses. Silahkan hubungi customer support kami untuk informasi selengkapnya.",
+				Success: 0,
+				Failed:  0,
+				Pending: req.Jumlah,
+			},
+		}
+
+		return res
+
+	}
 
 	for i := req.Jumlah; i > 0; i-- {
 
@@ -285,6 +387,18 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 		// Generate TransactionID
 		param.TrxID = utils.GenTransactionId()
 
+		t := i - 1
+		coupon := statusOrder.Data.Vouchers[t].VoucherID
+		code := statusOrder.Data.Vouchers[t].VoucherCode
+		expDate := statusOrder.Data.Vouchers[t].ExpiredDate
+		voucherLink := statusOrder.Data.Vouchers[t].Link
+
+		param.ExpDate = expDate
+		param.CouponID = coupon
+		param.VoucherLink = voucherLink
+
+		id := utils.GenerateTokenUUID()
+		go SaveDBVoucherAg(id, param.InstitutionID, coupon, code, param.AccountNumber, param.AccountId, req.CampaignID)
 		go SaveTransactionVoucherAg(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00")
 
 	}
@@ -344,11 +458,19 @@ func SaveTransactionVoucherAg(param models.Params, res interface{}, reqdata inte
 	responseUV, _ := json.Marshal(&res)  // Response UV
 	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
 
-	timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+	expDate := ""
+	if param.ExpDate != "" {
+		layout := "2006-01-02 15:04:05"
+		parse, _ := time.Parse(layout, param.ExpDate)
+
+		expDate = jodaTime.Format("YYYY-MM-dd", parse)
+	}
 
 	save := dbmodels.TSpending{
 		ID:              utils.GenerateTokenUUID(),
 		AccountNumber:   param.AccountNumber,
+		CustID:          param.AccountId,
+		RRN:             param.RRN,
 		Voucher:         param.NamaVoucher,
 		MerchantID:      param.MerchantID,
 		TransactionId:   param.TrxID,
@@ -371,7 +493,7 @@ func SaveTransactionVoucherAg(param models.Params, res interface{}, reqdata inte
 		CouponId:        param.CouponID,
 		CampaignId:      param.CampaignID,
 		AccountId:       param.AccountId,
-		RedeemAt:        timeRedeem,
+		ExpDate:         expDate,
 	}
 
 	err := db.DbCon.Create(&save).Error

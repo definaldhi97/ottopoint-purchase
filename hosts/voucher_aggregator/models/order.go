@@ -62,23 +62,27 @@ type RequestCheckOrderStatus struct {
 type ResponseCheckOrderStatus struct {
 	ResponseCode string `json:"responseCode"`
 	ResponseDesc string `json:"responseDesc"`
-	Data         struct {
-		ProductCode    string `json:"productCode"`
-		Qty            int    `json:"qty"`
-		OrderID        string `json:"orderId"`
-		OrderDate      string `json:"orderDate"`
-		TransactionID  string `json:"transactionId"`
-		DeliveryMethod string `json:"deliveryMethod"`
-		Vouchers       []struct {
-			VoucherID   string `json:"voucherId"`
-			VoucherCode string `json:"voucherCode"`
-			VoucherName string `json:"voucherName"`
-			ExpiredDate string `json:"expiredDate,omitempty"`
-			Link        string `json:"link"`
-		} `json:"vouchers"`
-		TotalRecord   int `json:"totalRecord"`
-		RecordPerPage int `json:"recordPerPage"`
-		CurrentPage   int `json:"currentPage"`
-		TotalPage     int `json:"totalPage"`
-	} `json:"data"`
+	Data         Data   `json:"data"`
+}
+
+type Data struct {
+	ProductCode    string    `json:"productCode"`
+	Qty            int       `json:"qty"`
+	OrderID        string    `json:"orderId"`
+	OrderDate      string    `json:"orderDate"`
+	TransactionID  string    `json:"transactionId"`
+	DeliveryMethod string    `json:"deliveryMethod"`
+	Vouchers       []Voucher `json:"voucher"`
+	TotalRecord    int       `json:"totalRecord"`
+	RecordPerPage  int       `json:"recordPerPage"`
+	CurrentPage    int       `json:"currentPage"`
+	TotalPage      int       `json:"totalPage"`
+}
+
+type Voucher struct {
+	VoucherID   string `json:"voucherId"`
+	VoucherCode string `json:"voucherCode"`
+	VoucherName string `json:"voucherName"`
+	ExpiredDate string `json:"expiredDate,omitempty"`
+	Link        string `json:"link"`
 }
