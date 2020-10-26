@@ -170,7 +170,7 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 			text := param.TrxID + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point couse transaction " + param.NamaVoucher + " is failed"
 
 			schedulerData := dbmodels.TSchedulerRetry{
-				Code:          constants.CodeSchedulerSepulsa,
+				Code:          constants.CodeScheduler,
 				TransactionID: utils.Before(text, "#"),
 				Count:         0,
 				IsDone:        false,
@@ -301,7 +301,38 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 		param.RRN = sepulsaRes.TransactionID
 
 		// Use Voucher to OpenLoyalty
-		go CouponVoucherCustomer(req.CampaignID, couponID, couponCode, param.AccountId, 1)
+		// go CouponVoucherCustomer(req.CampaignID, couponID, couponCode, param.AccountId, 1)
+		use, err2 := opl.CouponVoucherCustomer(req.CampaignID, couponID, couponCode, param.AccountId, 1)
+		if err2 != nil {
+
+			logs.Info(fmt.Sprintf("[Error : %v]", err2))
+			logs.Info(fmt.Sprintf("[Response : %v]", use))
+			logs.Info("[Error from OPL]-[CouponVoucherCustomer]")
+
+			sugarLogger.Info("[SepulsaService]-[CouponVoucherCustomer]")
+			sugarLogger.Info(fmt.Sprintf("[SepulsaService]-[FailedCouponVoucherCustomer]-[%v", err2.Error()))
+
+			// Save Scheduler Retry With Code SC003
+			text := param.RRN + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point couse transaction " + param.NamaVoucher + " is failed"
+
+			schedulerData := dbmodels.TSchedulerRetry{
+				Code:          constants.CodeSchedulerSepulsa,
+				TransactionID: utils.Before(text, "#"),
+				Count:         0,
+				IsDone:        false,
+				CreatedAT:     time.Now(),
+			}
+
+			errSaveScheduler := db.DbCon.Create(&schedulerData).Error
+			if errSaveScheduler != nil {
+
+				fmt.Println("===== Gagal SaveScheduler ke DB =====")
+				fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
+				fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", param.AccountNumber, param.RRN))
+
+			}
+
+		}
 
 		id := utils.GenerateTokenUUID()
 		go SaveDBSepulsa(id, param.InstitutionID, coupon, param.CouponCode, param.AccountNumber, param.AccountId, req.CampaignID)
@@ -354,10 +385,10 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 		if (responseCode != "Success") &&
 			(responseCode != "Pending") {
 
-			text := args.OrderID + spending.Institution + constants.CodeSchedulerSepulsa + "#" + "OP09 - Reversal point cause transaction " + spending.Voucher + " is failed"
+			text := args.OrderID + spending.Institution + constants.CodeScheduler + "#" + "OP09 - Reversal point cause transaction " + spending.Voucher + " is failed"
 
 			schedulerData := dbmodels.TSchedulerRetry{
-				Code:          constants.CodeSchedulerSepulsa,
+				Code:          constants.CodeScheduler,
 				TransactionID: utils.Before(text, "#"),
 				Count:         0,
 				IsDone:        false,
