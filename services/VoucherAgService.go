@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"ottopoint-purchase/hosts/opl/host"
+	opl "ottopoint-purchase/hosts/opl/host"
+	kafka "ottopoint-purchase/hosts/publisher/host"
 	signature "ottopoint-purchase/hosts/signature/host"
 	vg "ottopoint-purchase/hosts/voucher_aggregator/host"
 	vgmodels "ottopoint-purchase/hosts/voucher_aggregator/models"
@@ -70,7 +72,7 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
-			Data: models.UltraVoucherResp{
+			Data: vgmodels.ResponseVoucherAg{
 				Code:    "60",
 				Msg:     "Token or Session Expired Please Login Again",
 				Success: 0,
@@ -94,7 +96,7 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Point Tidak Cukup"))
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
-			Data: models.UltraVoucherResp{
+			Data: vgmodels.ResponseVoucherAg{
 				Code:    "27",
 				Msg:     "Point Tidak Mencukupi",
 				Success: 0,
@@ -119,7 +121,7 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
-			Data: models.UltraVoucherResp{
+			Data: vgmodels.ResponseVoucherAg{
 				Code:    "65",
 				Msg:     "Payment count limit exceeded",
 				Success: 0,
@@ -143,7 +145,7 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
-			Data: models.UltraVoucherResp{
+			Data: vgmodels.ResponseVoucherAg{
 				Code:    "01",
 				Msg:     "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya.",
 				Success: 0,
@@ -181,6 +183,7 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 				constants.RD_ERROR_INVALID_SIGNATURE,
 			),
 		}
+		return res
 	}
 
 	// Get Signature from interface{}
@@ -197,33 +200,36 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 	if errorder != nil || order.ResponseCode == "" {
 
 		// Reversal Start Here
+		fmt.Println("Error : ", errorder)
+		fmt.Println("Response OrderVoucher : ", order)
+		fmt.Println("[VoucherAgServices]-[OrderVoucher]")
+		fmt.Println("[Failed Order Voucher]-[Gagal Order Voucher]")
 
-	}
-
-	// Handle Stock Not Available
-	if order.ResponseCode == "04" {
-
-		// Start Reversal Here
+		sugarLogger.Info("[VoucherAgServices]-[OrderVoucher]")
+		sugarLogger.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
 
 		for i := req.Jumlah; i > 0; i-- {
 
-			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
-
-			// Generate TransactionID
+			// TrxId
 			param.TrxID = utils.GenTransactionId()
 
-			go SaveTransactionVoucherAg(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
+			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
 
+			t := i - 1
+			coupon := redeem.Coupons[t].Id
+			param.CouponID = coupon
+
+			go SaveTransactionVoucherAg(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09")
 		}
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
-			Data: vgmodels.ResponseVoucherAg{
-				Code:    "176",
-				Msg:     "Voucher tidak tersedia",
+			Data: models.UltraVoucherResp{
+				Code:    "68",
+				Msg:     "Transaksi Anda sedang dalam proses. Silahkan hubungi customer support kami untuk informasi selengkapnya.",
 				Success: 0,
-				Failed:  req.Jumlah,
-				Pending: 0,
+				Failed:  0,
+				Pending: req.Jumlah,
 			},
 		}
 
@@ -231,20 +237,176 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 
 	}
 
-	// Handle General Error
-	if order.ResponseCode != "00" {
+	// Handle Stock Not Available
+	if order.ResponseCode == "04" {
 
-		// Reversal Start Here
+		// Start Reversal Here
+		fmt.Println("Internal Server Error : ", errorder)
+		fmt.Println("ResponseCode : ", order.ResponseCode)
+		fmt.Println("[VoucherAgServices]-[OrderVoucher]")
+		fmt.Println("[Stock not Available]-[Gagal Order Voucher]")
+
+		sugarLogger.Info("[VoucherAgServices]-[OrderVoucher]")
+		sugarLogger.Info("[Stock not Available]-[Gagal Order Voucher]")
+
+		for i := req.Jumlah; i > 0; i-- {
+			fmt.Println(fmt.Sprintf("[Line : %v]", i))
+
+			t := i - 1
+			coupon := redeem.Coupons[t].Id
+			couponCode := redeem.Coupons[t].Code
+			use, err2 := opl.CouponVoucherCustomer(req.CampaignID, coupon, couponCode, param.AccountId, 1)
+
+			var useErr string
+			for _, value := range use.Coupons {
+				useErr = value.CouponID
+			}
+
+			if err2 != nil || useErr == "" {
+				fmt.Println("[VoucherAgService]-[CouponVoucherCustomer]")
+				fmt.Println(fmt.Sprintf("[VoucherAgService]-[Error : %v]", err2))
+				sugarLogger.Info("[VoucherAgService]-[CouponVoucherCustomer]")
+			}
+
+		}
+
+		// TrxID
+		point := param.Point * req.Jumlah
+		totalPoint := strconv.Itoa(point)
+
+		param.TrxID = utils.GenTransactionId()
+		text := param.TrxID + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
+
+		schedulerData := dbmodels.TSchedulerRetry{
+			Code:          constants.CodeScheduler,
+			TransactionID: utils.Before(text, "#"),
+			Count:         0,
+			IsDone:        false,
+			CreatedAT:     time.Now(),
+		}
+
+		sendReversal, errReversal := host.TransferPoint(param.AccountId, totalPoint, text)
+
+		statusEarning := constants.Success
+		msgEarning := constants.MsgSuccess
+
+		if errReversal != nil || sendReversal.PointsTransferId == "" {
+
+			statusEarning = constants.TimeOut
+
+			fmt.Println(fmt.Sprintf("===== Failed TransferPointOPL to %v || RRN : %v =====", param.AccountNumber, param.RRN))
+
+			statusEarning = constants.TimeOut
+
+			for _, val1 := range sendReversal.Form.Children.Customer.Errors {
+				if val1 != "" {
+					msgEarning = val1
+					statusEarning = constants.Failed
+				}
+			}
+
+			for _, val2 := range sendReversal.Form.Children.Points.Errors {
+				if val2 != "" {
+					msgEarning = val2
+					statusEarning = constants.Failed
+				}
+			}
+
+			if sendReversal.Message != "" {
+				msgEarning = sendReversal.Message
+				statusEarning = constants.Failed
+			}
+
+			if sendReversal.Error.Message != "" {
+				msgEarning = sendReversal.Error.Message
+				statusEarning = constants.Failed
+			}
+
+			if statusEarning == constants.TimeOut {
+				errSaveScheduler := db.DbCon.Create(&schedulerData).Error
+				if errSaveScheduler != nil {
+
+					fmt.Println("===== Gagal SaveScheduler ke DB =====")
+					fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
+					fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", param.AccountNumber, param.RRN))
+
+					// return
+				}
+
+			}
+
+		}
+
+		expired := ExpiredPointService()
+
+		saveReversal := dbmodels.TEarning{
+			ID:               utils.GenerateTokenUUID(),
+			PartnerId:        param.InstitutionID,
+			TransactionId:    param.TrxID,
+			AccountNumber:    param.AccountNumber,
+			Point:            int64(point),
+			Status:           statusEarning,
+			StatusMessage:    msgEarning,
+			PointsTransferId: sendReversal.PointsTransferId,
+			TransType:        constants.CodeReversal,
+			AccountId:        param.AccountId,
+			ExpiredPoint:     expired,
+			TransactionTime:  time.Now(),
+		}
+
+		errSaveReversal := db.DbCon.Create(&saveReversal).Error
+		if errSaveReversal != nil {
+
+			fmt.Println(fmt.Sprintf("[Failed Save Reversal to DB]-[Error : %v]", errSaveReversal))
+			fmt.Println("[PackageServices]-[SaveEarning]")
+
+			fmt.Println(">>> Save CSV <<<")
+			name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
+			go utils.CreateCSVFile(saveReversal, name)
+
+		}
+
+		fmt.Println("========== Send Publisher ==========")
+
+		pubreq := models.NotifPubreq{
+			Type:           constants.CODE_REVERSAL_POINT,
+			NotificationTo: param.AccountNumber,
+			Institution:    param.InstitutionID,
+			ReferenceId:    param.RRN,
+			TransactionId:  param.Reffnum,
+			Data: models.DataValue{
+				RewardValue: "point",
+				Value:       totalPoint,
+			},
+		}
+
+		bytePub, _ := json.Marshal(pubreq)
+
+		kafkaReq := kafka.PublishReq{
+			Topic: utils.TopicsNotif,
+			Value: bytePub,
+		}
+
+		kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+		if err != nil {
+			fmt.Println("Gagal Send Publisher")
+			fmt.Println("Error : ", err)
+		}
+
+		fmt.Println("Response Publisher : ", kafkaRes)
 
 		for i := req.Jumlah; i > 0; i-- {
 
-			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
-
-			// Generate TransactionID
+			// TrxID
 			param.TrxID = utils.GenTransactionId()
 
-			go SaveTransactionVoucherAg(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
+			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
 
+			t := i - 1
+			coupon := redeem.Coupons[t].Id
+			param.CouponID = coupon
+
+			go SaveTransactionVoucherAg(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
 		}
 
 		res = models.Response{
@@ -268,16 +430,23 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 		fmt.Println("Error : ", errorder)
 		fmt.Println("Response OrderVoucher : ", order)
 		fmt.Println("[VoucherAggregator]-[OrderVoucher]")
-		fmt.Println("[Failed Order Voucher]-[Gagal Order Voucher]")
+		fmt.Println("[Pending Order]-[Gagal Order Voucher]")
 
 		// sugarLogger.Info("Internal Server Error : ", errOrder)
 		sugarLogger.Info("[VoucherAggregator]-[OrderVoucher]")
-		sugarLogger.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
+		sugarLogger.Info("[Pending Order]-[Gagal Order Voucher]")
 
 		for i := req.Jumlah; i > 0; i-- {
+			fmt.Println(fmt.Sprintf("[Line : %v]", i))
 
 			// TrxId
 			param.TrxID = utils.GenTransactionId()
+
+			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
+
+			t := i - 1
+			coupon := redeem.Coupons[t].Id
+			param.CouponID = coupon
 
 			go SaveTransactionVoucherAg(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09")
 
@@ -291,6 +460,189 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 				Success: 0,
 				Failed:  0,
 				Pending: req.Jumlah,
+			},
+		}
+
+		return res
+
+	}
+
+	// Handle General Error
+	if order.ResponseCode != "00" {
+
+		// Reversal Start Here
+		fmt.Println("Internal Server Error : ", errorder)
+		fmt.Println("ResponseCode : ", order.ResponseCode)
+		fmt.Println("[VoucherAgServices]-[FailedOrder]")
+		fmt.Println(fmt.Sprintf("[Response %v]", order.ResponseCode))
+
+		sugarLogger.Info("[VoucherAgServices]-[FailedOrder]")
+		sugarLogger.Info("[VoucherAgServices]-[Gagal Order Voucher]")
+
+		for i := req.Jumlah; i > 0; i-- {
+			fmt.Println(fmt.Sprintf("[Line : %v]", i))
+
+			t := i - 1
+			coupon := redeem.Coupons[t].Id
+			couponCode := redeem.Coupons[t].Code
+
+			use, err2 := opl.CouponVoucherCustomer(req.CampaignID, coupon, couponCode, param.AccountId, 1)
+			var useErr string
+			for _, value := range use.Coupons {
+				useErr = value.CouponID
+			}
+
+			if err2 != nil || useErr == "" {
+
+				fmt.Println("[VoucherAgServices]-[CouponVoucherCustomer]")
+				fmt.Println(fmt.Sprintf("[VoucherAgServices]-[Error : %v]", err2))
+				sugarLogger.Info("[VoucherAgServices]-[CouponVoucherCustomer]")
+			}
+
+		}
+
+		param.TrxID = utils.GenTransactionId()
+
+		text := param.TrxID + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
+
+		point := param.Point * req.Jumlah
+		totalPoint := strconv.Itoa(point)
+
+		schedulerData := dbmodels.TSchedulerRetry{
+			Code:          constants.CodeScheduler,
+			TransactionID: utils.Before(text, "#"),
+			Count:         0,
+			IsDone:        false,
+			CreatedAT:     time.Now(),
+		}
+
+		reversal, errReversal := host.TransferPoint(param.AccountId, totalPoint, text)
+
+		statusEarning := constants.Success
+		msgEarning := constants.MsgSuccess
+
+		if errReversal != nil || reversal.PointsTransferId == "" {
+
+			statusEarning = constants.TimeOut
+			statusEarning = constants.TimeOut
+
+			for _, val1 := range reversal.Form.Children.Customer.Errors {
+				if val1 != "" {
+					msgEarning = val1
+					statusEarning = constants.Failed
+				}
+			}
+
+			for _, val2 := range reversal.Form.Children.Points.Errors {
+				if val2 != "" {
+					msgEarning = val2
+					statusEarning = constants.Failed
+				}
+			}
+
+			if reversal.Message != "" {
+				msgEarning = reversal.Message
+				statusEarning = constants.Failed
+			}
+
+			if reversal.Error.Message != "" {
+				msgEarning = reversal.Error.Message
+				statusEarning = constants.Failed
+			}
+
+			if statusEarning == constants.TimeOut {
+				errSaveScheduler := db.DbCon.Create(&schedulerData).Error
+				if errSaveScheduler != nil {
+
+					fmt.Println("===== Gagal SaveScheduler ke DB =====")
+					fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
+					fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", param.AccountNumber, param.RRN))
+
+				}
+
+			}
+
+		}
+
+		expired := ExpiredPointService()
+
+		saveReversal := dbmodels.TEarning{
+			ID:               utils.GenerateTokenUUID(),
+			PartnerId:        param.InstitutionID,
+			TransactionId:    param.TrxID,
+			AccountNumber:    param.AccountNumber,
+			Point:            int64(point),
+			Status:           statusEarning,
+			StatusMessage:    msgEarning,
+			PointsTransferId: reversal.PointsTransferId,
+			TransType:        constants.CodeReversal,
+			AccountId:        param.AccountId,
+			ExpiredPoint:     expired,
+			TransactionTime:  time.Now(),
+		}
+
+		errSaveReversal := db.DbCon.Create(&saveReversal).Error
+		if errSaveReversal != nil {
+			fmt.Println(fmt.Sprintf("[Failed Save Reversal to DB]-[Error : %v]", errSaveReversal))
+			fmt.Println("[PackageServices]-[SaveEarning]")
+
+			fmt.Println(">>> Save CSV <<<")
+			name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
+			go utils.CreateCSVFile(saveReversal, name)
+		}
+
+		fmt.Println("========== Send Publisher ==========")
+
+		pubreq := models.NotifPubreq{
+			Type:           constants.CODE_REVERSAL_POINT,
+			NotificationTo: param.AccountNumber,
+			Institution:    param.InstitutionID,
+			ReferenceId:    param.RRN,
+			TransactionId:  param.Reffnum,
+			Data: models.DataValue{
+				RewardValue: "point",
+				Value:       totalPoint,
+			},
+		}
+
+		bytePub, _ := json.Marshal(pubreq)
+
+		kafkaReq := kafka.PublishReq{
+			Topic: "ottopoint-notification-reversal",
+			Value: bytePub,
+		}
+
+		kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+		if err != nil {
+			fmt.Println("Gagal Send Publisher")
+			fmt.Println("Error : ", err)
+		}
+
+		fmt.Println("Response Publisher : ", kafkaRes)
+
+		for i := req.Jumlah; i > 0; i-- {
+
+			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
+
+			// TrxID
+			param.TrxID = utils.GenTransactionId()
+
+			t := i - 1
+			coupon := redeem.Coupons[t].Id
+			param.CouponID = coupon
+
+			go SaveTransactionVoucherAg(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
+
+		}
+
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: vgmodels.ResponseVoucherAg{
+				Code:    "01",
+				Msg:     "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya.",
+				Success: 0,
+				Failed:  req.Jumlah,
+				Pending: 0,
 			},
 		}
 
@@ -307,76 +659,13 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 	if errStatus != nil {
 
 		// Handle Error Here
+		fmt.Println("Internal Server Error : ", errorder)
+		fmt.Println("ResponseCode : ", order.ResponseCode)
+		fmt.Println("[VoucherAgServices]-[FailedCheckOrderStatus]")
+		fmt.Println(fmt.Sprintf("[Response %v]", order.ResponseCode))
 
-	}
-
-	param.RRN = statusOrder.Data.TransactionID
-
-	fmt.Println("[OrderStatus] : ", statusOrder)
-	// Handle General Error
-	if order.ResponseCode != "00" {
-
-		// Reversal Start Here
-
-		for i := req.Jumlah; i > 0; i-- {
-
-			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
-
-			// Generate TransactionID
-			param.TrxID = utils.GenTransactionId()
-
-			go SaveTransactionVoucherAg(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
-
-		}
-
-		res = models.Response{
-			Meta: utils.ResponseMetaOK(),
-			Data: vgmodels.ResponseVoucherAg{
-				Code:    "01",
-				Msg:     "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya.",
-				Success: 0,
-				Failed:  req.Jumlah,
-				Pending: 0,
-			},
-		}
-
-		return res
-
-	}
-
-	// Handle Pending Status
-	if order.ResponseCode == "09" {
-
-		fmt.Println("Error : ", errorder)
-		fmt.Println("Response OrderVoucher : ", order)
-		fmt.Println("[VoucherAggregator]-[OrderVoucher]")
-		fmt.Println("[Failed Order Voucher]-[Gagal Order Voucher]")
-
-		// sugarLogger.Info("Internal Server Error : ", errOrder)
-		sugarLogger.Info("[VoucherAggregator]-[OrderVoucher]")
-		sugarLogger.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
-
-		for i := req.Jumlah; i > 0; i-- {
-
-			// TrxId
-			param.TrxID = utils.GenTransactionId()
-
-			go SaveTransactionVoucherAg(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09")
-
-		}
-
-		res = models.Response{
-			Meta: utils.ResponseMetaOK(),
-			Data: models.UltraVoucherResp{
-				Code:    "68",
-				Msg:     "Transaksi Anda sedang dalam proses. Silahkan hubungi customer support kami untuk informasi selengkapnya.",
-				Success: 0,
-				Failed:  0,
-				Pending: req.Jumlah,
-			},
-		}
-
-		return res
+		sugarLogger.Info("[VoucherAgServices]-[FailedCheckOrderStatus]")
+		sugarLogger.Info("[Failed Check Order Status]-[Gagal Order Voucher]")
 
 	}
 
@@ -436,7 +725,6 @@ func SaveDBVoucherAg(id, institution, coupon, vouchercode, phone, custIdOPL, cam
 	if err != nil {
 		fmt.Println("[Failed Save to DB ]", err)
 		fmt.Println("[Package-Services]-[UltraVoucherServices]")
-		// return err
 	}
 }
 
@@ -469,7 +757,6 @@ func SaveTransactionVoucherAg(param models.Params, res interface{}, reqdata inte
 	save := dbmodels.TSpending{
 		ID:              utils.GenerateTokenUUID(),
 		AccountNumber:   param.AccountNumber,
-		CustID:          param.AccountId,
 		RRN:             param.RRN,
 		Voucher:         param.NamaVoucher,
 		MerchantID:      param.MerchantID,
