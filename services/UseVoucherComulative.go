@@ -174,7 +174,6 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		VoucherCode:     billerRes.Data.Code,
 		CouponID:        param.CouponID,
 		ExpireDateVidio: billerRes.Data.EndDateVidio,
-		TrxID:         param.TrxID,
 		DataSupplier: models.Supplier{
 			Rc: billerRes.Rc,
 			Rd: billerRes.Msg,
@@ -415,7 +414,6 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		Status:      saveStatus,
 		// ExpDate:         param.ExpDate,
 		ExpDate:         ExpireDate,
-		TransactionId:   param.TrxID,
 		Institution:     param.InstitutionID,
 		CummulativeRef:  param.Reffnum,
 		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),

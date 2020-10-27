@@ -454,14 +454,12 @@ func DecryptAES(ciphertext []byte, key []byte) ([]byte, error) {
 	return gcm.Open(nil, nonce, ciphertext, nil)
 }
 
-func Before(value string, a string) string {
-	// Get substring before a string.
-	pos := strings.Index(value, a)
-	if pos == -1 {
-		return ""
-	}
-	return value[0:pos]
-}
+func GenerateTokenUUID() string {
+	value := uuid.Must(uuid.NewRandom())
+	fmt.Println("ini ID : ", value)
+	out := value.String()
+	fmt.Printf("%s", out)
+	tokenString := string(out)
 
 	tokenString = strings.ReplaceAll(tokenString, "\n", "")
 	tokenString = strings.ToLower(tokenString)
