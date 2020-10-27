@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"ottopoint-purchase/models"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -78,26 +77,11 @@ func GetDbCon() *gorm.DB {
 }
 
 func GetHealthCheck() hcmodels.DatabaseHealthCheck {
-	res := hcmodels.DatabaseHealthCheck{}
-
-	res.Name = envPostgresDb.Name
-	res.Host = envPostgresDb.Host
-	res.Port = envPostgresDb.Port
-	res.Status = "OK"
-	res.Description = ""
-
-	if err := DbCon.DB().Ping(); err != nil {
-		err = nil
-		if err = DbOpen(); err != nil {
-			res.Status = "NOT OK"
-			res.Description = err.Error()
-		}
+	return hcmodels.DatabaseHealthCheck{
+		Name:   envPostgresDb.Name,
+		Host:   envPostgresDb.Host,
+		Port:   envPostgresDb.Port,
+		Status: "OK",
+		// Description: ,
 	}
-
-	return res
-
-}
-
-type DbPostgres struct {
-	General models.GeneralModel
 }

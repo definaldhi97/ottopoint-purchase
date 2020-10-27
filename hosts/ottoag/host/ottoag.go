@@ -2,7 +2,6 @@ package host
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
@@ -24,7 +23,7 @@ var (
 	authorization   string
 
 	HealthCheckKey string
-	Name           string
+	name           string
 
 	serverkey string
 	memberID  string
@@ -45,7 +44,7 @@ func init() {
 	authorization = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_AUTHORIZATION", "T1RQT0lOVA==")              // dev
 	serverkey = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_SESSIONKEY", "052CFD8A04F99AC48E4656BBDF19FE60") // dev
 	HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_HEALTHCHECK_OTTOAG", "OTTOPOINT_HEALTH_CHECK:OTTOAG")
-	Name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_OTTOAG", "OTTOAG")
+	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_OTTOAG", "OTTOAG")
 }
 
 // PackMessageHeader ..
@@ -97,33 +96,11 @@ func Send(msgreq interface{}, head HeaderHTTP, typetrans string) ([]byte, error)
 
 // GetServiceHealthCheck ..
 func GetServiceHealthCheckOttoAG() hcmodels.ServiceHealthCheck {
-	res := hcmodels.ServiceHealthCheck{}
-	var erorr interface{}
-	// sugarLogger := service.General.OttoZapLog
-
-	PublicAddress := host + endpointInquiry
-	log.Print("url : ", PublicAddress)
-	res.Name = Name
-	res.Address = PublicAddress
-	res.UpdatedAt = time.Now().UTC()
-
-	d, err := http.Get(PublicAddress)
-
-	erorr = err
-	if err != nil {
-		log.Print("masuk error")
-		res.Status = "Not OK"
-		res.Description = fmt.Sprintf("%v", erorr)
-		return res
+	return hcmodels.ServiceHealthCheck{
+		Name:    name,
+		Address: host,
+		Status:  "OK",
+		// Description: ,
+		UpdatedAt: time.Now(),
 	}
-	if d.StatusCode != 200 {
-		res.Status = "Not OK"
-		res.Description = d.Status
-		return res
-	}
-
-	res.Status = "OK"
-	res.Description = ""
-
-	return res
 }

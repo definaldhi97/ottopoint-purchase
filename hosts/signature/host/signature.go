@@ -2,9 +2,6 @@ package host
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
-	"net/http"
 	"ottopoint-purchase/hosts/signature/models"
 	headermodels "ottopoint-purchase/models"
 	"time"
@@ -58,33 +55,11 @@ func Signature(signature interface{}, header headermodels.RequestHeader) (*model
 
 // GetServiceHealthCheck ..
 func GetServiceHealthCheckSignature() hcmodels.ServiceHealthCheck {
-	res := hcmodels.ServiceHealthCheck{}
-	var erorr interface{}
-	// sugarLogger := service.General.OttoZapLog
-
-	PublicAddress := host
-	log.Print("url : ", PublicAddress)
-	res.Name = name
-	res.Address = PublicAddress
-	res.UpdatedAt = time.Now().UTC()
-
-	d, err := http.Get(PublicAddress)
-
-	erorr = err
-	if err != nil {
-		log.Print("masuk error")
-		res.Status = "Not OK"
-		res.Description = fmt.Sprintf("%v", erorr)
-		return res
+	return hcmodels.ServiceHealthCheck{
+		Name:    name,
+		Address: host,
+		Status:  "OK",
+		// Description: ,
+		UpdatedAt: time.Now(),
 	}
-	if d.StatusCode != 200 {
-		res.Status = "Not OK"
-		res.Description = d.Status
-		return res
-	}
-
-	res.Status = "OK"
-	res.Description = ""
-
-	return res
 }

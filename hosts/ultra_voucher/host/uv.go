@@ -3,11 +3,10 @@ package host
 import (
 	"encoding/json"
 	"ottopoint-purchase/hosts/ultra_voucher/models"
-	"ottopoint-purchase/redis"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 	hcmodels "ottodigital.id/library/healthcheck/models"
-	hcutils "ottodigital.id/library/healthcheck/utils"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -25,7 +24,7 @@ var (
 func init() {
 	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_UV", "http://13.228.25.85:8704/uv-service/v0.1.0")
 
-	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_UV", "ULTRA VOUCHER")
+	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_UV", "UV-SERVICE")
 
 	endpointOrderVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_UV_ORDER", "/purchase/order")
 	endpointUseVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_UV_USE", "/voucher/use")
@@ -120,11 +119,12 @@ func CheckStatusOrder(InstitutionReff, InstitutionId string) (models.OrderVouche
 }
 
 // GetServiceHealthCheck ..
-func GetServiceHealthCheck() hcmodels.ServiceHealthCheck {
-	redisClient := redis.GetRedisConnection()
-	return hcutils.GetServiceHealthCheck(&redisClient, &hcmodels.ServiceEnv{
+func GetServiceHealthCheckUV() hcmodels.ServiceHealthCheck {
+	return hcmodels.ServiceHealthCheck{
 		Name:    name,
 		Address: host,
-		// HealthCheckKey: healthCheckKey,
-	})
+		Status:  "OK",
+		// Description: ,
+		UpdatedAt: time.Now(),
+	}
 }

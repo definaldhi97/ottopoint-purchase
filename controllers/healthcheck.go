@@ -7,6 +7,14 @@ import (
 	"ottopoint-purchase/db"
 	"time"
 
+	auth "ottopoint-purchase/hosts/auth/host"
+	opl "ottopoint-purchase/hosts/opl/host"
+	ottoag "ottopoint-purchase/hosts/ottoag/host"
+	ottomart "ottopoint-purchase/hosts/ottomart/host"
+	publisher "ottopoint-purchase/hosts/publisher/host"
+	redisToken "ottopoint-purchase/hosts/redis_token/host"
+	signature "ottopoint-purchase/hosts/signature/host"
+	uv "ottopoint-purchase/hosts/ultra_voucher/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/redis"
 	"ottopoint-purchase/utils"
@@ -67,16 +75,20 @@ func getHealthCheckStatus() hcmodels.HealthCheckResponse {
 	// TODO more database health check
 
 	// service
-	// serviceHc := make([]hcmodels.ServiceHealthCheck, 0)
-	// serviceHc = append(serviceHc, opl.GetServiceHealthCheckOPL())
-	// serviceHc = append(serviceHc, ottoag.GetServiceHealthCheckOttoAG())
-	// serviceHc = append(serviceHc, redisToken.GetServiceHealthCheckRedisService())
-	// serviceHc = append(serviceHc, signature.GetServiceHealthCheckSignature())
+	serviceHc := make([]hcmodels.ServiceHealthCheck, 0)
+	serviceHc = append(serviceHc, opl.GetServiceHealthCheckOPL())
+	serviceHc = append(serviceHc, ottoag.GetServiceHealthCheckOttoAG())
+	serviceHc = append(serviceHc, redisToken.GetServiceHealthCheckRedisService())
+	serviceHc = append(serviceHc, signature.GetServiceHealthCheckSignature())
+	serviceHc = append(serviceHc, auth.GetServiceHealthCheckAuth())
+	serviceHc = append(serviceHc, ottomart.GetServiceHealthCheckOttomart())
+	serviceHc = append(serviceHc, uv.GetServiceHealthCheckUV())
+	serviceHc = append(serviceHc, publisher.GetServiceHealthCheckPublisher())
 	// TODO more service health check
 
 	return hcmodels.HealthCheckResponse{
 		Redis:    redisHc,
 		Database: databaseHc,
-		// Service:  serviceHc,
+		Service:  serviceHc,
 	}
 }

@@ -3,8 +3,10 @@ package host
 import (
 	"encoding/json"
 	"ottopoint-purchase/hosts/ottomart/models"
+	"time"
 
 	"github.com/astaxie/beego/logs"
+	hcmodels "ottodigital.id/library/healthcheck/models"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -49,4 +51,15 @@ func NotifAndInbox(req models.NotifRequest) (*models.NotifResp, error) {
 	}
 
 	return &resp, nil
+}
+
+// GetServiceHealthCheck ..
+func GetServiceHealthCheckOttomart() hcmodels.ServiceHealthCheck {
+	return hcmodels.ServiceHealthCheck{
+		Name:    name,
+		Address: host,
+		Status:  "OK",
+		// Description: ,
+		UpdatedAt: time.Now(),
+	}
 }

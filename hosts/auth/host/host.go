@@ -3,6 +3,9 @@ package host
 import (
 	"encoding/json"
 	authModel "ottopoint-purchase/hosts/auth/models"
+	"time"
+
+	hcmodels "ottodigital.id/library/healthcheck/models"
 
 	"github.com/astaxie/beego/logs"
 	ODU "ottodigital.id/library/utils"
@@ -10,12 +13,14 @@ import (
 
 var (
 	host                         string
+	name                         string
 	endpointClearCacheGetBalance string
 	// HealthCheckKey string
 )
 
 func init() {
 	host = ODU.GetEnv("HOST_ADDRESS_OTTOPOINT_AUTH", "http://13.228.25.85:8666")
+	name = ODU.GetEnv("NAME_OTTOPOINT_AUTH", "OTTOPOINT-AUTH")
 	endpointClearCacheGetBalance = ODU.GetEnv("ENDPOINT_CLEAR_CACHE_BALANCE", "/auth/v2/clear-cache-balance-point")
 	// HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_REDIS_TOKEN", "OTTOPOINT-PURCHASE:REDIS_TOKEN_OTTOPOINT")
 }
@@ -49,4 +54,14 @@ func ClearCacheBalance(phone string) (authModel.RespClearCacheBalance, error) {
 	}
 
 	return result, nil
+}
+
+func GetServiceHealthCheckAuth() hcmodels.ServiceHealthCheck {
+	return hcmodels.ServiceHealthCheck{
+		Name:    name,
+		Address: host,
+		Status:  "OK",
+		// Description: ,
+		UpdatedAt: time.Now(),
+	}
 }
