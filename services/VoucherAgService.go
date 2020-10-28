@@ -677,8 +677,10 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 		param.TrxID = utils.GenTransactionId()
 
 		t := i - 1
-		coupon := statusOrder.Data.Vouchers[t].VoucherID
-		code := statusOrder.Data.Vouchers[t].VoucherCode
+		coupon := redeem.Coupons[t].Id
+		code := redeem.Coupons[t].Code
+		param.CouponID = coupon
+
 		expDate := statusOrder.Data.Vouchers[t].ExpiredDate
 		voucherLink := statusOrder.Data.Vouchers[t].Link
 
