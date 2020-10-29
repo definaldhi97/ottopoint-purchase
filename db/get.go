@@ -89,6 +89,38 @@ func CheckCouponUV(phone, campaign, couponId string) (dbmodels.UserMyVocuher, er
 	return res, nil
 }
 
+func GetVoucherAg(accountID, couponID string) (dbmodels.UserMyVocuher, error) {
+	res := dbmodels.UserMyVocuher{}
+
+	err := DbCon.Where("account_id = ? and coupon_id = ?", accountID, couponID).First(&res).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetVoucherUV]")
+		fmt.Println(fmt.Sprintf("Failed to connect database Voucher UV %v", err))
+
+		return res, err
+	}
+
+	return res, nil
+}
+
+func GetVoucherSpending(accountID, couponID string) (dbmodels.TSpending, error) {
+	res := dbmodels.TSpending{}
+
+	err := DbCon.Where("account_id = ? and coupon_id = ?", accountID, couponID).First(&res).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetVoucherUV]")
+		fmt.Println(fmt.Sprintf("Failed to connect database Voucher UV %v", err))
+
+		return res, err
+	}
+
+	return res, nil
+}
+
 func ParamData(code string) (dbmodels.MParameters, error) {
 	res := dbmodels.MParameters{}
 

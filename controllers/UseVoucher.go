@@ -141,6 +141,8 @@ func UseVouhcerController(ctx *gin.Context) {
 		res = usevoucher.GetVoucherUV(req, param)
 	case constants.OttoAG:
 		res = usevoucher.UseVoucherOttoAG(req, param)
+	case constants.VoucherAg:
+		res = usevoucher.UseVoucherAggregator(req, param)
 	}
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),

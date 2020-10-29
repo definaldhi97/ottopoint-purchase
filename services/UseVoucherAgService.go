@@ -1,0 +1,62 @@
+package services
+
+import (
+	"errors"
+	db "ottopoint-purchase/db"
+	"ottopoint-purchase/models"
+	"ottopoint-purchase/utils"
+
+	"github.com/astaxie/beego/logs"
+	"github.com/opentracing/opentracing-go"
+	"go.uber.org/zap"
+)
+
+func (t UseVoucherServices) UseVoucherAggregator(req models.UseVoucherReq, param models.Params) models.Response {
+	var res models.Response
+
+	sugarLogger := t.General.OttoZaplog
+	sugarLogger.Info("[UseVoucherAggregator-Services]",
+		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID),
+		zap.String("category : ", param.Category), zap.String("campaignId : ", req.CampaignID),
+		zap.String("cust_id : ", req.CustID), zap.String("cust_id2 : ", req.CustID2),
+		zap.String("product_code : ", param.ProductCode))
+
+	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[GetVoucherUV]")
+	defer span.Finish()
+
+	get, err := db.GetVoucherAg(param.AccountId, param.CouponID)
+	if err != nil {
+		logs.Info("Internal Server Error : ", err)
+		logs.Info("[UseVoucherAggregator]-[GetVoucherUV]")
+		logs.Info("[Failed get data from DB]")
+
+		sugarLogger.Info("[UseVoucherAggregator]-[GetVoucherUV]")
+		sugarLogger.Info("[Failed get data from DB]")
+
+		res = utils.GetMessageResponse(res, 422, false, errors.New("Voucher Tidak Ditemukan"))
+		return res
+	}
+
+	spend, err := db.GetVoucherSpending(get.AccountId, get.CouponID)
+	if err != nil {
+		logs.Info("Internal Server Error : ", err)
+		logs.Info("[UseVoucherAggregator]-[GetVoucherUV]")
+		logs.Info("[Failed get data from DB]")
+
+		sugarLogger.Info("[UseVoucherAggregator]-[GetVoucherUV]")
+		sugarLogger.Info("[Failed get data from DB]")
+
+		res = utils.GetMessageResponse(res, 422, false, errors.New("Terjadi Kesalahan"))
+		return res
+	}
+
+	res = models.Response{
+		Meta: utils.ResponseMetaOK(),
+		Data: models.GetVoucherAgResp{
+			Voucher:     param.NamaVoucher,
+			VoucherCode: spend.VoucherCode,
+			Link:        spend.VoucherLink,
+		},
+	}
+	return res
+}
