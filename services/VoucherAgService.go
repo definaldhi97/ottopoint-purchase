@@ -669,6 +669,8 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 
 	}
 
+	param.RRN = statusOrder.Data.TransactionID
+
 	for i := req.Jumlah; i > 0; i-- {
 
 		fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
@@ -681,11 +683,12 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 		code := redeem.Coupons[t].Code
 		param.CouponID = coupon
 
+		couponCode := statusOrder.Data.Vouchers[t].VoucherCode
 		expDate := statusOrder.Data.Vouchers[t].ExpiredDate
 		voucherLink := statusOrder.Data.Vouchers[t].Link
 
 		param.ExpDate = expDate
-		param.CouponID = coupon
+		param.CouponCode = couponCode
 		param.VoucherLink = voucherLink
 
 		id := utils.GenerateTokenUUID()
@@ -782,6 +785,8 @@ func SaveTransactionVoucherAg(param models.Params, res interface{}, reqdata inte
 		CouponId:        param.CouponID,
 		CampaignId:      param.CampaignID,
 		AccountId:       param.AccountId,
+		VoucherCode:     param.CouponCode,
+		VoucherLink:     param.VoucherLink,
 		ExpDate:         expDate,
 	}
 
