@@ -18,17 +18,18 @@ import (
 )
 
 var (
-	redeem             string
-	use_voucher        string
-	deductPoint        string
-	paymentQR          string
-	reversePoint       string
-	healthcheck        string
-	earningPoint       string
-	splitbill          string
-	comulative         string
-	usevoucher_uv      string
-	checkStatusEarning string
+	redeem                  string
+	use_voucher             string
+	deductPoint             string
+	paymentQR               string
+	reversePoint            string
+	healthcheck             string
+	earningPoint            string
+	splitbill               string
+	comulative              string
+	usevoucher_uv           string
+	checkStatusEarning      string
+	redeemCallbackVoucherAg string
 
 	csv string
 
@@ -53,6 +54,7 @@ func init() {
 	splitbill = utils.GetEnv("splitbill", "/transaction/v2/splitbill")
 	usevoucher_uv = utils.GetEnv("usevoucher_uv", "/transaction/v2/usevoucher_uv")
 	checkStatusEarning = utils.GetEnv("checkStatusEarning", "/transaction/v2/check-status-earning")
+	redeemCallbackVoucherAg = utils.GetEnv("callbackRequestVoucherAg", "/transaction/v2/redeem/voucherag")
 
 	csv = utils.GetEnv("csv", "/csv")
 
@@ -125,6 +127,8 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(splitbill, controllers.DeductSplitBillController)
 	router.POST(usevoucher_uv, controllers.UseVouhcerUVController)
 	router.POST(checkStatusEarning, controllers.CheckStatusEarningController)
+
+	router.POST(redeemCallbackVoucherAg, controllers.HandleCallbackRequestVoucherAg)
 
 	router.POST(csv, controllers.CreateFileCSVController)
 
