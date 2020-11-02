@@ -61,8 +61,9 @@ const (
 )
 
 const (
-	UV     = "Ultra Voucher"
-	OttoAG = "OttoAG"
+	UV      = "Ultra Voucher"
+	OttoAG  = "OttoAG"
+	Sepulsa = "Sepulsa"
 )
 
 const (
@@ -190,7 +191,8 @@ const (
 )
 
 const (
-	CodeScheduler = "SC001"
+	CodeScheduler        = "SC001"
+	CodeSchedulerSepulsa = "SC003"
 )
 
 const (
