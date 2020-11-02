@@ -55,7 +55,7 @@ func init() {
 	splitbill = utils.GetEnv("splitbill", "/transaction/v2/splitbill")
 	usevoucher_uv = utils.GetEnv("usevoucher_uv", "/transaction/v2/usevoucher_uv")
 	checkStatusEarning = utils.GetEnv("checkStatusEarning", "/transaction/v2/check-status-earning")
-	callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/callback/sepulsa")
+	callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/status/sepulsa")
 
 	csv = utils.GetEnv("csv", "/csv")
 
