@@ -18,7 +18,7 @@ import (
 )
 
 func SchedulerCheckStatusController(ctx *gin.Context) {
-	res := models.Response{}
+	// res := models.Response{}
 
 	sugarLogger := ottologer.GetLogger()
 	namectrl := "[SchedulerCheckStatusController]"
@@ -46,7 +46,7 @@ func SchedulerCheckStatusController(ctx *gin.Context) {
 		},
 	}
 
-	res = schedulerCheckStatus.NewSchedulerCheckStatusService()
+	res := schedulerCheckStatus.NewSchedulerCheckStatusService()
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", res))
