@@ -53,3 +53,28 @@ type Product struct {
 	Price     int    `json:"price"`
 	Enabled   string `json:"enabled"`
 }
+
+type CheckStatusSepulsaResp struct {
+	Amount         string      `json:"amount"`
+	Changed        string      `json:"changed"`
+	Created        string      `json:"created"`
+	CustomerNumber string      `json:"customer_number"`
+	Data           interface{} `json:"data"`
+	OrderID        string      `json:"order_id"`
+	Price          string      `json:"price"`
+	ProductID      struct {
+		Enabled   string `json:"enabled"`
+		Label     string `json:"label"`
+		Nominal   string `json:"nominal"`
+		Operator  string `json:"operator"`
+		Price     int    `json:"price"`
+		ProductID string `json:"product_id"`
+		Type      string `json:"type"`
+	} `json:"product_id"`
+	ResponseCode  string      `json:"response_code"`
+	SerialNumber  interface{} `json:"serial_number"`
+	Status        string      `json:"status"`
+	Token         interface{} `json:"token"`
+	TransactionID string      `json:"transaction_id"`
+	Type          string      `json:"type"`
+}

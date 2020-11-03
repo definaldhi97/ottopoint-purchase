@@ -2,9 +2,9 @@ package host
 
 import (
 	"encoding/json"
+	"fmt"
 	"ottopoint-purchase/hosts/sepulsa/models"
 
-	"github.com/astaxie/beego/logs"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -31,33 +31,45 @@ func EwalletInsertTransaction(req models.EwalletInsertTrxReq) (*models.EwalletIn
 	urlSvr := host + ewalletInsertTransaction
 	data, err := HTTPxFormPostSepulsa(urlSvr, req)
 	if err != nil {
-		logs.Error("Check error : ", err.Error())
+
+		fmt.Println(fmt.Sprintf("[Failed to HTTPxFormPostSepulsa]-[Error : %v]", err.Error()))
+		fmt.Println("[PackageHostSepulsa]-[EwalletInsertTransaction]")
+
 		return nil, err
 	}
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		logs.Error("Failed to unmarshalling response EwalletInsertTransaction from Sepulsa", err.Error())
+
+		fmt.Println(fmt.Sprintf("[Failed to unmarshalling response EwalletInsertTransaction]-[Error : %v]", err.Error()))
+		fmt.Println("[PackageHostSepulsa]-[EwalletInsertTransaction]")
+
 		return nil, err
 	}
 	return &resp, nil
 }
 
-func EwalletDetailTransaction(trxID string) (map[string]interface{}, error) {
-	var resp map[string]interface{}
+func EwalletDetailTransaction(trxID string) (*models.CheckStatusSepulsaResp, error) {
+	var resp models.CheckStatusSepulsaResp
 
 	urlSvr := host + ewalletDetailTransaction + trxID + ".json"
 
 	data, err := HTTPxFormGETSepulsa(urlSvr, nil)
 	if err != nil {
-		logs.Error("Check error : ", err.Error())
+
+		fmt.Println(fmt.Sprintf("[Failed to HTTPxFormPostSepulsa]-[Error : %v]", err.Error()))
+		fmt.Println("[PackageHostSepulsa]-[EwalletDetailTransaction]")
+
 		return nil, err
 	}
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		logs.Error("Failed to unmarshalling response EwalletDetailTransaction from Sepulsa", err.Error())
+
+		fmt.Println(fmt.Sprintf("[Failed to unmarshalling response EwalletDetailTransaction]-[Error : %v]", err.Error()))
+		fmt.Println("[PackageHostSepulsa]-[EwalletDetailTransaction]")
+
 		return nil, err
 	}
-	return resp, nil
+	return &resp, nil
 }
