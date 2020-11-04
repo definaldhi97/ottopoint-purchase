@@ -343,7 +343,7 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
 		Data: models.SepulsaRes{
-			Code:    "09",
+			Code:    "00",
 			Msg:     "Success",
 			Success: req.Jumlah,
 			Failed:  0,
