@@ -336,7 +336,7 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 
 		id := utils.GenerateTokenUUID()
 		go SaveDBSepulsa(id, param.InstitutionID, coupon, param.CouponCode, param.AccountNumber, param.AccountId, req.CampaignID)
-		go SaveTransactionSepulsa(param, sepulsaRes, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
+		go SaveTransactionSepulsa(param, sepulsaRes, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00")
 
 	}
 
@@ -344,10 +344,10 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 		Meta: utils.ResponseMetaOK(),
 		Data: models.SepulsaRes{
 			Code:    "09",
-			Msg:     "Pending",
-			Success: 0,
+			Msg:     "Success",
+			Success: req.Jumlah,
 			Failed:  0,
-			Pending: req.Jumlah,
+			Pending: 0,
 		},
 	}
 
@@ -458,7 +458,7 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 				// EarningRuleAdd  :,
 				PartnerId: spending.Institution,
 				// ReferenceId     : ,
-				TransactionId: spending.TransactionId,
+				TransactionId: utils.GenTransactionId(),
 				// ProductCode     :,
 				// ProductName     :,
 				AccountNumber: spending.AccountNumber,
