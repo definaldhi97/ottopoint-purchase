@@ -335,7 +335,7 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 		}
 
 		id := utils.GenerateTokenUUID()
-		go SaveDBSepulsa(id, param.InstitutionID, coupon, param.CouponCode, param.AccountNumber, param.AccountId, req.CampaignID)
+		go SaveDBSepulsa(id, param.InstitutionID, couponID, couponCode, param.AccountNumber, param.AccountId, req.CampaignID)
 		go SaveTransactionSepulsa(param, sepulsaRes, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00")
 
 	}
