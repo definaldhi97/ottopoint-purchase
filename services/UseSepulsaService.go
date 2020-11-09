@@ -344,7 +344,7 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 		Meta: utils.ResponseMetaOK(),
 		Data: models.SepulsaRes{
 			Code:    "00",
-			Msg:     "Success",
+			Msg:     fmt.Sprintf("Selamat Penukaran %s Kamu Berhasil, Silahkan Cek Saldo Kamu!", param.NamaVoucher),
 			Success: req.Jumlah,
 			Failed:  0,
 			Pending: 0,
