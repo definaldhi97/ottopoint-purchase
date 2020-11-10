@@ -213,6 +213,7 @@ func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
 		coupon = coupon[3:]
 	} else if supplierid == "SP" {
 		supplierID = "Sepulsa"
+		coupon = coupon[3:]
 	} else if supplierid == "VG" {
 		supplierID = "Voucher Aggregator"
 		coupon = coupon[3:]
