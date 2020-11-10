@@ -24,6 +24,7 @@ type Params struct {
 	CampaignID      string
 	SupplierID      string
 	VoucherCode     string // voucher code vidio
+	VoucherLink     string // voucher link
 	ExpireDateVidio string // Expire date Voucher Vidio
 	CategoryID      string
 	TrxID           string
