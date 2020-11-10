@@ -366,6 +366,8 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[SepulsaService]")
 	defer span.Finish()
 
+	fmt.Println("Start Delay ", time.Now().Unix())
+	time.Sleep(10 * time.Second)
 	go func(args sepulsaModels.CallbackTrxReq) {
 
 		// Get Spending By TransactionID and OrderID
@@ -544,6 +546,7 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 
 	}(req)
 
+	fmt.Println("End Process ", time.Now().Unix())
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
 		Data: nil,
