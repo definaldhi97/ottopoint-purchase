@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"ottopoint-purchase/controllers"
+	"ottopoint-purchase/controllers/v2_migrate"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -35,9 +36,10 @@ var (
 	nameservice     string
 	agentracinghost string
 
-	debugmode string
-	readto    int
-	writeto   int
+	debugmode           string
+	readto              int
+	writeto             int
+	redeemtionV2Migrate string
 )
 
 func init() {
@@ -61,6 +63,8 @@ func init() {
 	nameservice = utils.GetEnv("OTTOPOINT_PURCHASE_NAMESERVICE", "ottopoint-purchase")
 
 	agentracinghost = utils.GetEnv("AGENT_TRACING_HOST_OTTOPOINT_PURCHASE", "13.250.21.165:5775")
+
+	redeemtionV2Migrate = utils.GetEnv("redeemtionV2Migrate", "/v2-migrate/redeempoint")
 	// readto = utils.GetEnv("server.readtimeout", 30)
 	// writeto = utils.GetEnv("server.writetimeout", 30)
 
@@ -127,6 +131,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(checkStatusEarning, controllers.CheckStatusEarningController)
 
 	router.POST(csv, controllers.CreateFileCSVController)
+	router.POST(redeemtionV2Migrate, v2_migrate.RedeemtionVoucherController)
 
 	ottoRouter.Router = router
 

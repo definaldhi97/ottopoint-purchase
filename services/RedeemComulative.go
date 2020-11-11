@@ -135,7 +135,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 			Message: "Inquiry Failed",
 		}
 
-		go saveTransactionOttoAg(paramInq, dataInquery, reqInq, req, "01")
+		go SaveTransactionOttoAg(paramInq, dataInquery, reqInq, req, "01")
 
 		ErrRespRedeem <- errInquiry
 
@@ -170,7 +170,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 			Message: "Inquiry Failed",
 		}
 
-		go saveTransactionOttoAg(paramInq, dataInquery, req, inqBiller, "01")
+		go SaveTransactionOttoAg(paramInq, dataInquery, req, inqBiller, "01")
 
 		ErrRespRedeem <- errInquiry
 
@@ -185,7 +185,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 	}
 
-	go saveTransactionOttoAg(paramInq, dataInquery, req, inqBiller, "00")
+	go SaveTransactionOttoAg(paramInq, dataInquery, req, inqBiller, "00")
 
 	// coupon := []models.CouponsRedeem{}
 

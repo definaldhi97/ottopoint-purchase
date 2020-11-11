@@ -186,7 +186,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	if billerRes.Rc == "" {
 		fmt.Println(fmt.Sprintf("[Payment %v Time Out]", param.ProductType))
 
-		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09")
+		save := SaveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09")
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.UseRedeemResponse{
@@ -203,7 +203,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
 		fmt.Println(fmt.Sprintf("[Payment %v Pending]", param.ProductType))
 
-		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09")
+		save := SaveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09")
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.UseRedeemResponse{
@@ -220,7 +220,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
 		fmt.Println(fmt.Sprintf("[Payment %v Failed]", param.ProductType))
 
-		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "01")
+		save := SaveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "01")
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.UseRedeemResponse{
@@ -342,7 +342,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	}
 
 	fmt.Println(fmt.Sprintf("[Payment %v Success]", param.ProductType))
-	save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "00")
+	save := SaveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "00")
 	fmt.Println(fmt.Sprintf("[Response Save Payment %v : %v]", param.ProductType, save))
 
 	res = models.UseRedeemResponse{
@@ -361,7 +361,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	return res
 }
 
-func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, status string) string {
+func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, status string) string {
 
 	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[%v]", param.ProductType))
 

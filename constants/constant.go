@@ -129,6 +129,9 @@ const (
 	RC_ERROR_FAILED_GET_POINT = 107
 	RD_ERROR_FAILED_GET_POINT = "Gagal Dapat Point"
 
+	RC_VOUCHER_NOT_AVAILABLE = "208"
+	RD_VOUCHER_NOT_AVAILABLE = "Voucher not available"
+
 	// Nomor belum eligible
 
 	// Failed to GetBalance
@@ -188,4 +191,17 @@ const (
 	CODE_APPS_NOTIF     = 1
 	CODE_SMS_NOTIF      = 2
 	CODE_SMS_APPS_NOTIF = 3
+)
+
+const (
+	CODE_VENDOR_OTTOAG    = "A1OAG001"
+	CODE_VENDOR_UV        = "A1UVO002"
+	CODE_VENDOR_SEPULSA   = "A1SPS003"
+	CODE_VENDOR_AGREGATOR = "A1OPG004"
+)
+
+const (
+	CODE_SUCCESS   = "00"
+	CODE_FAILED    = "01"
+	CODE_STATUS_TO = "68"
 )
