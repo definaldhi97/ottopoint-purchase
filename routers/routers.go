@@ -33,6 +33,7 @@ var (
 	callbackSepulsa         string
 	checkStatusTrx          string
 	redeemCallbackVoucherAg string
+	checkStatusScheduler    string
 
 	view_voucher string
 
@@ -65,6 +66,7 @@ func init() {
 	use_voucher_vidio = utils.GetEnv("use_voucher_vidio", "/transaction/v2.1/usevoucher")
 	callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/status/sepulsa")
 	redeemCallbackVoucherAg = utils.GetEnv("callbackRequestVoucherAg", "/transaction/v2/redeem/voucherag")
+	checkStatusScheduler = utils.GetEnv("checkStatusScheduler", "/transaction/v2/check-status-scheduler")
 
 	csv = utils.GetEnv("csv", "/csv")
 
@@ -142,6 +144,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(callbackSepulsa, controllers.HandleCallbackSepulsa)
 
 	router.POST(redeemCallbackVoucherAg, controllers.HandleCallbackRequestVoucherAg)
+	router.POST(checkStatusScheduler, controllers.SchedulerCheckStatusController)
 
 	router.POST(csv, controllers.CreateFileCSVController)
 
