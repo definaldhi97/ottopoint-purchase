@@ -695,11 +695,19 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 			return res
 		}
 
+		brand, err := db.GetBrandCode(param.ProductCode)
+		if err != nil {
+			fmt.Println("err")
+		}
 		// Use Voucher ID as a Transaction ID
 		param.TrxID = couponID
 		param.ExpDate = expDate
 		param.CouponCode = fmt.Sprintf("%s", plaintText)
 		param.VoucherLink = voucherLink
+
+		if brand != nil && brand.Code != "" {
+			param.ProductCode = brand.Code
+		}
 
 		id := utils.GenerateTokenUUID()
 		go SaveDBVoucherAg(id, param.InstitutionID, coupon, code, param.AccountNumber, param.AccountId, req.CampaignID)

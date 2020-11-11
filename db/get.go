@@ -252,3 +252,23 @@ func GetUser(phone string) (dbmodels.User, error) {
 
 	return result, nil
 }
+
+func GetBrandCode(code string) (*dbmodels.MProductBrand, error) {
+
+	result := dbmodels.MProduct{}
+
+	err := DbCon.Where("code = ?", code).First(&result).Error
+	if err != nil {
+		return nil, err
+	}
+
+	brand := dbmodels.MProductBrand{}
+
+	err = DbCon.Where("id = ?", result.MProductBrandID).First(&brand).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &brand, nil
+
+}
