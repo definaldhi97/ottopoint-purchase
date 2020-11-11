@@ -680,14 +680,25 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 		code := redeem.Coupons[t].Code
 		param.CouponID = coupon
 
+		couponID := statusOrder.Data.Vouchers[t].VoucherID
 		couponCode := statusOrder.Data.Vouchers[t].VoucherCode
 		expDate := statusOrder.Data.Vouchers[t].ExpiredDate
 		voucherLink := statusOrder.Data.Vouchers[t].Link
 
+		a := []rune(coupon)
+		key32 := string(a[0:32])
+		key := []byte(key32)
+		chiperText := []byte(couponCode)
+		plaintText, err := utils.EncryptAES(chiperText, key)
+		if err != nil {
+			res = utils.GetMessageFailedErrorNew(res, constants.RC_FAILED_DECRYPT_VOUCHER, constants.RD_FAILED_DECRYPT_VOUCHER)
+			return res
+		}
+
 		// Use Voucher ID as a Transaction ID
-		param.TrxID = statusOrder.Data.Vouchers[t].VoucherID
+		param.TrxID = couponID
 		param.ExpDate = expDate
-		param.CouponCode = couponCode
+		param.CouponCode = fmt.Sprintf("%s", plaintText)
 		param.VoucherLink = voucherLink
 
 		id := utils.GenerateTokenUUID()
