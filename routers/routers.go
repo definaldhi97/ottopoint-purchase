@@ -127,7 +127,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(splitbill, controllers.DeductSplitBillController)
 	router.POST(usevoucher_uv, controllers.UseVouhcerUVController)
 	router.POST(checkStatusEarning, controllers.CheckStatusEarningController)
-	router.POST(checkStatusScheduler, controllers.SchedulerCheckStatusController)
+	router.GET(checkStatusScheduler, controllers.SchedulerCheckStatusController)
 
 	router.POST(csv, controllers.CreateFileCSVController)
 
