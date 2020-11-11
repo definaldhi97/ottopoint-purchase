@@ -19,19 +19,20 @@ import (
 )
 
 var (
-	redeem             string
-	use_voucher        string
-	deductPoint        string
-	paymentQR          string
-	reversePoint       string
-	healthcheck        string
-	earningPoint       string
-	splitbill          string
-	comulative         string
-	usevoucher_uv      string
-	checkStatusEarning string
-	callbackSepulsa    string
-	checkStatusTrx     string
+	redeem                  string
+	use_voucher             string
+	deductPoint             string
+	paymentQR               string
+	reversePoint            string
+	healthcheck             string
+	earningPoint            string
+	splitbill               string
+	comulative              string
+	usevoucher_uv           string
+	checkStatusEarning      string
+	callbackSepulsa         string
+	checkStatusTrx          string
+	redeemCallbackVoucherAg string
 
 	view_voucher string
 
@@ -63,6 +64,7 @@ func init() {
 	view_voucher = utils.GetEnv("view_voucher", "/transaction/v2.1/voucher/view")
 	use_voucher_vidio = utils.GetEnv("use_voucher_vidio", "/transaction/v2.1/usevoucher")
 	callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/status/sepulsa")
+	redeemCallbackVoucherAg = utils.GetEnv("callbackRequestVoucherAg", "/transaction/v2/redeem/voucherag")
 
 	csv = utils.GetEnv("csv", "/csv")
 
@@ -138,6 +140,8 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.GET(view_voucher, controller_v2_1.ViewVoucherController)
 	router.GET(use_voucher_vidio, controller_v2_1.UseVoucherVidioController)
 	router.POST(callbackSepulsa, controllers.HandleCallbackSepulsa)
+
+	router.POST(redeemCallbackVoucherAg, controllers.HandleCallbackRequestVoucherAg)
 
 	router.POST(csv, controllers.CreateFileCSVController)
 
