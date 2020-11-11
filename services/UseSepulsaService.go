@@ -542,6 +542,27 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 				sugarLogger.Info(fmt.Sprintf("[SepulsaService]-[FailedUpdateTSchedulerRetry]-[%v", err.Error()))
 			}
 
+		} else if responseCode == "Pending" {
+
+			text := args.TransactionID + spending.Institution + constants.CodeScheduler + "#" + "OP09 - Reversal point cause transaction " + spending.Voucher + " is failed"
+
+			schedulerData := dbmodels.TSchedulerRetry{
+				Code:          constants.CodeSchedulerSepulsa,
+				TransactionID: utils.Before(text, "#"),
+				Count:         0,
+				IsDone:        false,
+				CreatedAT:     time.Now(),
+			}
+
+			errSaveScheduler := db.DbCon.Create(&schedulerData).Error
+			if errSaveScheduler != nil {
+
+				fmt.Println("===== Gagal SaveScheduler ke DB =====")
+				fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
+				fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", spending.AccountNumber, spending.RRN))
+
+			}
+
 		}
 
 	}(req)
