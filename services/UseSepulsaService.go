@@ -6,6 +6,7 @@ import (
 	"log"
 	"ottopoint-purchase/constants"
 	db "ottopoint-purchase/db"
+	auth "ottopoint-purchase/hosts/auth/host"
 	"ottopoint-purchase/hosts/opl/host"
 	opl "ottopoint-purchase/hosts/opl/host"
 	kafka "ottopoint-purchase/hosts/publisher/host"
@@ -384,6 +385,8 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 		fmt.Println("[HandleCallbackSepulsa] - [ResponseCode] : ", args.ResponseCode)
 		fmt.Println("[HandleCallbackSepulsa] - [ResponseDesc] : ", responseCode)
 
+		go t.clearCacheBalance(spending.AccountNumber)
+
 		if (responseCode != "Success") &&
 			(responseCode != "Pending") {
 
@@ -592,6 +595,23 @@ func (t UseSepulsaService) CheckStatusTrx(transactionID string) models.Response 
 	}
 
 	return res
+}
+
+func (t UseSepulsaService) clearCacheBalance(phone string) {
+	fmt.Println(">>>>>>> Clear Cache Get Balance <<<<<<")
+	clearCacheBalance, err := auth.ClearCacheBalance(phone)
+	if err != nil {
+		fmt.Println("Clear Cache Balance Error : ", err)
+		return
+	}
+	if clearCacheBalance.ResponseCode != "00" {
+		fmt.Println("Message : ", clearCacheBalance.Messages)
+		fmt.Println("Response Code : ", clearCacheBalance.ResponseCode)
+		return
+	}
+	fmt.Println("Clear Cache Get Balance: ", clearCacheBalance.Messages)
+	return
+
 }
 
 func SaveDBSepulsa(id, institution, coupon, vouchercode, phone, custIdOPL, campaignID string) {
