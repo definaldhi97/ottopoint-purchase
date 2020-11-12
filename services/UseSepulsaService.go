@@ -259,9 +259,11 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 			fmt.Println("========== Send Publisher ==========")
 
 			pubreq := models.NotifPubreq{
-				Type:           "Reversal",
+				Type:           constants.CODE_REVERSAL_POINT,
 				NotificationTo: param.AccountNumber,
 				Institution:    param.InstitutionID,
+				ReferenceId:    param.TrxID,
+				TransactionId:  param.CumReffnum,
 				Data: models.DataValue{
 					RewardValue: "point",
 					Value:       fmt.Sprint(param.Point),
@@ -499,10 +501,11 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 			fmt.Println("========== Send Publisher ==========")
 
 			pubreq := models.NotifPubreq{
-				Type:           "Reversal",
+				Type:           constants.CODE_REVERSAL_POINT,
 				NotificationTo: spending.AccountNumber,
 				Institution:    spending.Institution,
-				TransactionId:  spending.TransactionId,
+				ReferenceId:    spending.RRN,
+				TransactionId:  spending.CummulativeRef,
 				Data: models.DataValue{
 					RewardValue: "point",
 					Value:       fmt.Sprint(spending.Point),
