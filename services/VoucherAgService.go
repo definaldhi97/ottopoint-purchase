@@ -28,7 +28,8 @@ import (
 )
 
 var (
-	callbackOttoPointPurchase = ODU.GetEnv("OTTOPOINT_PURCHASE_CALLBACK_VOUCHERAG", "http://34.101.119.111:8006/transaction/v2/callback/redeem/voucherag")
+	callbackHost              = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_CALLBACK_VOUCHERAG", "http://34.101.248.102:8600")
+	callbackOttoPointPurchase = ODU.GetEnv("OTTOPOINT_PURCHASE_CALLBACK_VOUCHERAG", "/transaction/v2/callback/redeem/voucherag")
 )
 
 type VoucherAgServices struct {
@@ -166,7 +167,7 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 		CustomerEmail:  dataOrder.Email,
 		CustomerPhone:  dataOrder.Phone,
 		DeliveryMethod: 1,
-		RedeemCallback: callbackOttoPointPurchase,
+		RedeemCallback: callbackHost + callbackOttoPointPurchase,
 	}
 
 	fmt.Println("Start - OrderVoucherAggregator")
