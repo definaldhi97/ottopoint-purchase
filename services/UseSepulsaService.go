@@ -540,8 +540,10 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 		fmt.Sprintln("[SuccessUpdateVoucherSepulsa] : ", res)
 		sugarLogger.Info("[SepulsaService]-[SuccessUpdateVoucherSepulsa]")
 
+		transactionID := spending.RRN + spending.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point couse transaction " + spending.Voucher + " is failed"
+
 		// Update TSchedulerRetry
-		_, err = db.UpdateTSchedulerRetry(args.OrderID)
+		_, err = db.UpdateTSchedulerRetry(utils.Before(transactionID, "#"))
 		if err != nil {
 			fmt.Println("[UpdateTSchedulerRetry] : ", err.Error())
 
