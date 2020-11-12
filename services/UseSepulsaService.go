@@ -596,7 +596,7 @@ func (t UseSepulsaService) clearCacheBalance(phone string) {
 
 func SaveTSchedulerRetry(param models.Params) {
 
-	fmt.Println(fmt.Sprintf("[Start-SaveTSchedulerRetry]-[Sepulsa]-[%v]", transType))
+	fmt.Println(fmt.Sprintf("[Start-SaveTSchedulerRetry]-[Sepulsa]"))
 
 	text := param.RRN + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point couse transaction " + param.NamaVoucher + " is failed"
 	schedulerData := dbmodels.TSchedulerRetry{
