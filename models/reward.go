@@ -15,6 +15,7 @@ type VoucherDetailsManagement1 struct {
 	RewardCodes         string    `gorm:"column:reward_codes" json:"rewardCodes"`
 	ExternalProductCode string    `gorm:"column:external_code" json:"productCodeExternal"`
 	InternalProductCode string    `gorm:"column:internal_code" json:"productCodeInternal"`
+	ProductID           string    `gorm:"column:m_product_id" json:"productID"`
 }
 
 type VoucherDetailsManagement struct {
@@ -30,6 +31,7 @@ type VoucherDetailsManagement struct {
 	RewardCodes         string    `gorm:"column:reward_codes" json:"rewardCodes"`
 	ExternalProductCode string    `gorm:"column:external_code" json:"productCodeExternal"`
 	InternalProductCode string    `gorm:"column:internal_code" json:"productCodeInternal"`
+	ProductID           string    `gorm:"column:m_product_id" json:"productID"`
 }
 
 // type BuyVocuherResp struct {
@@ -43,4 +45,5 @@ type SpendingPointVoucher struct {
 	Rc          string
 	Rd          string
 	CouponsCode string
+	CouponsID   string
 }

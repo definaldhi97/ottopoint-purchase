@@ -48,6 +48,7 @@ func RedeemVoucherOttoAg(req models.VoucherComultaiveReq, param models.Params, g
 	fmt.Println("[INQUIRY-BILLER][START]")
 	dataInquery, errInquiry := biller.InquiryBiller(inqReq.Data, req, reqInq, param)
 
+	textCommentSpending := param.Reffnum + "#" + param.NamaVoucher
 	paramInq := models.Params{
 		AccountNumber: param.AccountNumber,
 		MerchantID:    param.MerchantID,
@@ -66,6 +67,11 @@ func RedeemVoucherOttoAg(req models.VoucherComultaiveReq, param models.Params, g
 		ExpDate:       param.ExpDate,
 		SupplierID:    param.SupplierID,
 		CategoryID:    param.CategoryID,
+		CampaignID:    param.CampaignID,
+		ProductID:     param.ProductID,
+		AccountId:     param.AccountId,
+		Comment:       textCommentSpending,
+		RewardID:      param.RewardID,
 		DataSupplier: models.Supplier{
 			Rc: dataInquery.Rc,
 			Rd: dataInquery.Msg,
@@ -130,13 +136,14 @@ func RedeemVoucherOttoAg(req models.VoucherComultaiveReq, param models.Params, g
 		return
 
 	}
-
-	go services.SaveTransactionOttoAg(paramInq, dataInquery, reqInq, req, constants.CODE_SUCCESS)
-
+	//ss
 	// deduct point and deduct usage_limit voucher
-	resultRedeemVouch, errRedeemVouch := Redeem_PointandVoucher(req.Jumlah, param)
+	resultRedeemVouch, errRedeemVouch := Redeem_PointandVoucher(req.Jumlah, param, textCommentSpending)
 	fmt.Println("Response Deduct point dan voucher")
 	fmt.Println(resultRedeemVouch)
+
+	paramInq.CouponID = resultRedeemVouch.CouponsID
+	go services.SaveTransactionOttoAg(paramInq, dataInquery, reqInq, req, constants.CODE_SUCCESS)
 
 	if resultRedeemVouch.Rc != "00" {
 		fmt.Println("[ Error Redeem_PointandVoucher]")
@@ -160,6 +167,7 @@ func RedeemVoucherOttoAg(req models.VoucherComultaiveReq, param models.Params, g
 	}
 
 	resRedeemComu.CouponCode = resultRedeemVouch.CouponsCode
+	resRedeemComu.CouponID = resultRedeemVouch.CouponsID
 
 	ErrRespRedeem <- nil
 

@@ -366,7 +366,7 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[%v]", param.ProductType))
 
 	// validasi vidio is_used -> false
-	isUsed := true
+	isUsed := false
 	// codeVoucher := param.VoucherCode
 	var codeVoucher string
 	ExpireDate := param.ExpDate
@@ -375,8 +375,8 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	if param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
 		timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
 		redeemDate = timeRedeem
-
 		codeVoucher = EncryptVoucherCode(param.VoucherCode, param.CouponID)
+		isUsed = true
 	}
 
 	if param.Category == constants.CategoryVidio && param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
@@ -413,21 +413,25 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		ProductType: param.ProductType,
 		Status:      saveStatus,
 		// ExpDate:         param.ExpDate,
-		ExpDate:         ExpireDate,
-		Institution:     param.InstitutionID,
-		CummulativeRef:  param.Reffnum,
-		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
-		Point:           param.Point,
-		ResponderRc:     param.DataSupplier.Rc,
-		ResponderRd:     param.DataSupplier.Rd,
-		RequestorData:   string(reqOttoag),
-		ResponderData:   string(responseOttoag),
-		RequestorOPData: string(reqdataOP),
-		SupplierID:      param.SupplierID,
-		RedeemAt:        redeemDate,
-		CampaignId:      param.CampaignID,
-		VoucherCode:     codeVoucher,
-		CouponId:        param.CouponID,
+		ExpDate:           ExpireDate,
+		Institution:       param.InstitutionID,
+		CummulativeRef:    param.Reffnum,
+		DateTime:          utils.GetTimeFormatYYMMDDHHMMSS(),
+		Point:             param.Point,
+		ResponderRc:       param.DataSupplier.Rc,
+		ResponderRd:       param.DataSupplier.Rd,
+		RequestorData:     string(reqOttoag),
+		ResponderData:     string(responseOttoag),
+		RequestorOPData:   string(reqdataOP),
+		SupplierID:        param.SupplierID,
+		RedeemAt:          redeemDate,
+		CampaignId:        param.CampaignID,
+		VoucherCode:       codeVoucher,
+		CouponId:          param.CouponID,
+		AccountId:         param.AccountId,
+		ProductCategoryID: param.CategoryID,
+		Comment:           param.Comment,
+		RewardID:          param.RewardID,
 	}
 
 	err := db.DbCon.Create(&save).Error

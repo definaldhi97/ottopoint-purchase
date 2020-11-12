@@ -14,9 +14,23 @@ func GetVoucher(rewardID string) (models.VoucherDetailsManagement, error) {
 	var dtaVoucher models.VoucherDetailsManagement1
 
 	// err := DbCon.Raw(`select * from product.m_reward where id = ?`, rewardID).Scan(&result).Error
-	err := DbCon.Raw(`select a.id as reward_id, a."name", a.cost_in_points, a.usage_limit, d."name" as brand_name, a.activity_active_from, a.activity_active_to, a.categories as categories_id, c.code as code_suplier,  a.reward_codes, b.external_code, b.code as internal_code  from product.m_reward a join product.m_product b on (a.m_product_id = b.id)
+	err := DbCon.Raw(`select 
+	a.id as reward_id, 
+	a."name", 
+	a.cost_in_points, 
+	a.usage_limit, 
+	d."name" as brand_name, 
+	a.activity_active_from, 
+	a.activity_active_to, 
+	a.categories as categories_id, 
+	c.code as code_suplier,  
+	a.reward_codes, 
+	b.external_code, 
+	b.code as internal_code,
+	b.id as m_product_id
+	from product.m_reward a join product.m_product b on (a.m_product_id = b.id)
 	join vendor.m_vendor c on (b.m_vendor_id = c.id)
-	join product.m_product_brand d on (d.id = b.m_product_brand_id) where a.id = ?`, rewardID).Scan(&dtaVoucher).Error
+	join product.m_product_brand d on (d.id = b.m_product_brand_id)  where a.id = ?`, rewardID).Scan(&dtaVoucher).Error
 	if err != nil {
 		fmt.Println("Failed Get Voucher/Reward Details : ", err)
 		return result, err
@@ -40,6 +54,7 @@ func GetVoucher(rewardID string) (models.VoucherDetailsManagement, error) {
 	result.RewardCodes = dtaVoucher.RewardCodes
 	result.ExternalProductCode = dtaVoucher.ExternalProductCode
 	result.InternalProductCode = dtaVoucher.InternalProductCode
+	result.ProductID = dtaVoucher.ProductID
 
 	fmt.Println(result)
 

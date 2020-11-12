@@ -30,6 +30,9 @@ type Params struct {
 	DataSupplier        Supplier
 	UsageLimitVoucher   int
 	ProductCodeInternal string
+	ProductID           string
+	Comment             string
+	RewardID            string
 }
 
 type Supplier struct {

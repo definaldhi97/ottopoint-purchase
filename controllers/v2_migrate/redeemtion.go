@@ -129,6 +129,9 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 		Category:            dataVouch.Category,
 		UsageLimitVoucher:   dataVouch.UsageLimitVoucher,
 		ProductCodeInternal: dataVouch.ProductCodeInternal,
+		ProductID:           cekVoucher.ProductID,
+		CategoryID:          dataVouch.CategoryID,
+		RewardID:            dataVouch.RewardID,
 	}
 
 	switch dataVouch.SupplierID {
@@ -171,6 +174,8 @@ func SwitchDataVoucher(data models.VoucherDetailsManagement) models.Params {
 		CategoryID:          data.CategoriesID[0],
 		UsageLimitVoucher:   data.UsageLimit,
 		ProductCodeInternal: data.InternalProductCode,
+		RewardID:            data.RewardID,
+		ProductID:           data.ProductID,
 	}
 
 	return result

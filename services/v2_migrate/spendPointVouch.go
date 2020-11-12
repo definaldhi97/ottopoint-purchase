@@ -6,11 +6,12 @@ import (
 	"ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
 	"ottopoint-purchase/models"
+	"ottopoint-purchase/utils"
 	"strconv"
 	"strings"
 )
 
-func Redeem_PointandVoucher(QtyVoucher int, param models.Params) (models.SpendingPointVoucher, error) {
+func Redeem_PointandVoucher(QtyVoucher int, param models.Params, textComment string) (models.SpendingPointVoucher, error) {
 	fmt.Println("[ >>>>>>>>>>>>>>>>>> Redeem Point and Voucher <<<<<<<<<<<<<<<< ]")
 	var result models.SpendingPointVoucher
 	var msgEarning, statusEarning string
@@ -25,7 +26,8 @@ func Redeem_PointandVoucher(QtyVoucher int, param models.Params) (models.Spendin
 		return result, nil
 	}
 	// deduct/spending point
-	textComment := param.NamaVoucher + "," + "product code : " + param.ProductCodeInternal
+	// textComment := param.NamaVoucher + "," + "product code : " + param.ProductCodeInternal
+	// textComment := param.Reffnum + "#" + param.NamaVoucher
 	fmt.Println("Comment Spending Point Redeem Voucher : ", textComment)
 	replCostPoint := strings.ReplaceAll(strconv.Itoa(param.Point), ",", ".")
 	fmt.Println("Cost Point Voucher before : ", strconv.Itoa(param.Point))
@@ -76,9 +78,13 @@ func Redeem_PointandVoucher(QtyVoucher int, param models.Params) (models.Spendin
 		return result, errDeductVouch
 	}
 
+	generateCouponsID := utils.GenerateTokenUUID()
+	fmt.Println("Coupons ID : ", generateCouponsID)
+
 	result.Rc = "00"
 	result.Rd = "Success"
 	result.CouponsCode = param.CouponCode
+	result.CouponsID = generateCouponsID
 	return result, nil
 
 }
