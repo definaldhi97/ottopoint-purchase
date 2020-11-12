@@ -337,6 +337,24 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 
 		}
 
+		text := param.RRN + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point couse transaction " + param.NamaVoucher + " is failed"
+		schedulerData := dbmodels.TSchedulerRetry{
+			Code:          constants.CodeSchedulerSepulsa,
+			TransactionID: utils.Before(text, "#"),
+			Count:         0,
+			IsDone:        false,
+			CreatedAT:     time.Now(),
+		}
+
+		errSaveScheduler := db.DbCon.Create(&schedulerData).Error
+		if errSaveScheduler != nil {
+
+			fmt.Println("===== Gagal SaveScheduler ke DB =====")
+			fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
+			fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", param.AccountNumber, param.RRN))
+
+		}
+
 		id := utils.GenerateTokenUUID()
 		go SaveDBSepulsa(id, param.InstitutionID, couponID, couponCode, param.AccountNumber, param.AccountId, req.CampaignID)
 		go SaveTransactionSepulsa(param, sepulsaRes, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09")
@@ -548,27 +566,6 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 
 				sugarLogger.Info("[SepulsaService]-[UpdateTSchedulerRetry]")
 				sugarLogger.Info(fmt.Sprintf("[SepulsaService]-[FailedUpdateTSchedulerRetry]-[%v", err.Error()))
-			}
-
-		} else if responseCode == "Pending" {
-
-			text := args.TransactionID + spending.Institution + constants.CodeScheduler + "#" + "OP09 - Reversal point cause transaction " + spending.Voucher + " is failed"
-
-			schedulerData := dbmodels.TSchedulerRetry{
-				Code:          constants.CodeSchedulerSepulsa,
-				TransactionID: utils.Before(text, "#"),
-				Count:         0,
-				IsDone:        false,
-				CreatedAT:     time.Now(),
-			}
-
-			errSaveScheduler := db.DbCon.Create(&schedulerData).Error
-			if errSaveScheduler != nil {
-
-				fmt.Println("===== Gagal SaveScheduler ke DB =====")
-				fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
-				fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", spending.AccountNumber, spending.RRN))
-
 			}
 
 		}
