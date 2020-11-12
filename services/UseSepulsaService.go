@@ -535,17 +535,13 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 		fmt.Sprintln("[SuccessUpdateVoucherSepulsa] : ", res)
 		sugarLogger.Info("[SepulsaService]-[SuccessUpdateVoucherSepulsa]")
 
-		if responseCode == "Success" {
+		// Update TSchedulerRetry
+		_, err = db.UpdateTSchedulerRetry(args.OrderID)
+		if err != nil {
+			fmt.Println("[UpdateTSchedulerRetry] : ", err.Error())
 
-			// Update TSchedulerRetry
-			_, err = db.UpdateTSchedulerRetry(args.OrderID)
-			if err != nil {
-				fmt.Println("[UpdateTSchedulerRetry] : ", err.Error())
-
-				sugarLogger.Info("[SepulsaService]-[UpdateTSchedulerRetry]")
-				sugarLogger.Info(fmt.Sprintf("[SepulsaService]-[FailedUpdateTSchedulerRetry]-[%v", err.Error()))
-			}
-
+			sugarLogger.Info("[SepulsaService]-[UpdateTSchedulerRetry]")
+			sugarLogger.Info(fmt.Sprintf("[SepulsaService]-[FailedUpdateTSchedulerRetry]-[%v", err.Error()))
 		}
 
 	}(req)
