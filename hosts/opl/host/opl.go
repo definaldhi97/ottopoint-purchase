@@ -34,7 +34,7 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_OPL", "http://18.138.173.105")
+	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_OPL", "https://openloyalty-stg.ottopoint.id")
 	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_OPL", "OPENLOYALTY")
 
 	endpointRedeemVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM", "/api/customer/campaign/")

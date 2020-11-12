@@ -69,7 +69,8 @@ func UseVoucherComulative(req models.VoucherComultaiveReq, redeemComu models.Red
 		param.Amount = redeemComu.Redeem.Amount
 		param.RRN = redeemComu.Redeem.Rrn
 		param.CouponID = redeemComu.CouponID
-		resRedeem := RedeemUseVoucherComulative(req, param)
+		param.CouponCode = redeemComu.CouponCode
+		resRedeem := RedeemUseVoucherComulative(req, param, dataUser.CustID)
 
 		getRespChan <- resRedeem
 
@@ -78,7 +79,7 @@ func UseVoucherComulative(req models.VoucherComultaiveReq, redeemComu models.Red
 }
 
 // function reedem use voucher
-func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Params) models.RedeemResponse {
+func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Params, custID string) models.RedeemResponse {
 	res := models.RedeemResponse{}
 
 	fmt.Println("[RedeemUseVoucherComulative]-[Package-Services]")
@@ -103,6 +104,17 @@ func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Pa
 	// case constants.CategoryMobileLegend, constants.CategoryFreeFire:
 	// 	resRedeem = voucher.RedeemGameComulative(reqRedeem, req, param)
 	// }
+
+	// special case if transaction vidio failed langsung ke history
+	if resRedeem.Rc != "00" && resRedeem.Rc != "09" && resRedeem.Rc != "68" {
+		if param.Category == constants.CategoryVidio {
+			_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.CouponCode, custID, 1)
+			fmt.Println("================ result use voucher couponId : ", param.CouponID)
+			if err2 != nil {
+				fmt.Println("================ result use voucher couponId Error: ", param.CouponID)
+			}
+		}
+	}
 
 	res = models.RedeemResponse{
 		Rc:          resRedeem.Rc,
