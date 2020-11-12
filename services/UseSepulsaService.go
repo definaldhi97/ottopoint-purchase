@@ -335,25 +335,8 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 
 		}
 
-		text := param.RRN + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point couse transaction " + param.NamaVoucher + " is failed"
-		schedulerData := dbmodels.TSchedulerRetry{
-			Code:          constants.CodeSchedulerSepulsa,
-			TransactionID: utils.Before(text, "#"),
-			Count:         0,
-			IsDone:        false,
-			CreatedAT:     time.Now(),
-		}
-
-		errSaveScheduler := db.DbCon.Create(&schedulerData).Error
-		if errSaveScheduler != nil {
-
-			fmt.Println("===== Gagal SaveScheduler ke DB =====")
-			fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
-			fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", param.AccountNumber, param.RRN))
-
-		}
-
 		id := utils.GenerateTokenUUID()
+		go SaveTSchedulerRetry(param)
 		go SaveDBSepulsa(id, param.InstitutionID, couponID, couponCode, param.AccountNumber, param.AccountId, req.CampaignID)
 		go SaveTransactionSepulsa(param, sepulsaRes, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09")
 
@@ -608,6 +591,30 @@ func (t UseSepulsaService) clearCacheBalance(phone string) {
 	}
 	fmt.Println("Clear Cache Get Balance: ", clearCacheBalance.Messages)
 	return
+
+}
+
+func SaveTSchedulerRetry(param models.Params) {
+
+	fmt.Println(fmt.Sprintf("[Start-SaveTSchedulerRetry]-[Sepulsa]-[%v]", transType))
+
+	text := param.RRN + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point couse transaction " + param.NamaVoucher + " is failed"
+	schedulerData := dbmodels.TSchedulerRetry{
+		Code:          constants.CodeSchedulerSepulsa,
+		TransactionID: utils.Before(text, "#"),
+		Count:         0,
+		IsDone:        false,
+		CreatedAT:     time.Now(),
+	}
+
+	errSaveScheduler := db.DbCon.Create(&schedulerData).Error
+	if errSaveScheduler != nil {
+
+		fmt.Println("===== Gagal SaveScheduler ke DB =====")
+		fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
+		fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", param.AccountNumber, param.RRN))
+
+	}
 
 }
 
