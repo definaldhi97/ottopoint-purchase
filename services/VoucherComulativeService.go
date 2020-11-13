@@ -386,7 +386,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 
 	var m string
 	if req.Jumlah > 1 {
-		m = getMsgCummulative(rc, msg)
+		m = GetMsgCummulative(rc, msg)
 	}
 
 	if s != 0 && f != 0 && p == 0 {
@@ -437,7 +437,7 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	return res
 }
 
-func getMsgCummulative(rc, msg string) string {
+func GetMsgCummulative(rc, msg string) string {
 
 	var codeMsg string
 

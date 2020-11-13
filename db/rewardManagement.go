@@ -72,3 +72,16 @@ func UpdateUsageLimitVoucher(rewadID string, latestLimitVoucher int) error {
 	}
 	return nil
 }
+
+func Get_MReward(id string) (dbmodels.MRewardModel, error) {
+	var result dbmodels.MRewardModel
+
+	err := DbCon.Raw(`select * from product.m_reward where id = ?`, id).Scan(&result).Error
+	if err != nil {
+		fmt.Println("Failed Get Voucher/Reward : ", err)
+		return result, err
+	}
+
+	return result, nil
+
+}

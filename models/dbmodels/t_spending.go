@@ -40,6 +40,7 @@ type TSpending struct {
 	ProductCategoryID string    `gorm:"product_category_id"`
 	Comment           string    `gorm:"comment"`
 	RewardID          string    `gorm:"column:m_reward_id"`
+	MProductID        string    `gorm:"column:m_product_id"`
 }
 
 func (t *TSpending) TableName() string {

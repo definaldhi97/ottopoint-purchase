@@ -79,6 +79,7 @@ func UseVoucherComulative(req models.VoucherComultaiveReq, redeemComu models.Red
 
 // function reedem use voucher
 func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Params) models.RedeemResponse {
+	fmt.Println("[ >>>>>>>>>>>>>>>>>> Payment Voucher Otto AG <<<<<<<<<<<<<<<< ]")
 	res := models.RedeemResponse{}
 
 	fmt.Println("[RedeemUseVoucherComulative]-[Package-Services]")
@@ -174,6 +175,9 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		VoucherCode:     billerRes.Data.Code,
 		CouponID:        param.CouponID,
 		ExpireDateVidio: billerRes.Data.EndDateVidio,
+		AccountId:       param.AccountId,
+		ProductID:       param.ProductID,
+		RewardID:        param.RewardID,
 		DataSupplier: models.Supplier{
 			Rc: billerRes.Rc,
 			Rd: billerRes.Msg,
@@ -432,6 +436,7 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		ProductCategoryID: param.CategoryID,
 		Comment:           param.Comment,
 		RewardID:          param.RewardID,
+		MProductID:        param.ProductID,
 	}
 
 	err := db.DbCon.Create(&save).Error

@@ -7,8 +7,9 @@ import (
 )
 
 type Count struct {
-	Count         int    `gorm:"count" json:"count"`
-	AccountNumber string `gorm:"account_number"`
+	Count         int    `gorm:"column:count" json:"count"`
+	AccountNumber string `gorm:"column:account_number"`
+	CountFailed   int    `gorm:"column:count_failed"`
 }
 
 type MappingRc struct {
@@ -95,7 +96,7 @@ func GetPyenmentFailed(cummulative_ref string) (Count, error) {
 	res := Count{}
 
 	// err := DbCon.Exec(`select * from users where phone = ?, status = true`, phone).Scan(&res).Error
-	err := DbCon.Raw("select account_number, sum(point) as count from t_spending where status not in ('00','09','68') and cummulative_ref = ? and trans_type = ? group by account_number", cummulative_ref, constants.CODE_TRANSTYPE_REDEMPTION).Scan(&res).Error
+	err := DbCon.Raw("select account_number, sum(point) as count, count(*) as count_failed from t_spending where status not in ('00','09','68') and cummulative_ref = ? and trans_type = ? group by account_number", cummulative_ref, constants.CODE_TRANSTYPE_REDEMPTION).Scan(&res).Error
 	if err != nil {
 		fmt.Println("[EEROR-DATABASE]")
 		fmt.Println("[GetPyenmentFailed]")

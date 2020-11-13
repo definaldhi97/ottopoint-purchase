@@ -12,7 +12,7 @@ import (
 )
 
 func Redeem_PointandVoucher(QtyVoucher int, param models.Params, textComment string) (models.SpendingPointVoucher, error) {
-	fmt.Println("[ >>>>>>>>>>>>>>>>>> Redeem Point and Voucher <<<<<<<<<<<<<<<< ]")
+	fmt.Println("[ >>>>>>>>>>>>>>>>>> Spending/Deduct Point and Voucher <<<<<<<<<<<<<<<< ]")
 	var result models.SpendingPointVoucher
 	var msgEarning, statusEarning string
 	// validasi usage limit voucher

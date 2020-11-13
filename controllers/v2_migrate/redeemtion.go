@@ -12,6 +12,9 @@ import (
 	"ottopoint-purchase/services/v2_migrate"
 	"ottopoint-purchase/utils"
 	"strings"
+	"time"
+
+	zaplog "github.com/opentracing-contrib/go-zap/log"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/gin-gonic/gin"
@@ -132,12 +135,13 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 		ProductID:           cekVoucher.ProductID,
 		CategoryID:          dataVouch.CategoryID,
 		RewardID:            dataVouch.RewardID,
+		ExpDate:             dataVouch.ExpDate,
 	}
 
 	switch dataVouch.SupplierID {
 	case constants.CODE_VENDOR_OTTOAG:
 		fmt.Println(" [ Product OTTOAG ]")
-		go UseVoucherOttoAgService.UseVoucherOttoAg(req, param)
+		res = UseVoucherOttoAgService.UseVoucherOttoAg(req, param)
 	case constants.CODE_VENDOR_UV:
 		fmt.Println(" [ Product Ultra Voucher ]")
 	case constants.CODE_VENDOR_SEPULSA:
@@ -145,6 +149,17 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 	case constants.CODE_VENDOR_AGREGATOR:
 		fmt.Println(" [ Product Agregator ]")
 	}
+
+	sugarLogger.Info("RESPONSE : ", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
+		zap.Any("BODY : ", res))
+
+	datalog := utils.LogSpanMax(res)
+	zaplog.InfoWithSpan(span, namectrl,
+		zap.Any("RESP : ", datalog),
+		zap.Duration("backoff : ", time.Second))
+
+	defer span.Finish()
+	ctx.JSON(http.StatusOK, res)
 
 }
 

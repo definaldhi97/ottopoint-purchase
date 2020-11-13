@@ -10,18 +10,18 @@ type MRewardModel struct {
 	Categories                 string    `gorm:"column:categories" json:"categories"`
 	MoreInformationLink        string    `gorm:"column:more_information_link" json:"moreInformationLink"`
 	PushNotificationText       string    `gorm:"column:push_notification_text" json:"pushNotificationText"`
-	ProductValue               int       `gorm:"column:product_value" json:"productValue"`
-	CostinPoints               int       `gorm:"column:cost_in_points" json:"costinPoints"`
-	Levels                     int       `gorm:"column:levels" json:"levels"`
-	Segments                   int       `gorm:"column:segments" json:"segments"`
+	ProductValue               float64   `gorm:"column:product_value" json:"productValue"`
+	CostinPoints               float64   `gorm:"column:cost_in_points" json:"costinPoints"`
+	Levels                     string    `gorm:"column:levels" json:"levels"`
+	Segments                   string    `gorm:"column:segments" json:"segments"`
 	Unlimited                  bool      `gorm:"column:unlimited" json:"unlimited"`
 	SingleCoupon               bool      `gorm:"column:single_coupon" json:"singleCoupon"`
 	UsageLimit                 int       `gorm:"column:usage_limit" json:"usageLimit"`
 	LimitPeruser               int       `gorm:"column:limit_per_user" json:"limitPerUser"`
 	RewardCodes                string    `gorm:"column:reward_odes" json:"rewardCodes"`
-	SupplierCost               int       `gorm:"column:supplier_cost" json:"supplierCost"`
-	Tax                        string    `gorm:"column:tax" json:"tax"`
-	taxPriceValue              int       `gorm:"column:tax_price_value" json:"taxPriceValue"`
+	SupplierCost               float64   `gorm:"column:supplier_cost" json:"supplierCost"`
+	Tax                        int       `gorm:"column:tax" json:"tax"`
+	taxPriceValue              float64   `gorm:"column:tax_price_value" json:"taxPriceValue"`
 	Labels                     string    `gorm:"column:labels" json:"labels"`
 	DaysInactive               int       `gorm:"column:days_inactive" json:"daysInactive"`
 	TransactionPercentageValue int       `gorm:"column:transaction_percentage_value" json:"transactionPercentageValue"`
