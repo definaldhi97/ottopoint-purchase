@@ -5,9 +5,11 @@ import (
 	db "ottopoint-purchase/db"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/opentracing/opentracing-go"
+	"github.com/vjeantet/jodaTime"
 	"go.uber.org/zap"
 )
 
@@ -50,13 +52,37 @@ func (t UseVoucherServices) UseVoucherAggregator(req models.UseVoucherReq, param
 		return res
 	}
 
+	// Update Status Voucher
+	timeUse := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+	go db.UpdateVoucher(timeUse, spend.CouponId)
+
+	codeVoucher := t.decryptVoucherCode(spend.VoucherCode, spend.CouponId)
+
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
 		Data: models.GetVoucherAgResp{
 			Voucher:     param.NamaVoucher,
-			VoucherCode: spend.VoucherCode,
+			VoucherCode: codeVoucher,
 			Link:        spend.VoucherLink,
 		},
 	}
 	return res
+}
+
+func (t UseVoucherServices) decryptVoucherCode(voucherCode, couponID string) string {
+
+	var codeVoucher string
+	if voucherCode == "" {
+		return voucherCode
+	}
+
+	a := []rune(couponID)
+	key32 := string(a[0:32])
+	secretKey := []byte(key32)
+	codeByte := []byte(voucherCode)
+	chiperText, _ := utils.DecryptAES(codeByte, secretKey)
+	codeVoucher = string(chiperText)
+
+	return codeVoucher
+
 }
