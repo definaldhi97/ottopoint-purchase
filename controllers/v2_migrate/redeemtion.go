@@ -108,7 +108,7 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 		}
 	}
 
-	UseVoucherOttoAgService := v2_migrate.UseVoucherOttoAgService{
+	VoucherOttoAgService := v2_migrate.VoucherOttoAgService{
 		General: models.GeneralModel{
 			ParentSpan: span,
 			OttoZaplog: sugarLogger,
@@ -117,7 +117,16 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 		},
 	}
 
-	UseVoucherUVService := v2_migrate.UseVoucherUVService{
+	VoucherUVService := v2_migrate.VoucherUVService{
+		General: models.GeneralModel{
+			ParentSpan: span,
+			OttoZaplog: sugarLogger,
+			SpanId:     spanid,
+			Context:    context,
+		},
+	}
+
+	VoucherSepulsaService := v2_migrate.VoucherSepulsaService{
 		General: models.GeneralModel{
 			ParentSpan: span,
 			OttoZaplog: sugarLogger,
@@ -150,12 +159,13 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 	switch dataVouch.SupplierID {
 	case constants.CODE_VENDOR_OTTOAG:
 		fmt.Println(" [ Product OTTOAG ]")
-		res = UseVoucherOttoAgService.VoucherOttoAg(req, param)
+		res = VoucherOttoAgService.VoucherOttoAg(req, param)
 	case constants.CODE_VENDOR_UV:
 		fmt.Println(" [ Product Ultra Voucher ]")
-		res = UseVoucherUVService.VoucherUV(req, param)
+		res = VoucherUVService.VoucherUV(req, param)
 	case constants.CODE_VENDOR_SEPULSA:
 		fmt.Println(" [ Product Sepulsa ]")
+		res = VoucherSepulsaService.VoucherSepulsa(req, param)
 	case constants.CODE_VENDOR_AGREGATOR:
 		fmt.Println(" [ Product Agregator ]")
 	}
@@ -202,6 +212,8 @@ func SwitchDataVoucher(data models.VoucherDetailsManagement) models.Params {
 		RewardID:            data.RewardID,
 		ProductID:           data.ProductID,
 	}
+
+	fmt.Println("limit Voucher sepulsa : ", result.UsageLimitVoucher)
 
 	return result
 }
