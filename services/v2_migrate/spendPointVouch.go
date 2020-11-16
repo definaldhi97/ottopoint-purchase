@@ -28,10 +28,12 @@ func Redeem_PointandVoucher(QtyVoucher int, param models.Params) (models.Spendin
 	// deduct/spending point
 	// textComment := param.NamaVoucher + "," + "product code : " + param.ProductCodeInternal
 	// textComment := param.Reffnum + "#" + param.NamaVoucher
+	totalPoint := param.Point * QtyVoucher
 	fmt.Println("Comment Spending Point Redeem Voucher : ", param.Comment)
-	replCostPoint := strings.ReplaceAll(strconv.Itoa(param.Point), ",", ".")
-	fmt.Println("Cost Point Voucher before : ", strconv.Itoa(param.Point))
+	replCostPoint := strings.ReplaceAll(strconv.Itoa(totalPoint), ",", ".")
+	fmt.Println("Cost Point Voucher before : ", strconv.Itoa(totalPoint))
 	fmt.Println("Cost point Voucher : ", replCostPoint)
+
 	resSpend, errSpend := opl.SpendPoint(param.AccountId, replCostPoint, param.Comment)
 
 	if errSpend != nil || resSpend.PointsTransferId == "" {
@@ -81,10 +83,18 @@ func Redeem_PointandVoucher(QtyVoucher int, param models.Params) (models.Spendin
 	generateCouponsID := utils.GenerateTokenUUID()
 	fmt.Println("Coupons ID : ", generateCouponsID)
 
+	var couponVouc []models.CouponsVoucher
+	for i := 0; QtyVoucher > i; i++ {
+		a := models.CouponsVoucher{
+			CouponsCode: param.CouponCode,
+			CouponsID:   utils.GenerateTokenUUID(),
+		}
+		couponVouc = append(couponVouc, a)
+	}
+
 	result.Rc = "00"
 	result.Rd = "Success"
-	result.CouponsCode = param.CouponCode
-	result.CouponsID = generateCouponsID
+	result.CouponseVouch = couponVouc
 	return result, nil
 
 }

@@ -143,7 +143,7 @@ func RedeemVoucherOttoAg(req models.VoucherComultaiveReq, param models.Params, g
 	fmt.Println("Response Deduct point dan voucher")
 	fmt.Println(resultRedeemVouch)
 
-	paramInq.CouponID = resultRedeemVouch.CouponsID
+	paramInq.CouponID = resultRedeemVouch.CouponseVouch[0].CouponsID
 	go services.SaveTransactionOttoAg(paramInq, dataInquery, reqInq, req, constants.CODE_SUCCESS)
 
 	if resultRedeemVouch.Rc != "00" {
@@ -167,8 +167,8 @@ func RedeemVoucherOttoAg(req models.VoucherComultaiveReq, param models.Params, g
 		return
 	}
 
-	resRedeemComu.CouponCode = resultRedeemVouch.CouponsCode
-	resRedeemComu.CouponID = resultRedeemVouch.CouponsID
+	resRedeemComu.CouponCode = resultRedeemVouch.CouponseVouch[0].CouponsCode
+	resRedeemComu.CouponID = resultRedeemVouch.CouponseVouch[0].CouponsID
 
 	ErrRespRedeem <- nil
 

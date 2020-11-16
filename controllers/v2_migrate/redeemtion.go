@@ -117,6 +117,15 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 		},
 	}
 
+	UseVoucherUVService := v2_migrate.UseVoucherUVService{
+		General: models.GeneralModel{
+			ParentSpan: span,
+			OttoZaplog: sugarLogger,
+			SpanId:     spanid,
+			Context:    context,
+		},
+	}
+
 	param := models.Params{
 		AccountNumber:       dataToken.Data,
 		MerchantID:          dataUser.MerchantID,
@@ -144,6 +153,7 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 		res = UseVoucherOttoAgService.VoucherOttoAg(req, param)
 	case constants.CODE_VENDOR_UV:
 		fmt.Println(" [ Product Ultra Voucher ]")
+		res = UseVoucherUVService.VoucherUV(req, param)
 	case constants.CODE_VENDOR_SEPULSA:
 		fmt.Println(" [ Product Sepulsa ]")
 	case constants.CODE_VENDOR_AGREGATOR:

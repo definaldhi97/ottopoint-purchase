@@ -45,7 +45,7 @@ func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 	exp := utils.FormatTimeString(time.Now(), 0, 0, timeExp)
 	param.ExpDate = exp
 
-	total := strconv.Itoa(req.Jumlah)
+	// total := strconv.Itoa(req.Jumlah)
 
 	// spending point and spending usage_limit voucher
 	textCommentSpending := param.CumReffnum + "#" + param.NamaVoucher
@@ -126,7 +126,12 @@ func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 		return res
 	}
 
-	if errRedeemVouchUV != nil || RedeemVouchUV.Rd != "" || RedeemVouchUV.CouponsCode == "" {
+	var c string
+	for _, vall := range RedeemVouchUV.CouponseVouch {
+		c = vall.CouponsCode
+	}
+
+	if errRedeemVouchUV != nil || RedeemVouchUV.Rd != "" || c == "" {
 		fmt.Println("Error : ", errRedeemVouchUV)
 		fmt.Println("[UltraVoucherServices]-[RedeemVoucher]")
 		fmt.Println("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
@@ -191,7 +196,8 @@ func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
 
 			t := i - 1
-			param.CouponID = RedeemVouchUV[t].CouponsID
+			coupon := RedeemVouchUV.CouponseVouch[t].CouponsID
+			param.CouponID = coupon
 
 			// go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "09")
 			go services.SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09")
@@ -224,7 +230,7 @@ func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 			TransactionId:  param.Reffnum,
 			Data: models.DataValue{
 				RewardValue: "point",
-				Value:       totalPoint,
+				Value:       strconv.Itoa(totalPoint),
 			},
 		}
 
@@ -248,7 +254,8 @@ func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 			// TrxID
 			param.TrxID = utils.GenTransactionId()
 			t := i - 1
-			param.CouponID = RedeemVouchUV.CouponsID
+			coupon := RedeemVouchUV.CouponseVouch[t].CouponsID
+			param.CouponID = coupon
 			go services.SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
 
 		}
@@ -295,7 +302,7 @@ func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 			TransactionId:  param.Reffnum,
 			Data: models.DataValue{
 				RewardValue: "point",
-				Value:       totalPoint,
+				Value:       strconv.Itoa(totalPoint),
 			},
 		}
 
@@ -318,7 +325,8 @@ func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 			// TrxID
 			param.TrxID = utils.GenTransactionId()
 			t := i - 1
-			param.CouponID = RedeemVouchUV[t].CouponsID
+			coupon := RedeemVouchUV.CouponseVouch[t].CouponsID
+			param.CouponID = coupon
 			go services.SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
 
 		}
@@ -344,11 +352,12 @@ func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 		// TrxID
 		param.TrxID = utils.GenTransactionId()
 		t := i - 1
-		param.CouponID = RedeemVouchUV[t].CouponsID
+		coupon := RedeemVouchUV.CouponseVouch[t].CouponsID
+		param.CouponID = coupon
 		code := order.Data.VouchersCode[t].Code
 
 		id := utils.GenerateTokenUUID()
-		go services.SaveDB(id, param.InstitutionID, param.CouponI, code, param.AccountNumber, param.AccountId, req.CampaignID)
+		go services.SaveDB(id, param.InstitutionID, param.CouponID, code, param.AccountNumber, param.AccountId, req.CampaignID)
 		go services.SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00")
 
 	}
