@@ -131,6 +131,11 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		saveStatus = constants.Failed
 	}
 
+	isUsed := false
+	if status == "01" {
+		isUsed = true
+	}
+
 	reqUV, _ := json.Marshal(&reqdata)   // Req UV
 	responseUV, _ := json.Marshal(&res)  // Response UV
 	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
@@ -148,7 +153,7 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		ProductCode:       param.ProductCode,
 		Amount:            int64(param.Point),
 		TransType:         trasnType,
-		IsUsed:            false,
+		IsUsed:            isUsed,
 		ProductType:       param.ProductType,
 		Status:            saveStatus,
 		ExpDate:           param.ExpDate,
