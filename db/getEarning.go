@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"ottopoint-purchase/models/dbmodels"
 
 	"github.com/astaxie/beego/logs"
@@ -15,6 +16,31 @@ func GetEarningCode(code string) (dbmodels.MEarningRule, error) {
 		return res, err
 	}
 	logs.Info("Data MEarning :", res)
+
+	return res, nil
+}
+
+func GetEarningCodebyProductCode(productCode string) (dbmodels.MEarningRule, error) {
+	res := dbmodels.MEarningRule{}
+
+	fmt.Println("[Select from GeneralSpending]")
+	err := DbCon.Raw(`select * from m_earning_rule where lower(sku_ids) like '%?%' = ?`, productCode).Scan(&res).Error
+	if err != nil {
+
+		fmt.Println(fmt.Sprintf("[Failed to Get EarningCode from GeneralSpending]-[Error : %v]", err.Error()))
+		fmt.Println("[PackageDB]-[GetEarningCodebyProductCode]")
+
+		fmt.Println("[Select from CustoomeEventRule]")
+		err = DbCon.Raw(`select * from m_earning_rule where event_name = ?`, productCode).Scan(&res).Error
+		if err != nil {
+
+			fmt.Println(fmt.Sprintf("[Failed to Get EarningCode from CustoomeEventRule]-[Error : %v]", err.Error()))
+			fmt.Println("[PackageDB]-[GetEarningCodebyProductCode]")
+
+			return res, err
+		}
+
+	}
 
 	return res, nil
 }

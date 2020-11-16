@@ -34,6 +34,7 @@ var (
 	checkStatusTrx          string
 	redeemCallbackVoucherAg string
 	checkStatusScheduler    string
+	getEarningRule     string
 
 	view_voucher string
 
@@ -68,6 +69,7 @@ func init() {
 	redeemCallbackVoucherAg = utils.GetEnv("callbackRequestVoucherAg", "/transaction/v2/redeem/voucherag")
 	checkStatusScheduler = utils.GetEnv("checkStatusScheduler", "/transaction/v2/check-status-scheduler")
 
+	getEarningRule = utils.GetEnv("getEarningRule", "/transaction/v2/getEarning")
 	csv = utils.GetEnv("csv", "/csv")
 
 	debugmode = utils.GetEnv("apps.debug", "debug")
@@ -142,6 +144,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.GET(view_voucher, controller_v2_1.ViewVoucherController)
 	router.GET(use_voucher_vidio, controller_v2_1.UseVoucherVidioController)
 	router.POST(callbackSepulsa, controllers.HandleCallbackSepulsa)
+	router.GET(getEarningRule, controllers.GetEarningRuleController)
 
 	router.POST(redeemCallbackVoucherAg, controllers.HandleCallbackRequestVoucherAg)
 	router.POST(checkStatusScheduler, controllers.SchedulerCheckStatusController)
