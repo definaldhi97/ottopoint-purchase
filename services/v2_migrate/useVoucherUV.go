@@ -51,6 +51,8 @@ func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 	textCommentSpending := param.CumReffnum + "#" + param.NamaVoucher
 	param.Comment = textCommentSpending
 	RedeemVouchUV, errRedeemVouchUV := Redeem_PointandVoucher(req.Jumlah, param)
+	fmt.Println("result Spending point / Deduct point")
+	fmt.Println(RedeemVouchUV)
 
 	if RedeemVouchUV.Rd == "Invalid JWT Token" {
 		fmt.Println("Error : ", errRedeemVouchUV)
@@ -77,7 +79,7 @@ func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 		return res
 	}
 
-	if RedeemVouchUV.Rd == "Not enough points" {
+	if RedeemVouchUV.Rd == "not enough points" {
 		fmt.Println("Error : ", errRedeemVouchUV)
 		fmt.Println("[UltraVoucherServices]-[RedeemVoucher]")
 		fmt.Println("[Not enough points]-[Gagal Redeem Voucher]")
@@ -131,7 +133,7 @@ func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 		c = vall.CouponsCode
 	}
 
-	if errRedeemVouchUV != nil || RedeemVouchUV.Rd != "" || c == "" {
+	if errRedeemVouchUV != nil || RedeemVouchUV.Rc != "00" || c == "" {
 		fmt.Println("Error : ", errRedeemVouchUV)
 		fmt.Println("[UltraVoucherServices]-[RedeemVoucher]")
 		fmt.Println("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
@@ -202,6 +204,20 @@ func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 			// go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "09")
 			go services.SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09")
 		}
+
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: models.UltraVoucherResp{
+				// Code: "178",
+				Code: "68",
+				Msg:  "Transaksi Anda sedang dalam proses. Silahkan hubungi customer support kami untuk informasi selengkapnya.",
+				// Msg:     "Maaf koneksi timeout. Silahkan dicoba kembali beberapa saat lagi",
+				Success: 0,
+				Failed:  0,
+				Pending: req.Jumlah,
+			},
+		}
+		return res
 	}
 
 	if order.ResponseCode == "02" {
@@ -259,6 +275,14 @@ func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 			go services.SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
 
 		}
+
+		fmt.Println("[ >>>>>>>>>>>>> Response Redeemtion Ultra Voucher UV <<<<<<<<<<<<<<<< ]")
+		fmt.Println("[ Code ] : ", "176")
+		fmt.Println("[ Coummulatif Reff Num ] : ", param.CumReffnum)
+		fmt.Println("[ Order ] : ", req.Jumlah)
+		fmt.Println("[ Success ] : ", 0)
+		fmt.Println("[ Failed ] : ", 0)
+		fmt.Println("[ Pending ] : ", req.Jumlah)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -331,6 +355,14 @@ func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 
 		}
 
+		fmt.Println("[ >>>>>>>>>>>>> Response Redeemtion Ultra Voucher UV <<<<<<<<<<<<<<<< ]")
+		fmt.Println("[ Code ] : ", "0")
+		fmt.Println("[ Coummulatif Reff Num ] : ", param.CumReffnum)
+		fmt.Println("[ Order ] : ", req.Jumlah)
+		fmt.Println("[ Success ] : ", 0)
+		fmt.Println("[ Failed ] : ", req.Jumlah)
+		fmt.Println("[ Pending ] : ", 0)
+
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
 			Data: models.UltraVoucherResp{
@@ -361,6 +393,14 @@ func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 		go services.SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00")
 
 	}
+
+	fmt.Println("[ >>>>>>>>>>>>> Response Redeemtion Ultra Voucher UV <<<<<<<<<<<<<<<< ]")
+	fmt.Println("[ Code ] : ", "00")
+	fmt.Println("[ Coummulatif Reff Num ] : ", param.CumReffnum)
+	fmt.Println("[ Order ] : ", req.Jumlah)
+	fmt.Println("[ Success ] : ", req.Jumlah)
+	fmt.Println("[ Failed ] : ", 0)
+	fmt.Println("[ Pending ] : ", 0)
 
 	fmt.Println("Response UV : ", order)
 	res = models.Response{
