@@ -21,8 +21,8 @@ type UseVoucherOttoAgService struct {
 	General models.GeneralModel
 }
 
-func (t UseVoucherOttoAgService) UseVoucherOttoAg(req models.VoucherComultaiveReq, param models.Params) models.Response {
-	fmt.Println("[ >>>>>>>>>>>>>>>>>> Use Voucher OttoAg Service <<<<<<<<<<<<<<<< ]")
+func (t UseVoucherOttoAgService) VoucherOttoAg(req models.VoucherComultaiveReq, param models.Params) models.Response {
+	fmt.Println("[ >>>>>>>>>>>>>>>>>> Voucher OttoAg Service <<<<<<<<<<<<<<<< ]")
 
 	var res models.Response
 

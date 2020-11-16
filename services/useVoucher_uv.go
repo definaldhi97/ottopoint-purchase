@@ -166,6 +166,8 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		CampaignId:      param.CampaignID,
 		AccountId:       param.AccountId,
 		RedeemAt:        timeRedeem,
+		Comment:         param.Comment,
+		RewardID:        param.RewardID,
 	}
 
 	err := db.DbCon.Create(&save).Error

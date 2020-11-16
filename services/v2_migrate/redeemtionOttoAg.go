@@ -49,6 +49,7 @@ func RedeemVoucherOttoAg(req models.VoucherComultaiveReq, param models.Params, g
 	dataInquery, errInquiry := biller.InquiryBiller(inqReq.Data, req, reqInq, param)
 
 	textCommentSpending := param.Reffnum + "#" + param.NamaVoucher
+	param.Comment = textCommentSpending
 	paramInq := models.Params{
 		AccountNumber: param.AccountNumber,
 		MerchantID:    param.MerchantID,
@@ -137,8 +138,8 @@ func RedeemVoucherOttoAg(req models.VoucherComultaiveReq, param models.Params, g
 
 	}
 	//ss
-	// deduct point and deduct usage_limit voucher
-	resultRedeemVouch, errRedeemVouch := Redeem_PointandVoucher(req.Jumlah, param, textCommentSpending)
+	// spending point and spending usage_limit voucher
+	resultRedeemVouch, errRedeemVouch := Redeem_PointandVoucher(req.Jumlah, param)
 	fmt.Println("Response Deduct point dan voucher")
 	fmt.Println(resultRedeemVouch)
 

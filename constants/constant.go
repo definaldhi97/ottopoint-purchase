@@ -205,3 +205,7 @@ const (
 	CODE_FAILED    = "01"
 	CODE_STATUS_TO = "68"
 )
+
+const (
+	RECEIVER_NAME_UV = "OTTOPOINT"
+)

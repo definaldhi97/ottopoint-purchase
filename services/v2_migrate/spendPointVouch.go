@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func Redeem_PointandVoucher(QtyVoucher int, param models.Params, textComment string) (models.SpendingPointVoucher, error) {
+func Redeem_PointandVoucher(QtyVoucher int, param models.Params) (models.SpendingPointVoucher, error) {
 	fmt.Println("[ >>>>>>>>>>>>>>>>>> Spending/Deduct Point and Voucher <<<<<<<<<<<<<<<< ]")
 	var result models.SpendingPointVoucher
 	var msgEarning, statusEarning string
@@ -28,11 +28,11 @@ func Redeem_PointandVoucher(QtyVoucher int, param models.Params, textComment str
 	// deduct/spending point
 	// textComment := param.NamaVoucher + "," + "product code : " + param.ProductCodeInternal
 	// textComment := param.Reffnum + "#" + param.NamaVoucher
-	fmt.Println("Comment Spending Point Redeem Voucher : ", textComment)
+	fmt.Println("Comment Spending Point Redeem Voucher : ", param.Comment)
 	replCostPoint := strings.ReplaceAll(strconv.Itoa(param.Point), ",", ".")
 	fmt.Println("Cost Point Voucher before : ", strconv.Itoa(param.Point))
 	fmt.Println("Cost point Voucher : ", replCostPoint)
-	resSpend, errSpend := opl.SpendPoint(param.AccountId, replCostPoint, textComment)
+	resSpend, errSpend := opl.SpendPoint(param.AccountId, replCostPoint, param.Comment)
 
 	if errSpend != nil || resSpend.PointsTransferId == "" {
 
@@ -65,7 +65,7 @@ func Redeem_PointandVoucher(QtyVoucher int, param models.Params, textComment str
 		//
 
 		result.Rc = "500"
-		result.Rd = "Internal Server Error"
+		result.Rd = msgEarning
 		return result, errSpend
 	}
 

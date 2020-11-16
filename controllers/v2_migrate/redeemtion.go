@@ -141,7 +141,7 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 	switch dataVouch.SupplierID {
 	case constants.CODE_VENDOR_OTTOAG:
 		fmt.Println(" [ Product OTTOAG ]")
-		res = UseVoucherOttoAgService.UseVoucherOttoAg(req, param)
+		res = UseVoucherOttoAgService.VoucherOttoAg(req, param)
 	case constants.CODE_VENDOR_UV:
 		fmt.Println(" [ Product Ultra Voucher ]")
 	case constants.CODE_VENDOR_SEPULSA:
