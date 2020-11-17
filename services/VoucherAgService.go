@@ -764,8 +764,19 @@ func (t VoucherAgServices) HandleCallback(req models.CallbackRequestVoucherAg) m
 		return res
 	}
 
+	cekVoucher, errVoucher := opl.VoucherDetail(tspending.CampaignId)
+	if errVoucher != nil || cekVoucher.CampaignID == "" {
+		sugarLogger.Info("[HandleCallback]-[VoucherDetail]")
+		sugarLogger.Info(fmt.Sprintf("Error : ", errVoucher))
+
+		logs.Info("[HandleCallback]-[VoucherDetail]")
+		logs.Info(fmt.Sprintf("Error : ", errVoucher))
+	}
+
+	couponCode := cekVoucher.Coupons[0]
+
 	// Use Voucher
-	use, err2 := opl.CouponVoucherCustomer(tspending.CampaignId, tspending.CouponId, tspending.VoucherCode, tspending.AccountId, 1)
+	use, err2 := opl.CouponVoucherCustomer(tspending.CampaignId, tspending.CouponId, couponCode, tspending.AccountId, 1)
 	var useErr string
 	for _, value := range use.Coupons {
 		useErr = value.CouponID
@@ -780,7 +791,7 @@ func (t VoucherAgServices) HandleCallback(req models.CallbackRequestVoucherAg) m
 	}
 
 	// Update TSpending
-	_, err3 := db.UpdateVoucherAg(tspending.ID, req.Data.RedeemedDate, req.Data.UsedDate)
+	_, err3 := db.UpdateVoucherAg(req.Data.RedeemedDate, req.Data.UsedDate, tspending.ID)
 	if err3 != nil {
 
 		fmt.Println("[VoucherAgServices]-[HandleCallback]-[FailedUpdate]")
