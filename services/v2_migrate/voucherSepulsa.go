@@ -20,11 +20,11 @@ import (
 	"go.uber.org/zap"
 )
 
-type VoucherSepulsaService struct {
+type VoucherSepulsaMigrateService struct {
 	General models.GeneralModel
 }
 
-func (t VoucherSepulsaService) VoucherSepulsa(req models.VoucherComultaiveReq, param models.Params) models.Response {
+func (t VoucherSepulsaMigrateService) VoucherSepulsa(req models.VoucherComultaiveReq, param models.Params) models.Response {
 	fmt.Println("[ >>>>>>>>>>>>>>>>>> Voucher Sepulsa Service <<<<<<<<<<<<<<<< ]")
 
 	var res models.Response

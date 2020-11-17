@@ -108,7 +108,7 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 		}
 	}
 
-	VoucherOttoAgService := v2_migrate.VoucherOttoAgService{
+	VoucherOttoAgMigrateService := v2_migrate.VoucherOttoAgMigrateService{
 		General: models.GeneralModel{
 			ParentSpan: span,
 			OttoZaplog: sugarLogger,
@@ -117,7 +117,7 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 		},
 	}
 
-	VoucherUVService := v2_migrate.VoucherUVService{
+	VoucherUVMigrateService := v2_migrate.VoucherUVMigrateService{
 		General: models.GeneralModel{
 			ParentSpan: span,
 			OttoZaplog: sugarLogger,
@@ -126,7 +126,16 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 		},
 	}
 
-	VoucherSepulsaService := v2_migrate.VoucherSepulsaService{
+	VoucherSepulsaMigrateService := v2_migrate.VoucherSepulsaMigrateService{
+		General: models.GeneralModel{
+			ParentSpan: span,
+			OttoZaplog: sugarLogger,
+			SpanId:     spanid,
+			Context:    context,
+		},
+	}
+
+	VoucherAgMigrateServices := v2_migrate.VoucherAgMigrateServices{
 		General: models.GeneralModel{
 			ParentSpan: span,
 			OttoZaplog: sugarLogger,
@@ -159,15 +168,17 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 	switch dataVouch.SupplierID {
 	case constants.CODE_VENDOR_OTTOAG:
 		fmt.Println(" [ Product OTTOAG ]")
-		res = VoucherOttoAgService.VoucherOttoAg(req, param)
+		res = VoucherOttoAgMigrateService.VoucherOttoAg(req, param)
 	case constants.CODE_VENDOR_UV:
 		fmt.Println(" [ Product Ultra Voucher ]")
-		res = VoucherUVService.VoucherUV(req, param)
+		res = VoucherUVMigrateService.VoucherUV(req, param)
 	case constants.CODE_VENDOR_SEPULSA:
 		fmt.Println(" [ Product Sepulsa ]")
-		res = VoucherSepulsaService.VoucherSepulsa(req, param)
+		res = VoucherSepulsaMigrateService.VoucherSepulsa(req, param)
 	case constants.CODE_VENDOR_AGREGATOR:
 		fmt.Println(" [ Product Agregator ]")
+		header.DeviceID = "H2H"
+		res = VoucherAgMigrateServices.VoucherAg(req, param, header)
 	}
 
 	sugarLogger.Info("RESPONSE : ", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),

@@ -24,6 +24,7 @@ type Params struct {
 	TrxID           string
 	VoucherCode     string // voucher code vidio
 	ExpireDateVidio string // Expire date Voucher Vidio
+	VoucherLink     string // voucher link
 	CategoryID      string
 	// percobaan
 	Total               int

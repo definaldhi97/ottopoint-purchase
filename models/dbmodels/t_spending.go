@@ -41,6 +41,7 @@ type TSpending struct {
 	Comment           string    `gorm:"comment"`
 	RewardID          string    `gorm:"column:m_reward_id"`
 	MProductID        string    `gorm:"column:m_product_id"`
+	VoucherLink       string    `gorm:"voucher_link"`
 }
 
 func (t *TSpending) TableName() string {

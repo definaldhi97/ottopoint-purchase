@@ -132,6 +132,9 @@ const (
 	RC_VOUCHER_NOT_AVAILABLE = "208"
 	RD_VOUCHER_NOT_AVAILABLE = "Voucher not available"
 
+	RC_FAILED_DECRYPT_VOUCHER = 202
+	RD_FAILED_DECRYPT_VOUCHER = "Failed to Decrypt Voucher"
+
 	// Nomor belum eligible
 
 	// Failed to GetBalance
