@@ -17,11 +17,11 @@ import (
 	"go.uber.org/zap"
 )
 
-type UseVoucherOttoAgService struct {
+type VoucherOttoAgMigrateService struct {
 	General models.GeneralModel
 }
 
-func (t UseVoucherOttoAgService) VoucherOttoAg(req models.VoucherComultaiveReq, param models.Params) models.Response {
+func (t VoucherOttoAgMigrateService) VoucherOttoAg(req models.VoucherComultaiveReq, param models.Params) models.Response {
 	fmt.Println("[ >>>>>>>>>>>>>>>>>> Voucher OttoAg Service <<<<<<<<<<<<<<<< ]")
 
 	var res models.Response

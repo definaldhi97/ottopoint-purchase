@@ -18,11 +18,11 @@ import (
 	"go.uber.org/zap"
 )
 
-type UseVoucherUVService struct {
+type VoucherUVMigrateService struct {
 	General models.GeneralModel
 }
 
-func (t UseVoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param models.Params) models.Response {
+func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, param models.Params) models.Response {
 	fmt.Println("[ >>>>>>>>>>>>>>>>>> Voucher UV Service <<<<<<<<<<<<<<<< ]")
 
 	var res models.Response
