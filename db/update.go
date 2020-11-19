@@ -98,3 +98,25 @@ func UpdateTSchedulerVoucherAG(transactionID string) error {
 
 	return nil
 }
+
+func UpdateVoucherAgSecond(status, respDesc, tspendingID string) (dbmodels.TSpending, error) {
+	res := dbmodels.TSpending{}
+	var internalCode string
+	switch status {
+	case "Success":
+		internalCode = "00"
+	case "Pending":
+		internalCode = "09"
+	default:
+		internalCode = "01"
+	}
+
+	err := DbCon.Raw(`update t_spending set responder_rd = ?, responder_rc = ?, status = ? where id = ?`, status, respDesc, internalCode, tspendingID).Scan(&res).Error
+	if err != nil {
+		logs.Info("Failed to UpdateVoucherSepulsa from database", err)
+		return res, err
+	}
+	logs.Info("Update Voucher :", res)
+
+	return res, nil
+}
