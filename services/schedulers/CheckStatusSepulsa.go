@@ -112,8 +112,6 @@ func (t SchedulerCheckStatusService) CheckStatusVoucherAgService(trxID string) e
 		return errStatus
 	}
 
-	orderStatus.ResponseCode = "09"
-
 	if orderStatus != nil {
 
 		if orderStatus.ResponseCode == "09" ||
