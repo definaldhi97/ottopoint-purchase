@@ -776,6 +776,8 @@ func (t VoucherAgServices) HandleCallback(req models.CallbackRequestVoucherAg) m
 
 	}
 
+	go db.UpdateTSchedulerVoucherAG(req.Data.OrderID)
+
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
 	}

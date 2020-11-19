@@ -1,6 +1,7 @@
 package db
 
 import (
+	"ottopoint-purchase/constants"
 	"ottopoint-purchase/models/dbmodels"
 
 	"github.com/astaxie/beego/logs"
@@ -47,4 +48,19 @@ func UpdateVoucherAg(redeemDate, usedDate, spendingID string) (dbmodels.TSpendin
 
 	return res, nil
 
+}
+
+func UpdateTSchedulerVoucherAG(transactionID string) error {
+
+	err := DbCon.Raw(
+		"update t_scheduler_retry set is_done = true where transaction_id = ? and code = ?",
+		transactionID, constants.CodeSchedulerVoucherAG,
+	).Error
+
+	if err != nil {
+		logs.Info("Failed to UpdateVoucher from database", err)
+		return err
+	}
+
+	return nil
 }

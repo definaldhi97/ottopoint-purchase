@@ -182,7 +182,8 @@ const (
 )
 
 const (
-	CodeScheduler = "SC001"
+	CodeScheduler          = "SC001"
+	CodeSchedulerVoucherAG = "SC006"
 )
 
 const (
