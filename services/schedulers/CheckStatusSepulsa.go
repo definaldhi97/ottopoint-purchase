@@ -1,12 +1,14 @@
 package schedulers
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/hosts/opl/host"
 	opl "ottopoint-purchase/hosts/opl/host"
+	kafka "ottopoint-purchase/hosts/publisher/host"
 	sepulsa "ottopoint-purchase/hosts/sepulsa/host"
 	signature "ottopoint-purchase/hosts/signature/host"
 	voucherAg "ottopoint-purchase/hosts/voucher_aggregator/host"
@@ -119,7 +121,7 @@ func (t SchedulerCheckStatusService) CheckStatusVoucherAgService(trxID string) e
 
 			spending := spendings[0]
 			totalPoint := int(spending.Amount) * count
-			trxID := utils.GenTransactionId()
+			transactionID := utils.GenTransactionId()
 			text := trxID + spending.Institution + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + spending.Voucher + " is failed"
 
 			schedulerData := dbmodels.TSchedulerRetry{
@@ -183,7 +185,7 @@ func (t SchedulerCheckStatusService) CheckStatusVoucherAgService(trxID string) e
 			saveReversal := dbmodels.TEarning{
 				ID:               utils.GenerateTokenUUID(),
 				PartnerId:        spending.Institution,
-				TransactionId:    trxID,
+				TransactionId:    transactionID,
 				AccountNumber:    spending.AccountNumber,
 				Point:            int64(totalPoint),
 				Status:           statusEarning,
@@ -204,6 +206,32 @@ func (t SchedulerCheckStatusService) CheckStatusVoucherAgService(trxID string) e
 				name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
 				go utils.CreateCSVFile(saveReversal, name)
 			}
+
+			pubreq := models.NotifPubreq{
+				Type:           constants.CODE_REVERSAL_POINT,
+				NotificationTo: spending.AccountNumber,
+				Institution:    spending.Institution,
+				ReferenceId:    spending.RRN,
+				TransactionId:  trxID,
+				Data: models.DataValue{
+					RewardValue: "point",
+					Value:       fmt.Sprint(totalPoint),
+				},
+			}
+
+			bytePub, _ := json.Marshal(pubreq)
+			kafkaReq := kafka.PublishReq{
+				Topic: constants.TOPIC_PUSHNOTIF_GENERAL,
+				Value: bytePub,
+			}
+
+			kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+			if err != nil {
+				fmt.Println("Gagal Send Publisher")
+				fmt.Println("Error : ", err)
+			}
+
+			fmt.Println("Response Publisher : ", kafkaRes)
 
 		}
 
