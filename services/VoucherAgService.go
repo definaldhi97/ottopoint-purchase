@@ -453,6 +453,26 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 
 		}
 
+		// Save To Scheduler
+		text := param.CumReffnum + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
+		schedulerData := dbmodels.TSchedulerRetry{
+			Code:          constants.CodeSchedulerVoucherAG,
+			TransactionID: utils.Before(text, "#"),
+			Count:         0,
+			IsDone:        false,
+			CreatedAT:     time.Now(),
+		}
+
+		errSaveScheduler := db.DbCon.Create(&schedulerData).Error
+		if errSaveScheduler != nil {
+
+			fmt.Println("===== Gagal SaveScheduler ke DB =====")
+			fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
+			fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", param.AccountNumber, param.RRN))
+
+			// return
+		}
+
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
 			Data: models.UltraVoucherResp{
@@ -648,6 +668,25 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 		}
 
 		return res
+
+	}
+
+	// Save To Scheduler
+	text := param.CumReffnum + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
+	schedulerData := dbmodels.TSchedulerRetry{
+		Code:          constants.CodeSchedulerVoucherAG,
+		TransactionID: utils.Before(text, "#"),
+		Count:         0,
+		IsDone:        false,
+		CreatedAT:     time.Now(),
+	}
+
+	errSaveScheduler := db.DbCon.Create(&schedulerData).Error
+	if errSaveScheduler != nil {
+
+		fmt.Println("===== Gagal SaveScheduler ke DB =====")
+		fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
+		fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", param.AccountNumber, param.RRN))
 
 	}
 
