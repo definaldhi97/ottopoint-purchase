@@ -6,9 +6,11 @@ import (
 	"ottopoint-purchase/db"
 	opl "ottopoint-purchase/hosts/opl/host"
 	"ottopoint-purchase/models"
+	"ottopoint-purchase/models/dbmodels"
 	"ottopoint-purchase/utils"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func Redeem_PointandVoucher(QtyVoucher int, param models.Params) (models.SpendingPointVoucher, error) {
@@ -33,6 +35,17 @@ func Redeem_PointandVoucher(QtyVoucher int, param models.Params) (models.Spendin
 	replCostPoint := strings.ReplaceAll(strconv.Itoa(totalPoint), ",", ".")
 	fmt.Println("Cost Point Voucher before : ", strconv.Itoa(totalPoint))
 	fmt.Println("Cost point Voucher : ", replCostPoint)
+
+	// save to scheduler
+	schedulerData := dbmodels.TSchedulerRetry{
+		// ID
+		Code:          constants.CodeSchedulerSpending,
+		TransactionID: utils.Before(param.Comment, "#"),
+		Count:         0,
+		IsDone:        false,
+		CreatedAT:     time.Now(),
+		// UpdatedAT
+	}
 
 	resSpend, errSpend := opl.SpendPoint(param.AccountId, replCostPoint, param.Comment)
 
@@ -61,10 +74,17 @@ func Redeem_PointandVoucher(QtyVoucher int, param models.Params) (models.Spendin
 		}
 
 		// check scheduler
-		fmt.Println("Result Error Spending Point :")
-		fmt.Println(msgEarning)
-		fmt.Println(statusEarning)
-		//
+		if statusEarning == constants.TimeOut {
+			errSaveScheduler := db.DbCon.Create(&schedulerData).Error
+			if errSaveScheduler != nil {
+
+				fmt.Println("===== Gagal SaveScheduler ke DB =====")
+				fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
+				fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", param.AccountNumber, param.RRN))
+
+				// return
+			}
+		}
 
 		result.Rc = "500"
 		result.Rd = msgEarning
