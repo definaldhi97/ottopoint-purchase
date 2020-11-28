@@ -169,3 +169,25 @@ func HTTPDeleteWithHeader(url string, jsondata interface{}, header http.Header) 
 	}
 	return []byte(body), nil
 }
+
+// HTTPPostWithHeader func
+func HTTPPostWithHeader(url string, jsondata interface{}, header http.Header) ([]byte, error) {
+	request := gorequest.New()
+	request.SetDebug(envHttp.DebugClient)
+	timeout, _ := time.ParseDuration(envHttp.Timeout)
+	//_ := errors.New("Connection Problem")
+	// if url[:5] == "https" {
+	// 	request.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	// }
+	reqagent := request.Post(url)
+	reqagent.Header = header
+	_, body, errs := reqagent.
+		Send(jsondata).
+		Timeout(timeout).
+		Retry(envHttp.RetryBad, time.Second, http.StatusInternalServerError).
+		End()
+	if errs != nil {
+		return []byte(body), errs[0]
+	}
+	return []byte(body), nil
+}

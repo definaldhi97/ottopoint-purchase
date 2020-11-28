@@ -89,10 +89,11 @@ func CheckCouponUV(phone, campaign, couponId string) (dbmodels.UserMyVocuher, er
 	return res, nil
 }
 
-func ParamData(code string) (dbmodels.MParameters, error) {
+func ParamData(group, code string) (dbmodels.MParameters, error) {
 	res := dbmodels.MParameters{}
 
-	err := DbCon.Where("code = ?", code).First(&res).Error
+	// err := DbCon.Where("code = ?", code).First(&res).Error
+	err := DbCon.Raw(`select * from public.m_parameters mp where mp."group" = ? and  mp.code = ?`, group, code).Scan(&res).Error
 	if err != nil {
 
 		fmt.Println("[EEROR-DATABASE]")

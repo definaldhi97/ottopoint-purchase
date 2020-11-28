@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/vjeantet/jodaTime"
 )
 
@@ -82,7 +83,7 @@ func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Pa
 	fmt.Println("[ >>>>>>>>>>>>>>>>>> Payment Voucher Otto AG <<<<<<<<<<<<<<<< ]")
 	res := models.RedeemResponse{}
 
-	fmt.Println("[RedeemUseVoucherComulative]-[Package-Services]")
+	logrus.Info("[RedeemUseVoucherComulative]-[Package-Services]")
 
 	reqRedeem := models.UseRedeemRequest{
 		AccountNumber: param.AccountNumber,
@@ -483,9 +484,8 @@ func SendToPublisher(pubreq interface{}, topic string) {
 
 	kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
 	if err != nil {
-		fmt.Println("Gagal Send Publisher")
-		fmt.Println("Error : ", err)
+		logrus.Error("Failed Send Publisher : ", err)
 	}
 
-	fmt.Println("Response Publisher : ", kafkaRes)
+	logrus.Info("[ Response Publisher ] : ", kafkaRes)
 }

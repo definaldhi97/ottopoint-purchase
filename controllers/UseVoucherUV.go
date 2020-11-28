@@ -79,7 +79,7 @@ func UseVouhcerUVController(ctx *gin.Context) {
 		sugarLogger.Info("[UseVouhcerUVController]-[GetUltraVoucher]")
 		sugarLogger.Info("[Failed from DB]-[Get Data Voucher-UV]")
 
-		res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
+		res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
 		ctx.JSON(http.StatusOK, res)
 		return
 	}

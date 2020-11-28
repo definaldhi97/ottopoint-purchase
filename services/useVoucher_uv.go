@@ -15,6 +15,7 @@ import (
 
 	"github.com/astaxie/beego/logs"
 	"github.com/opentracing/opentracing-go"
+	"github.com/sirupsen/logrus"
 	"github.com/vjeantet/jodaTime"
 	"go.uber.org/zap"
 )
@@ -22,8 +23,7 @@ import (
 func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.Params) models.Response {
 	var res models.Response
 
-	logs.Info("=== GetVoucherUV ===")
-	fmt.Println("=== GetVoucherUV ===")
+	logrus.Info("[ >>>>>>>>>>>>>>>>>>>>>> Use Voucher UV Service <<<<<<<<<<<<<<<<<<<<<< ]")
 
 	sugarLogger := t.General.OttoZaplog
 	sugarLogger.Info("[GetVoucherUV-Services]",
