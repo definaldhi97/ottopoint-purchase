@@ -49,7 +49,7 @@ func Redeem_PointandVoucher(QtyVoucher int, param models.Params, TrxID string, h
 	schedulerData := dbmodels.TSchedulerRetry{
 		// ID
 		Code:          constants.CodeSchedulerSpending,
-		TransactionID: param.Reffnum,
+		TransactionID: TrxID,
 		Count:         0,
 		IsDone:        false,
 		CreatedAT:     time.Now(),
