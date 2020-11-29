@@ -86,7 +86,7 @@ func CallBackUVController(ctx *gin.Context) {
 		zap.Any("BODY", req),
 		zap.Any("HEADER", ctx.Request.Header))
 
-	CallabckUVServices := v2_migrate.CallabckUVServices{
+	VoucherUVMigrateService := v2_migrate.VoucherUVMigrateService{
 		General: models.GeneralModel{
 			ParentSpan: span,
 			OttoZaplog: sugarLogger,
@@ -118,7 +118,7 @@ func CallBackUVController(ctx *gin.Context) {
 		AccountId:   req.AccountId,
 	}
 
-	res = CallabckUVServices.CallbackVoucherUV(req, param, getData.CampaignID)
+	res = VoucherUVMigrateService.CallbackVoucherUV(req, param, getData.CampaignID)
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
 		zap.Any("BODY", res))

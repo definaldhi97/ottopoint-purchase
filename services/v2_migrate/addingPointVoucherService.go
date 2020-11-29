@@ -14,12 +14,12 @@ import (
 	"github.com/vjeantet/jodaTime"
 )
 
-func Adding_PointVoucher(param models.Params, countPoint, countVoucher int, header models.RequestHeader) string {
+func Adding_PointVoucher(param models.Params, countPoint, countVoucher int, TrxID string, header models.RequestHeader) string {
 	fmt.Println("[ >>>>>>>>>>>>>>>>>> Adding / Reversal Point and Voucher <<<<<<<<<<<<<<<< ]")
 
 	var result string
 
-	textComment := param.TrxID + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
+	textComment := TrxID + param.InstitutionID + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + param.NamaVoucher + " is failed"
 	statusEarning := constants.Success
 	msgEarning := constants.MsgSuccess
 
@@ -28,7 +28,7 @@ func Adding_PointVoucher(param models.Params, countPoint, countVoucher int, head
 
 	addingPoinReq := op_corepoint.AddingPointReq{
 		AccountID:     param.AccountId,
-		TransactionID: param.TrxID,
+		TransactionID: TrxID,
 		ExpiredDays:   expPoint.Value,
 		Point:         countPoint,
 		Comment:       textComment,

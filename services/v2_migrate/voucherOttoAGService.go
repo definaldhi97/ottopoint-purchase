@@ -114,7 +114,7 @@ func (t VoucherOttoAgMigrateService) VoucherOttoAg(req models.VoucherComultaiveR
 	if rcUseVoucher.AccountNumber != "" {
 		fmt.Println("[ >>>>>>>>>>>>>>>>>>>> Reversal to Point <<<<<<<<<<<<<<<<<<<<<< ] ")
 
-		resultReversal := Adding_PointVoucher(param, rcUseVoucher.Count, rcUseVoucher.CountFailed, header)
+		resultReversal := Adding_PointVoucher(param, rcUseVoucher.Count, rcUseVoucher.CountFailed, param.TrxID, header)
 		logrus.Info(resultReversal)
 
 		/////////////////////////////

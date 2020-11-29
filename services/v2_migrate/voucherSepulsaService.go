@@ -144,7 +144,7 @@ func (t VoucherSepulsaMigrateService) VoucherSepulsa(req models.VoucherComultaiv
 			logrus.Info("[SepulsaService]-[InsertTransaction]")
 			logrus.Error("ResponseDesc : ", errTransaction.Error())
 
-			resultReversal := Adding_PointVoucher(param, param.Point, 1, header)
+			resultReversal := Adding_PointVoucher(param, param.Point, 1, param.CumReffnum, header)
 			fmt.Println(resultReversal)
 
 			fmt.Println("[ >>>>>>>>>>>>>>>>>>>>>>> Send Publisher <<<<<<<<<<<<<<<<<<<< ]")
@@ -213,6 +213,120 @@ func (t VoucherSepulsaMigrateService) VoucherSepulsa(req models.VoucherComultaiv
 
 	return res
 
+}
+
+func (t VoucherSepulsaMigrateService) CallbackVoucherSepulsa(req sepulsaModels.CallbackTrxReq) models.Response {
+	fmt.Println("[ >>>>>>>>>>>>>>>>>> CallBack Sepulsa Service <<<<<<<<<<<<<<<< ]")
+	var res models.Response
+
+	sugarLogger := t.General.OttoZaplog
+	sugarLogger.Info("[SepulsaService]",
+		zap.String("TransactionID : ", req.TransactionID), zap.String("OrderID : ", req.OrderID),
+		zap.String("Status : ", req.Status), zap.String("Desc : ", req.ResponseCode),
+	)
+
+	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[SepulsaService]")
+	defer span.Finish()
+
+	fmt.Println("Start Delay ", time.Now().Unix())
+	time.Sleep(10 * time.Second)
+
+	go func(args sepulsaModels.CallbackTrxReq) {
+		// Get Spending By TransactionID and OrderID
+		spending, err := db.GetSpendingSepulsa(args.TransactionID, args.OrderID)
+		if err != nil {
+			fmt.Println("[GetSpendingSepulsa] : ", err.Error())
+			logrus.Error("[ Failed Get SpendingSepulsa ] : ", err.Error())
+		}
+
+		responseCode := models.GetErrorMsg(args.ResponseCode)
+
+		logrus.Info("[HandleCallbackSepulsa] - [ResponseCode] : ", args.ResponseCode)
+		logrus.Info("[HandleCallbackSepulsa] - [ResponseDesc] : ", responseCode)
+
+		param := models.Params{
+			InstitutionID: spending.Institution,
+			NamaVoucher:   spending.Voucher,
+			AccountId:     spending.AccountId,
+			AccountNumber: spending.AccountNumber,
+			RRN:           spending.RRN,
+			TrxID:         spending.TransactionId,
+			RewardID:      spending.RewardID,
+			Point:         spending.Point,
+		}
+
+		header := models.RequestHeader{
+			DeviceID:      "ottopoint-purchase",
+			InstitutionID: spending.Institution,
+			Geolocation:   "-",
+			ChannelID:     "H2H",
+			AppsID:        "-",
+			Timestamp:     utils.GetTimeFormatYYMMDDHHMMSS(),
+			Authorization: "-",
+			Signature:     "-",
+		}
+
+		if (responseCode != "Success") && (responseCode != "Pending") {
+
+			resultReversal := Adding_PointVoucher(param, spending.Point, 1, args.OrderID, header)
+			fmt.Println(resultReversal)
+
+			fmt.Println("[ >>>>>>>>>>>>>>>>>>>>>>> Send Publisher <<<<<<<<<<<<<<<<<<<< ]")
+
+			pubreq := models.NotifPubreq{
+				Type:           constants.CODE_REVERSAL_POINT,
+				NotificationTo: spending.AccountNumber,
+				Institution:    spending.Institution,
+				ReferenceId:    spending.RRN,
+				TransactionId:  spending.CummulativeRef,
+				Data: models.DataValue{
+					RewardValue: "point",
+					Value:       fmt.Sprint(spending.Point),
+				},
+			}
+
+			bytePub, _ := json.Marshal(pubreq)
+
+			kafkaReq := kafka.PublishReq{
+				Topic: constants.TOPIC_PUSHNOTIF_GENERAL,
+				Value: bytePub,
+			}
+
+			kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+			if err != nil {
+				logrus.Error("Gagal Send Publisher : ", err)
+			}
+			logrus.Info("[ Response Publisher ] : ", kafkaRes)
+
+		}
+
+		responseSepulsa, _ := json.Marshal(args)
+
+		// Update TSpending
+		_, errUpdate := db.UpdateVoucherSepulsa(responseCode, args.ResponseCode, string(responseSepulsa), args.TransactionID, args.OrderID)
+
+		if errUpdate != nil {
+			logrus.Error("[UpdateVoucherSepulsa] : ", errUpdate.Error())
+
+		}
+
+		transactionID := spending.RRN + spending.Institution + constants.CodeReversal + "#" + "OP009 - Reversal point couse transaction " + spending.Voucher + " is failed"
+		// Update TSchedulerRetry
+		_, err = db.UpdateTSchedulerRetry(utils.Before(transactionID, "#"))
+		if err != nil {
+
+			logrus.Error("[SepulsaService]-[FailedUpdateTSchedulerRetry] : ", errUpdate.Error())
+		}
+
+	}(req)
+
+	fmt.Println("End Process ", time.Now().Unix())
+	res = models.Response{
+		Meta: utils.ResponseMetaOK(),
+		Data: nil,
+	}
+
+	return res
 }
 
 func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interface{}, reqOP models.VoucherComultaiveReq, transType, status string) {
