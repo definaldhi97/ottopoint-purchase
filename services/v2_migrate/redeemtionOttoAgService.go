@@ -142,7 +142,7 @@ func RedeemVoucherOttoAg(req models.VoucherComultaiveReq, param models.Params, h
 	}
 
 	// spending point and spending usage_limit voucher
-	resultRedeemVouch, errRedeemVouch := Redeem_PointandVoucher(1, param, header)
+	resultRedeemVouch, errRedeemVouch := Redeem_PointandVoucher(1, param, param.TrxID, header)
 
 	logrus.Info("[ Response Deduct point dan voucher ]")
 	logrus.Info(resultRedeemVouch)

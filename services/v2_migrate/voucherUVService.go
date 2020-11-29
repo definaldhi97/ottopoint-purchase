@@ -51,7 +51,7 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 	// spending point and spending usage_limit voucher
 	textCommentSpending := param.CumReffnum + "#" + param.NamaVoucher
 	param.Comment = textCommentSpending
-	RedeemVouchUV, errRedeemVouchUV := Redeem_PointandVoucher(req.Jumlah, param, header)
+	RedeemVouchUV, errRedeemVouchUV := Redeem_PointandVoucher(req.Jumlah, param, param.CumReffnum, header)
 	logrus.Info("Response Spending point / Deduct point")
 	logrus.Info(RedeemVouchUV)
 

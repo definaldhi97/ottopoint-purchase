@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func Redeem_PointandVoucher(QtyVoucher int, param models.Params, header models.RequestHeader) (models.SpendingPointVoucher, error) {
+func Redeem_PointandVoucher(QtyVoucher int, param models.Params, TrxID string, header models.RequestHeader) (models.SpendingPointVoucher, error) {
 	fmt.Println("[ >>>>>>>>>>>>>>>>>> Spending/Deduct Point and Voucher <<<<<<<<<<<<<<<< ]")
 	var result models.SpendingPointVoucher
 	var msgEarning, statusEarning string
@@ -40,7 +40,7 @@ func Redeem_PointandVoucher(QtyVoucher int, param models.Params, header models.R
 
 	spenPoinReq := op_corepoint.SpendingPointReq{
 		AccountID:     param.AccountId,
-		TransactionID: param.TrxID,
+		TransactionID: TrxID,
 		Point:         totalPoint,
 		Comment:       param.Comment,
 	}
