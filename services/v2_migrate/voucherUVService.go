@@ -15,6 +15,7 @@ import (
 	"ottopoint-purchase/utils"
 
 	"github.com/opentracing/opentracing-go"
+	"github.com/sirupsen/logrus"
 	"go.uber.org/zap"
 )
 
@@ -181,14 +182,10 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 
 	if errOrder != nil || order.ResponseCode == "" {
 
-		fmt.Println("Error : ", errOrder)
-		fmt.Println("Response OrderVoucher : ", order)
-		fmt.Println("[UltraVoucherServices]-[OrderVoucher]")
-		fmt.Println("[Failed Order Voucher]-[Gagal Order Voucher]")
-
-		// sugarLogger.Info("Internal Server Error : ", errOrder)
-		sugarLogger.Info("[UltraVoucherServices]-[OrderVoucher]")
-		sugarLogger.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
+		logrus.Info("[UltraVoucherServices]-[OrderVoucher]")
+		logrus.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
+		logrus.Error("Error oreder UV : ", errOrder)
+		logrus.Info("Response OrderVoucher : ", order)
 
 		for i := req.Jumlah; i > 0; i-- {
 
@@ -222,10 +219,10 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 
 	if order.ResponseCode == "02" {
 
-		fmt.Println("Internal Server Error : ", errOrder)
-		fmt.Println("ResponseCode : ", order.ResponseCode)
-		fmt.Println("[UltraVoucherServices]-[OrderVoucher]")
-		fmt.Println("[Stock not Available]-[Gagal Order Voucher]")
+		logrus.Info("[UltraVoucherServices]-[OrderVoucher]")
+		logrus.Info("[Stock not Available]-[Gagal Order Voucher]")
+		logrus.Info("[ Response OrderVoucher ] : ", order)
+		logrus.Info("[ ResponseCode ] : ", order.ResponseCode)
 
 		// sugarLogger.Info("Internal Server Error : ", errOrder)
 		sugarLogger.Info("[UltraVoucherServices]-[OrderVoucher]")
@@ -356,12 +353,12 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 		}
 
 		fmt.Println("[ >>>>>>>>>>>>> Response Redeemtion Ultra Voucher UV <<<<<<<<<<<<<<<< ]")
-		fmt.Println("[ Code ] : ", "0")
-		fmt.Println("[ Coummulatif Reff Num ] : ", param.CumReffnum)
-		fmt.Println("[ Order ] : ", req.Jumlah)
-		fmt.Println("[ Success ] : ", 0)
-		fmt.Println("[ Failed ] : ", req.Jumlah)
-		fmt.Println("[ Pending ] : ", 0)
+		logrus.Info("[ Code ] : ", "176")
+		logrus.Info("[ Coummulatif Reff Num ] : ", param.CumReffnum)
+		logrus.Info("[ Order ] : ", req.Jumlah)
+		logrus.Info("[ Success ] : ", 0)
+		logrus.Info("[ Failed ] : ", 0)
+		logrus.Info("[ Pending ] : ", req.Jumlah)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -395,12 +392,12 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 	}
 
 	fmt.Println("[ >>>>>>>>>>>>> Response Redeemtion Ultra Voucher UV <<<<<<<<<<<<<<<< ]")
-	fmt.Println("[ Code ] : ", "00")
-	fmt.Println("[ Coummulatif Reff Num ] : ", param.CumReffnum)
-	fmt.Println("[ Order ] : ", req.Jumlah)
-	fmt.Println("[ Success ] : ", req.Jumlah)
-	fmt.Println("[ Failed ] : ", 0)
-	fmt.Println("[ Pending ] : ", 0)
+	logrus.Info("[ Code ] : ", "176")
+	logrus.Info("[ Coummulatif Reff Num ] : ", param.CumReffnum)
+	logrus.Info("[ Order ] : ", req.Jumlah)
+	logrus.Info("[ Success ] : ", 0)
+	logrus.Info("[ Failed ] : ", 0)
+	logrus.Info("[ Pending ] : ", req.Jumlah)
 
 	fmt.Println("Response UV : ", order)
 	res = models.Response{
