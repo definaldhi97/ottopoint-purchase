@@ -135,6 +135,15 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 		},
 	}
 
+	VoucherAgMigrateServices := v2_migrate.VoucherAgMigrateServices{
+		General: models.GeneralModel{
+			ParentSpan: span,
+			OttoZaplog: sugarLogger,
+			SpanId:     spanid,
+			Context:    context,
+		},
+	}
+
 	param := models.Params{
 		AccountNumber:       dataToken.Data,
 		MerchantID:          dataUser.MerchantID,
@@ -168,6 +177,8 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 		res = VoucherSepulsaMigrateService.VoucherSepulsa(req, param, header)
 	case constants.CODE_VENDOR_AGREGATOR:
 		fmt.Println(" [ Product Agregator ]")
+		header.DeviceID = "H2H"
+		res = VoucherAgMigrateServices.VoucherAgg(req, param, header)
 	}
 
 	sugarLogger.Info("RESPONSE : ", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),

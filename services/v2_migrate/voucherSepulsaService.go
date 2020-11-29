@@ -46,7 +46,7 @@ func (t VoucherSepulsaMigrateService) VoucherSepulsa(req models.VoucherComultaiv
 	param.Amount = int64(param.Point)
 
 	// spending point and spending usage_limit voucher
-	textCommentSpending := param.CumReffnum + "#" + param.NamaVoucher
+	textCommentSpending := param.CumReffnum + param.InstitutionID + constants.CodeSchedulerSpending + "#" + param.NamaVoucher
 	param.Comment = textCommentSpending
 	RedeemVouchSP, errRedeemVouchSP := Redeem_PointandVoucher(req.Jumlah, param, param.CumReffnum, header)
 

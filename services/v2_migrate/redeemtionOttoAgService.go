@@ -50,7 +50,7 @@ func RedeemVoucherOttoAg(req models.VoucherComultaiveReq, param models.Params, h
 	logrus.Info("[INQUIRY-BILLER][START]")
 	dataInquery, errInquiry := biller.InquiryBiller(inqReq.Data, req, reqInq, param)
 
-	textCommentSpending := param.TrxID + "#" + param.NamaVoucher
+	textCommentSpending := param.TrxID + param.InstitutionID + constants.CodeSchedulerSpending + "#" + param.NamaVoucher
 	param.Comment = textCommentSpending
 	paramInq := models.Params{
 		AccountNumber: param.AccountNumber,
