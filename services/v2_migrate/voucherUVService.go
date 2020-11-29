@@ -57,9 +57,10 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 
 	if RedeemVouchUV.Rc == "10" || RedeemVouchUV.Rd == "Insufficient Point" {
 
-		logrus.Info("Error : ", errRedeemVouchUV)
 		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
 		logrus.Info("[Not enough points]-[Gagal Redeem Voucher]")
+		logrus.Info("[Rc] : ", RedeemVouchUV.Rc)
+		logrus.Info("[Rd] : ", RedeemVouchUV.Rd)
 
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Point Tidak Cukup"))
 		res = models.Response{
@@ -77,13 +78,11 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 	}
 
 	if RedeemVouchUV.Rc == "208" || RedeemVouchUV.Rd == "Voucher not available" {
-		fmt.Println("Error : ", errRedeemVouchUV)
-		fmt.Println("[UltraVoucherServices]-[RedeemVoucher]")
-		fmt.Println("[Limit exceeded]-[Gagal Redeem Voucher]")
 
-		// sugarLogger.Info("Internal Server Error : ", errredeem)
-		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
-		sugarLogger.Info("[Limit exceeded]-[Gagal Redeem Voucher]")
+		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
+		logrus.Info("[Voucher not available]-[Gagal Redeem Voucher]")
+		logrus.Info("[Rc] : ", RedeemVouchUV.Rc)
+		logrus.Info("[Rd] : ", RedeemVouchUV.Rd)
 
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Voucher Sudah Limit"))
 
@@ -107,13 +106,9 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 	}
 
 	if errRedeemVouchUV != nil || RedeemVouchUV.Rc != "00" || c == "" {
-		fmt.Println("Error : ", errRedeemVouchUV)
-		fmt.Println("[UltraVoucherServices]-[RedeemVoucher]")
-		fmt.Println("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
-
-		// sugarLogger.Info("Internal Server Error : ", errredeem)
-		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
-		sugarLogger.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
+		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
+		logrus.Info("[Rc] : ", RedeemVouchUV.Rc)
+		logrus.Info("[Rd] : ", RedeemVouchUV.Rd)
 
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
 		res = models.Response{
