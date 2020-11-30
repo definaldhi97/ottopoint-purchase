@@ -153,3 +153,18 @@ func GetVoucherAgSpending(orderID, transactionID string) (dbmodels.TSpending, er
 
 	return res, nil
 }
+
+func GetVoucherAgSpendingSecond(orderID string) ([]dbmodels.TSpending, error) {
+	res := []dbmodels.TSpending{}
+	err := DbCon.Where("cummulative_ref = ?", orderID).First(&res).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetVoucherAgSpending]")
+		fmt.Println(fmt.Sprintf("Failed to connect database Voucher UV %v", err))
+
+		return res, err
+	}
+
+	return res, nil
+}

@@ -55,7 +55,7 @@ func AddingPoint(req AddingPointReq, headerReq models.RequestHeader) (*TrxPointR
 
 }
 
-func SependingPoint(req SpendingPointReq, headerReq models.RequestHeader) (*TrxPointRes, error) {
+func SpendingPoint(req SpendingPointReq, headerReq models.RequestHeader) (*TrxPointRes, error) {
 	fmt.Println("[ >>>>>>>>>>>>>> package Trx SpendingPoint to ottopoint-corepoint <<<<<<<<<<<<<<<< ]")
 
 	var result TrxPointRes

@@ -57,7 +57,7 @@ func Redeem_PointandVoucher(QtyVoucher int, param models.Params, TrxID string, h
 	}
 
 	// Spending/Deduct Point
-	resSpend, errSpend := op_corepoint.SependingPoint(spenPoinReq, header)
+	resSpend, errSpend := op_corepoint.SpendingPoint(spenPoinReq, header)
 
 	if errSpend != nil {
 
