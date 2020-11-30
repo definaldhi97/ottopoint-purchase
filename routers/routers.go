@@ -19,17 +19,18 @@ import (
 )
 
 var (
-	redeem             string
-	use_voucher        string
-	deductPoint        string
-	paymentQR          string
-	reversePoint       string
-	healthcheck        string
-	earningPoint       string
-	splitbill          string
-	comulative         string
-	usevoucher_uv      string
-	checkStatusEarning string
+	redeem               string
+	use_voucher          string
+	deductPoint          string
+	paymentQR            string
+	reversePoint         string
+	healthcheck          string
+	earningPoint         string
+	splitbill            string
+	comulative           string
+	usevoucher_uv        string
+	checkStatusEarning   string
+	checkStatusScheduler string
 
 	csv string
 
@@ -69,6 +70,7 @@ func init() {
 	redeemtionV2Migrate = utils.GetEnv("redeemtionV2Migrate", "/v2-migrate/redeempoint")
 	callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/status/sepulsa")
 	callback_Agg = utils.GetEnv("callback_uv", "/v2-migrate/callback/agregator")
+	checkStatusScheduler = utils.GetEnv("checkStatusScheduler", "/transaction/v2/check-status-scheduler")
 	// readto = utils.GetEnv("server.readtimeout", 30)
 	// writeto = utils.GetEnv("server.writetimeout", 30)
 
@@ -138,6 +140,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(redeemtionV2Migrate, v2_migrate.RedeemtionVoucherController)
 	router.POST(callbackSepulsa, v2_migrate.CallbackSepulsaController)
 	router.POST(callback_Agg, v2_migrate.CallbackVoucherAggController)
+	router.POST(checkStatusScheduler, controllers.SchedulerCheckStatusController)
 
 	ottoRouter.Router = router
 
