@@ -120,3 +120,35 @@ func GetDataInstitution(Institution string) (dbmodels.MInstution, error) {
 	return result, nil
 
 }
+
+func GetSpendingSepulsa(transactionID, orderID string) (dbmodels.TSpending, error) {
+	res := dbmodels.TSpending{}
+
+	err := DbCon.Where("transaction_id = ? and rrn = ?", orderID, transactionID).First(&res).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetSpendingSepulsa]")
+		fmt.Println(fmt.Sprintf("Failed to connect database GetSpendingSepulsa %v", err))
+
+		return res, err
+	}
+
+	return res, nil
+}
+
+func GetVoucherAgSpending(orderID, transactionID string) (dbmodels.TSpending, error) {
+	res := dbmodels.TSpending{}
+
+	err := DbCon.Where("transaction_id = ? and rrn = ?", orderID, transactionID).First(&res).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetVoucherAgSpending]")
+		fmt.Println(fmt.Sprintf("Failed to connect database Voucher UV %v", err))
+
+		return res, err
+	}
+
+	return res, nil
+}
