@@ -40,8 +40,11 @@ var (
 	readto              int
 	writeto             int
 	redeemtionV2Migrate string
-	callbackSepulsa     string
-	callback_Agg        string
+
+	callbackSepulsa string
+	callback_Agg    string
+
+	callback_uv string
 )
 
 func init() {
@@ -67,8 +70,12 @@ func init() {
 	agentracinghost = utils.GetEnv("AGENT_TRACING_HOST_OTTOPOINT_PURCHASE", "13.250.21.165:5775")
 
 	redeemtionV2Migrate = utils.GetEnv("redeemtionV2Migrate", "/v2-migrate/redeempoint")
+
 	callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/status/sepulsa")
 	callback_Agg = utils.GetEnv("callback_uv", "/v2-migrate/callback/agregator")
+
+	callback_uv = utils.GetEnv("callback_uv", "/v2-migrate/callback/uv")
+
 	// readto = utils.GetEnv("server.readtimeout", 30)
 	// writeto = utils.GetEnv("server.writetimeout", 30)
 
@@ -132,6 +139,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(earningPoint, controllers.EarningsPointController)
 	router.POST(splitbill, controllers.DeductSplitBillController)
 	router.POST(usevoucher_uv, controllers.UseVouhcerUVController)
+	router.POST(callback_uv, v2_migrate.CallBackUVController)
 	router.POST(checkStatusEarning, controllers.CheckStatusEarningController)
 
 	router.POST(csv, controllers.CreateFileCSVController)
