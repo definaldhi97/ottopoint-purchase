@@ -17,7 +17,7 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("HOST_PUBLISHER", "http://13.228.25.85:8402")
+	host = ODU.GetEnv("hos.ottopointcorepoint", "http://13.228.25.85:8402")
 	endpointAdding = ODU.GetEnv("endpoint.adding", "/v1/points/transfer/add")
 	endpointSpending = ODU.GetEnv("endpoint.spending", "/v1/points/transfer/spend")
 }
