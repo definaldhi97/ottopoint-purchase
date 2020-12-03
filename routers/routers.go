@@ -53,12 +53,12 @@ func init() {
 	healthcheck = utils.GetEnv("healthcheck", "/transaction/v2/healthcheck")
 	redeem = utils.GetEnv("redeem", "/transaction/v2/redeem")
 	use_voucher = utils.GetEnv("use_voucher", "/transaction/v2/usevoucher")
-	comulative = utils.GetEnv("comulative", "/transaction/v2/redeempoint")
+	// comulative = utils.GetEnv("comulative", "/transaction/v2/redeempoint")
 	deductPoint = utils.GetEnv("deduct_point", "/transaction/v2/deduct")
 	reversePoint = utils.GetEnv("reverse_point", "/transaction/v2/reversal")
 	earningPoint = utils.GetEnv("earning_point", "/transaction/v2/earningpoint")
 	splitbill = utils.GetEnv("splitbill", "/transaction/v2/splitbill")
-	usevoucher_uv = utils.GetEnv("usevoucher_uv", "/transaction/v2/usevoucher_uv")
+	// usevoucher_uv = utils.GetEnv("usevoucher_uv", "/transaction/v2/usevoucher_uv")
 	checkStatusEarning = utils.GetEnv("checkStatusEarning", "/transaction/v2/check-status-earning")
 
 	csv = utils.GetEnv("csv", "/csv")
@@ -69,12 +69,14 @@ func init() {
 
 	agentracinghost = utils.GetEnv("AGENT_TRACING_HOST_OTTOPOINT_PURCHASE", "13.250.21.165:5775")
 
-	redeemtionV2Migrate = utils.GetEnv("redeemtionV2Migrate", "/v2-migrate/redeempoint")
+	// redeemtionV2Migrate = utils.GetEnv("redeemtionV2Migrate", "/v2-migrate/redeempoint")
+	redeemtionV2Migrate = utils.GetEnv("redeemtionV2Migrate", "/transaction/v2/redeempoint")
 
 	callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/status/sepulsa")
 	callback_Agg = utils.GetEnv("callback_uv", "/v2-migrate/callback/agregator")
 
-	callback_uv = utils.GetEnv("callback_uv", "/v2-migrate/callback/uv")
+	// callback_uv = utils.GetEnv("callback_uv", "/v2-migrate/callback/uv")
+	callback_uv = utils.GetEnv("callback_uv", "/transaction/v2/usevoucher_uv")
 
 	// readto = utils.GetEnv("server.readtimeout", 30)
 	// writeto = utils.GetEnv("server.writetimeout", 30)
@@ -132,13 +134,13 @@ func (ottoRouter *OttoRouter) Routers() {
 	// router.GET(cashbackbyproduct, controllers.InquiryController)
 	router.GET(healthcheck, controllers.HealthCheckService)
 	router.POST(redeem, controllers.VoucherRedeemController)
-	router.POST(comulative, controllers.VoucherComulativeController)
+	// router.POST(comulative, controllers.VoucherComulativeController)
 	router.POST(use_voucher, controllers.UseVouhcerController)
 	router.POST(deductPoint, controllers.PointController)
 	router.POST(reversePoint, controllers.ReversePointController)
 	router.POST(earningPoint, controllers.EarningsPointController)
 	router.POST(splitbill, controllers.DeductSplitBillController)
-	router.POST(usevoucher_uv, controllers.UseVouhcerUVController)
+	// router.POST(usevoucher_uv, controllers.UseVouhcerUVController)
 	router.POST(callback_uv, v2_migrate.CallBackUVController)
 	router.POST(checkStatusEarning, controllers.CheckStatusEarningController)
 
