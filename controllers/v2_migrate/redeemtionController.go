@@ -92,7 +92,7 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 		req.CustID = "0"
 	}
 
-	if dataVouch.SupplierID == "OttoAG" {
+	if dataVouch.SupplierID == constants.CODE_VENDOR_OTTOAG {
 		validateVerfix := controllers.ValidatePerfix(req.CustID, dataVouch.ProductCode, dataVouch.Category)
 		if validateVerfix == false {
 			fmt.Println("Invalid verfix")
@@ -224,6 +224,7 @@ func SwitchDataVoucher(data models.VoucherDetailsManagement) models.Params {
 		ProductID:           data.ProductID,
 	}
 
+	fmt.Println("M_reward : ", data.RewardID)
 	fmt.Println("limit Voucher sepulsa : ", result.UsageLimitVoucher)
 
 	return result

@@ -121,6 +121,11 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 
 	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[UltraVoucher]-[%v]", trasnType))
 
+	fmt.Println("Param.Mreward : ", param.RewardID)
+
+	var ExpireDate time.Time
+	var redeemDate time.Time
+
 	var saveStatus string
 	switch status {
 	case "00":
@@ -136,11 +141,16 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		isUsed = true
 	}
 
+	if trasnType == constants.CODE_TRANSTYPE_REDEMPTION {
+		ExpireDate = utils.ExpireDateVoucherAGt(constants.EXPDATE_VOUCHER)
+		redeemDate = time.Now()
+	}
+
 	reqUV, _ := json.Marshal(&reqdata)   // Req UV
 	responseUV, _ := json.Marshal(&res)  // Response UV
 	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
 
-	timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+	// timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
 
 	save := dbmodels.TSpending{
 		ID:            utils.GenerateTokenUUID(),
@@ -156,7 +166,7 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		IsUsed:            isUsed,
 		ProductType:       param.ProductType,
 		Status:            saveStatus,
-		ExpDate:           param.ExpDate,
+		ExpDate:           &ExpireDate,
 		Institution:       param.InstitutionID,
 		CummulativeRef:    param.CumReffnum,
 		DateTime:          utils.GetTimeFormatYYMMDDHHMMSS(),
@@ -170,9 +180,9 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		CouponId:          param.CouponID,
 		CampaignId:        param.CampaignID,
 		AccountId:         param.AccountId,
-		RedeemAt:          timeRedeem,
+		RedeemAt:          &redeemDate,
 		Comment:           param.Comment,
-		RewardID:          param.RewardID,
+		MRewardID:         param.RewardID,
 		ProductCategoryID: param.CategoryID,
 		MProductID:        param.ProductID,
 	}

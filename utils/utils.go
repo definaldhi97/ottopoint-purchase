@@ -460,3 +460,12 @@ func GenerateTokenUUID() string {
 	tokenString = strings.ToLower(tokenString)
 	return tokenString
 }
+
+func ExpireDateVoucherAGt(value int) time.Time {
+	now := time.Now().Local()
+	layOut := "2006-01-02"
+	expierDate := now.AddDate(0, 0, value)
+	date := expierDate.Format("2006-01-02")
+	dateStamp, _ := time.Parse(layOut, date)
+	return dateStamp
+}

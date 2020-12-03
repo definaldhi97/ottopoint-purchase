@@ -600,6 +600,9 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 
 	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[VoucherAggregator]-[%v]", transType))
 
+	var ExpireDate time.Time
+	var redeemDate time.Time
+
 	var saveStatus string
 	isUsed := false
 	switch status {
@@ -616,12 +619,17 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 	responseUV, _ := json.Marshal(&res)  // Response UV
 	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
 
-	expDate := ""
-	if param.ExpDate != "" {
-		layout := "2006-01-02 15:04:05"
-		parse, _ := time.Parse(layout, param.ExpDate)
+	// expDate := ""
+	// if param.ExpDate != "" {
+	// 	layout := "2006-01-02 15:04:05"
+	// 	parse, _ := time.Parse(layout, param.ExpDate)
 
-		expDate = jodaTime.Format("YYYY-MM-dd", parse)
+	// 	expDate = jodaTime.Format("YYYY-MM-dd", parse)
+	// }
+
+	if transType == constants.CODE_TRANSTYPE_REDEMPTION {
+		ExpireDate = utils.ExpireDateVoucherAGt(constants.EXPDATE_VOUCHER)
+		redeemDate = time.Now()
 	}
 
 	save := dbmodels.TSpending{
@@ -652,10 +660,11 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		AccountId:       param.AccountId,
 		VoucherCode:     param.CouponCode,
 		VoucherLink:     param.VoucherLink,
-		ExpDate:         expDate,
+		ExpDate:         &ExpireDate,
+		RedeemAt:        &redeemDate,
 
 		Comment:           param.Comment,
-		RewardID:          param.RewardID,
+		MRewardID:         param.RewardID,
 		ProductCategoryID: param.CategoryID,
 		MProductID:        param.ProductID,
 	}

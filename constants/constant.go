@@ -217,3 +217,7 @@ const (
 const (
 	RECEIVER_NAME_UV = "OTTOPOINT"
 )
+
+var (
+	EXPDATE_VOUCHER = 15
+)

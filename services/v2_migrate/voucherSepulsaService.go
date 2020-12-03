@@ -274,7 +274,7 @@ func (t VoucherSepulsaMigrateService) CallbackVoucherSepulsa(req sepulsaModels.C
 			AccountNumber: spending.AccountNumber,
 			RRN:           spending.RRN,
 			TrxID:         spending.TransactionId,
-			RewardID:      spending.RewardID,
+			RewardID:      spending.MRewardID,
 			Point:         spending.Point,
 		}
 
@@ -344,6 +344,9 @@ func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interf
 
 	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[Sepulsa]-[%v]", transType))
 
+	var ExpireDate time.Time
+	var redeemDate time.Time
+
 	var saveStatus string
 	switch status {
 	case "00":
@@ -354,11 +357,16 @@ func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interf
 		saveStatus = constants.Failed
 	}
 
+	if transType == constants.CODE_TRANSTYPE_REDEMPTION {
+		ExpireDate = utils.ExpireDateVoucherAGt(constants.EXPDATE_VOUCHER)
+		redeemDate = time.Now()
+	}
+
 	reqSepulsa, _ := json.Marshal(&reqdata)
 	responseSepulsa, _ := json.Marshal(&res)
 	reqdataOP, _ := json.Marshal(&reqOP)
 
-	timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+	// timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
 
 	save := dbmodels.TSpending{
 		ID:                utils.GenerateTokenUUID(),
@@ -372,10 +380,10 @@ func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interf
 		Amount:            int64(param.Amount),
 		TransType:         transType,
 		IsUsed:            true,
-		UsedAt:            timeRedeem,
+		UsedAt:            &redeemDate,
 		ProductType:       param.ProductType,
 		Status:            saveStatus,
-		ExpDate:           param.ExpDate,
+		ExpDate:           &ExpireDate,
 		Institution:       param.InstitutionID,
 		CummulativeRef:    param.CumReffnum,
 		DateTime:          utils.GetTimeFormatYYMMDDHHMMSS(),
@@ -389,9 +397,9 @@ func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interf
 		CouponId:          param.CouponID,
 		CampaignId:        param.CampaignID,
 		AccountId:         param.AccountId,
-		RedeemAt:          timeRedeem,
+		RedeemAt:          &redeemDate,
 		Comment:           param.Comment,
-		RewardID:          param.RewardID,
+		MRewardID:         param.RewardID,
 		ProductCategoryID: param.CategoryID,
 		MProductID:        param.ProductID,
 	}
