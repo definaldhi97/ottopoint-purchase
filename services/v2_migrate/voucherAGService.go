@@ -660,8 +660,8 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		AccountId:       param.AccountId,
 		VoucherCode:     param.CouponCode,
 		VoucherLink:     param.VoucherLink,
-		ExpDate:         &ExpireDate,
-		RedeemAt:        &redeemDate,
+		ExpDate:         utils.DefaultNulTime(ExpireDate),
+		RedeemAt:        utils.DefaultNulTime(redeemDate),
 
 		Comment:           param.Comment,
 		MRewardID:         param.RewardID,

@@ -397,7 +397,7 @@ func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interf
 		CouponId:          param.CouponID,
 		CampaignId:        param.CampaignID,
 		AccountId:         param.AccountId,
-		RedeemAt:          &redeemDate,
+		RedeemAt:          utils.DefaultNulTime(redeemDate),
 		Comment:           param.Comment,
 		MRewardID:         param.RewardID,
 		ProductCategoryID: param.CategoryID,

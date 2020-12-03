@@ -278,8 +278,8 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 		fmt.Println("[ Coummulatif Reff Num ] : ", param.CumReffnum)
 		fmt.Println("[ Order ] : ", req.Jumlah)
 		fmt.Println("[ Success ] : ", 0)
-		fmt.Println("[ Failed ] : ", 0)
-		fmt.Println("[ Pending ] : ", req.Jumlah)
+		fmt.Println("[ Failed ] : ", req.Jumlah)
+		fmt.Println("[ Pending ] : ", 0)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -392,12 +392,12 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 	}
 
 	fmt.Println("[ >>>>>>>>>>>>> Response Redeemtion Ultra Voucher UV <<<<<<<<<<<<<<<< ]")
-	logrus.Info("[ Code ] : ", "176")
+	logrus.Info("[ Code ] : ", "00")
 	logrus.Info("[ Coummulatif Reff Num ] : ", param.CumReffnum)
 	logrus.Info("[ Order ] : ", req.Jumlah)
 	logrus.Info("[ Success ] : ", 0)
 	logrus.Info("[ Failed ] : ", 0)
-	logrus.Info("[ Pending ] : ", req.Jumlah)
+	logrus.Info("[ Pending ] : ", 0)
 
 	fmt.Println("Response UV : ", order)
 	res = models.Response{

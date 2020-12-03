@@ -125,6 +125,7 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 
 	var ExpireDate time.Time
 	var redeemDate time.Time
+	// var defaultExpireDate nil
 
 	var saveStatus string
 	switch status {
@@ -166,7 +167,7 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		IsUsed:            isUsed,
 		ProductType:       param.ProductType,
 		Status:            saveStatus,
-		ExpDate:           &ExpireDate,
+		ExpDate:           utils.DefaultNulTime(ExpireDate),
 		Institution:       param.InstitutionID,
 		CummulativeRef:    param.CumReffnum,
 		DateTime:          utils.GetTimeFormatYYMMDDHHMMSS(),
@@ -180,7 +181,7 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		CouponId:          param.CouponID,
 		CampaignId:        param.CampaignID,
 		AccountId:         param.AccountId,
-		RedeemAt:          &redeemDate,
+		RedeemAt:          utils.DefaultNulTime(redeemDate),
 		Comment:           param.Comment,
 		MRewardID:         param.RewardID,
 		ProductCategoryID: param.CategoryID,

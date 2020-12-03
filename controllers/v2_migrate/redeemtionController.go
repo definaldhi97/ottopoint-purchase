@@ -206,8 +206,6 @@ func SwitchDataVoucher(data models.VoucherDetailsManagement) models.Params {
 		producrType = data.BrandName
 	}
 
-	fmt.Println("Cost point voucher", data.CostPoints)
-
 	result = models.Params{
 		ProductType:         producrType,
 		ProductCode:         data.ExternalProductCode,
@@ -223,9 +221,6 @@ func SwitchDataVoucher(data models.VoucherDetailsManagement) models.Params {
 		RewardID:            data.RewardID,
 		ProductID:           data.ProductID,
 	}
-
-	fmt.Println("M_reward : ", data.RewardID)
-	fmt.Println("limit Voucher sepulsa : ", result.UsageLimitVoucher)
 
 	return result
 }

@@ -469,3 +469,10 @@ func ExpireDateVoucherAGt(value int) time.Time {
 	dateStamp, _ := time.Parse(layOut, date)
 	return dateStamp
 }
+
+func DefaultNulTime(date time.Time) *time.Time {
+	if !date.IsZero() {
+		return &date
+	}
+	return nil
+}
