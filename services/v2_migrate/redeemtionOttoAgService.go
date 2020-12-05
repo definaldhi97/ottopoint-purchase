@@ -50,7 +50,7 @@ func RedeemVoucherOttoAg(req models.VoucherComultaiveReq, param models.Params, g
 	fmt.Println("[INQUIRY-BILLER][START]")
 	dataInquery, errInquiry := biller.InquiryBiller(inqReq.Data, req, reqInq, param)
 
-	textCommentSpending := param.Reffnum + "#" + param.NamaVoucher
+	textCommentSpending := param.TrxID + "#" + param.NamaVoucher
 	param.Comment = textCommentSpending
 	paramInq := models.Params{
 		AccountNumber: param.AccountNumber,
@@ -149,6 +149,7 @@ func RedeemVoucherOttoAg(req models.VoucherComultaiveReq, param models.Params, g
 
 	if resultRedeemVouch.Rc == "00" {
 		paramInq.CouponID = resultRedeemVouch.CouponseVouch[0].CouponsID
+		paramInq.PointTransferID = resultRedeemVouch.PointTransferID
 	}
 
 	go services.SaveTransactionOttoAg(paramInq, dataInquery, reqInq, req, constants.CODE_SUCCESS)
@@ -193,6 +194,8 @@ func RedeemVoucherOttoAg(req models.VoucherComultaiveReq, param models.Params, g
 
 	resRedeemComu.Code = redeemRes.Code
 	resRedeemComu.Message = redeemRes.Message
+	resRedeemComu.PointTransferID = resultRedeemVouch.PointTransferID
+	resRedeemComu.Comment = textCommentSpending
 	resRedeemComu.Redeem = r
 	getResp <- resRedeemComu
 

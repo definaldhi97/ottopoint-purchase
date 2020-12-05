@@ -117,7 +117,7 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 	return res
 }
 
-func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status string) {
+func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status string, expVoucher int) {
 
 	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[UltraVoucher]-[%v]", trasnType))
 
@@ -125,7 +125,6 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 
 	var ExpireDate time.Time
 	var redeemDate time.Time
-	// var defaultExpireDate nil
 
 	var saveStatus string
 	switch status {
@@ -143,7 +142,7 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 	}
 
 	if trasnType == constants.CODE_TRANSTYPE_REDEMPTION {
-		ExpireDate = utils.ExpireDateVoucherAGt(constants.EXPDATE_VOUCHER)
+		ExpireDate = utils.ExpireDateVoucherAGt(expVoucher)
 		redeemDate = time.Now()
 	}
 
@@ -186,6 +185,7 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		MRewardID:         param.RewardID,
 		ProductCategoryID: param.CategoryID,
 		MProductID:        param.ProductID,
+		PointsTransferID:  param.PointTransferID,
 	}
 
 	err := db.DbCon.Create(&save).Error

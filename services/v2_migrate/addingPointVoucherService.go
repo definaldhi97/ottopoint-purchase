@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/vjeantet/jodaTime"
 )
 
@@ -126,14 +127,55 @@ func Adding_PointVoucher(param models.Params, countPoint, countVoucher int) stri
 	dtaVocher, _ := db.Get_MReward(param.RewardID)
 	latestUsageLimit := dtaVocher.UsageLimit + countVoucher
 
-	errDeductVouch := db.UpdateUsageLimitVoucher(param.RewardID, latestUsageLimit)
+	// errDeductVouch := db.UpdateUsageLimitVoucher(param.RewardID, latestUsageLimit)
+	errDeductVouch := UpdateUsageLimitVoucher(param.RewardID, latestUsageLimit)
 	if errDeductVouch != nil {
 
-		result = ">>>>>>> Failed Get Voucher <<<<<<<<"
+		result = ">>>>>>> Failed Update Stock Voucher <<<<<<<<"
 		return result
 	}
 
 	result = ">>>>>>> Adding/Reversal Point Success <<<<<<<<"
 	return result
+
+}
+
+func UpdateUsageLimitVoucher(reward_id string, latestUsageLimit int) error {
+	fmt.Println("[ Lock Update UsageLimit Voucher ]")
+	var modelReward dbmodels.MRewardModel
+	var err error
+	tx := db.DbCon.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	if err = tx.Raw("select * from product.m_reward mr where mr.id = ? for update", reward_id).Scan(&modelReward).Error; err != nil {
+		tx.Rollback()
+		logrus.Error("[ Failed selct for update m_reward : ", err.Error())
+		return err
+	}
+	// update wl_point data
+	queryString := fmt.Sprintf(`update product.m_reward  set usage_limit=%d where id ='%s'`, latestUsageLimit, reward_id)
+	if err = tx.Exec(queryString).Error; err != nil {
+		tx.Rollback()
+		logrus.Error("[ Failed update Usage Limit Voucher : ", err.Error())
+		return err
+
+	}
+
+	if err = tx.Commit().Error; err != nil {
+		logrus.Error("[ Failed commit update usage limit voucher : ", err.Error())
+		return err
+	}
+
+	fmt.Println("[ Lock Update UsageLimit Voucher Success ]")
+
+	return nil
 
 }

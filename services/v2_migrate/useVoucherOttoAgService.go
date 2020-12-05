@@ -34,6 +34,8 @@ func UseVoucherOttoAg(req models.VoucherComultaiveReq, redeemComu models.RedeemC
 	param.Amount = redeemComu.Redeem.Amount
 	param.RRN = redeemComu.Redeem.Rrn
 	param.CouponID = redeemComu.CouponID
+	param.PointTransferID = redeemComu.PointTransferID
+	param.Comment = redeemComu.Comment
 	resRedeem := services.RedeemUseVoucherComulative(req, param)
 	getRespChan <- resRedeem
 }

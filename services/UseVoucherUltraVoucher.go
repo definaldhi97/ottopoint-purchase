@@ -214,7 +214,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			param.CouponID = coupon
 
 			// go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "09")
-			go SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09")
+			go SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09", timeExp)
 		}
 
 		res = models.Response{
@@ -431,7 +431,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			coupon := redeem.Coupons[t].Id
 			param.CouponID = coupon
 
-			go SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
+			go SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01", timeExp)
 		}
 
 		// res = utils.GetMessageResponse(res, 145, false, errors.New(fmt.Sprintf("Voucher yg tersedia %v", order.Data.VouchersAvailable)))
@@ -644,7 +644,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			coupon := redeem.Coupons[t].Id
 			param.CouponID = coupon
 
-			go SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
+			go SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01", timeExp)
 		}
 
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
@@ -678,7 +678,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		id := utils.GenerateTokenUUID()
 		go SaveDB(id, param.InstitutionID, coupon, code, param.AccountNumber, param.AccountId, req.CampaignID)
 
-		go SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00")
+		go SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00", timeExp)
 	}
 
 	fmt.Println("Response UV : ", order)
@@ -720,37 +720,38 @@ func SaveDB(id, institution, coupon, vouchercode, phone, custIdOPL, campaignID s
 func DataParameterOrder() models.ParamUV {
 	res := models.ParamUV{}
 
-	nama := "" // nama
-	email := "UV_EMAIL_ORDER"
-	phone := "UV_PHONE_ORDER"
-	expired := "UV_EXPIRED_VOUCHER"
+	// nama := "" // nama
+	// email := "UV_EMAIL_ORDER"
+	// phone := "UV_PHONE_ORDER"
+	// expired := "UV_EXPIRED_VOUCHER"
+	// group := "UVCONFIG"
 
-	datanama, errnama := db.ParamData(nama)
+	datanama, errnama := db.ParamData(constants.CODE_CONFIG_UV_GROUP, constants.CODE_CONFIG_UV_NAME)
 	if errnama != nil {
 		fmt.Println("[Error get data from Db m_paramaters]")
 		fmt.Println("Error : ", errnama)
-		fmt.Println("Code :", nama)
+		fmt.Println("Code :", constants.CODE_CONFIG_UV_NAME)
 	}
 
-	dataemail, erremail := db.ParamData(email)
+	dataemail, erremail := db.ParamData(constants.CODE_CONFIG_UV_GROUP, constants.CODE_CONFIG_UV_EMAIL)
 	if erremail != nil {
 		fmt.Println("[Error get data from Db m_paramaters]")
 		fmt.Println("Error : ", erremail)
-		fmt.Println("Code :", email)
+		fmt.Println("Code :", constants.CODE_CONFIG_UV_EMAIL)
 	}
 
-	dataphone, errphone := db.ParamData(phone)
+	dataphone, errphone := db.ParamData(constants.CODE_CONFIG_UV_GROUP, constants.CODE_CONFIG_UV_PHONE)
 	if errphone != nil {
 		fmt.Println("[Error get data from Db m_paramaters]")
 		fmt.Println("Error : ", errphone)
-		fmt.Println("Code :", phone)
+		fmt.Println("Code :", constants.CODE_CONFIG_UV_PHONE)
 	}
 
-	dataexpired, errexpired := db.ParamData(expired)
+	dataexpired, errexpired := db.ParamData(constants.CODE_CONFIG_UV_GROUP, constants.CODE_CONFIG_UV_EXPIRED)
 	if errexpired != nil {
 		fmt.Println("[Error get data from Db m_paramaters]")
 		fmt.Println("Error : ", errexpired)
-		fmt.Println("Code :", expired)
+		fmt.Println("Code :", constants.CODE_CONFIG_UV_EXPIRED)
 	}
 
 	res = models.ParamUV{

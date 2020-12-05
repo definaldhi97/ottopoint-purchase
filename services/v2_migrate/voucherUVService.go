@@ -51,18 +51,19 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 	// spending point and spending usage_limit voucher
 	textCommentSpending := param.CumReffnum + "#" + param.NamaVoucher
 	param.Comment = textCommentSpending
+
 	RedeemVouchUV, errRedeemVouchUV := Redeem_PointandVoucher(req.Jumlah, param)
-	fmt.Println("result Spending point / Deduct point")
-	fmt.Println(RedeemVouchUV)
+
+	param.PointTransferID = RedeemVouchUV.PointTransferID
+	logrus.Info("[ Result Spending point / Deduct point ]")
+	logrus.Info(RedeemVouchUV)
 
 	if RedeemVouchUV.Rd == "Invalid JWT Token" {
-		fmt.Println("Error : ", errRedeemVouchUV)
-		fmt.Println("[UltraVoucherServices]-[RedeemVoucher]")
-		fmt.Println("[Internal Server Error]-[Gagal Redeem Voucher]")
 
-		// sugarLogger.Info("Internal Server Error : ", errredeem)
-		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
-		sugarLogger.Info("[Internal Server Error]-[Gagal Redeem Voucher]")
+		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
+		logrus.Error("Error : ", errRedeemVouchUV)
+		logrus.Info("[ ResponseCode ] : ", RedeemVouchUV.Rc)
+		logrus.Info("[ ResponseDesc ] : ", RedeemVouchUV.Rd)
 
 		// res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
 
@@ -81,13 +82,11 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 	}
 
 	if RedeemVouchUV.Rd == "not enough points" {
-		fmt.Println("Error : ", errRedeemVouchUV)
-		fmt.Println("[UltraVoucherServices]-[RedeemVoucher]")
-		fmt.Println("[Not enough points]-[Gagal Redeem Voucher]")
 
-		// sugarLogger.Info("Internal Server Error : ", errredeem)
-		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
-		sugarLogger.Info("[Not enough points]-[Gagal Redeem Voucher]")
+		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
+		logrus.Error("Error : ", errRedeemVouchUV)
+		logrus.Info("[ ResponseCode ] : ", RedeemVouchUV.Rc)
+		logrus.Info("[ ResponseDesc ] : ", RedeemVouchUV.Rd)
 
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Point Tidak Cukup"))
 		res = models.Response{
@@ -105,15 +104,11 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 	}
 
 	if RedeemVouchUV.Rd == "Voucher not available" {
-		fmt.Println("Error : ", errRedeemVouchUV)
-		fmt.Println("[UltraVoucherServices]-[RedeemVoucher]")
-		fmt.Println("[Limit exceeded]-[Gagal Redeem Voucher]")
 
-		// sugarLogger.Info("Internal Server Error : ", errredeem)
-		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
-		sugarLogger.Info("[Limit exceeded]-[Gagal Redeem Voucher]")
-
-		// res = utils.GetMessageResponse(res, 500, false, errors.New("Voucher Sudah Limit"))
+		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
+		logrus.Error("Error : ", errRedeemVouchUV)
+		logrus.Info("[ ResponseCode ] : ", RedeemVouchUV.Rc)
+		logrus.Info("[ ResponseDesc ] : ", RedeemVouchUV.Rd)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -135,13 +130,9 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 	}
 
 	if errRedeemVouchUV != nil || RedeemVouchUV.Rc != "00" || c == "" {
-		fmt.Println("Error : ", errRedeemVouchUV)
-		fmt.Println("[UltraVoucherServices]-[RedeemVoucher]")
-		fmt.Println("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
-
-		// sugarLogger.Info("Internal Server Error : ", errredeem)
-		sugarLogger.Info("[UltraVoucherServices]-[RedeemVoucher]")
-		sugarLogger.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
+		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
+		logrus.Error("Error : ", errRedeemVouchUV)
+		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
 
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
 		res = models.Response{
@@ -199,7 +190,7 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 			param.CouponID = coupon
 
 			// go SaveTransactionUV(param, order, reqOrder, req, "Reedemtion", "09")
-			go services.SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09")
+			go services.SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09", timeExp)
 		}
 
 		res = models.Response{
@@ -223,10 +214,6 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 		logrus.Info("[Stock not Available]-[Gagal Order Voucher]")
 		logrus.Info("[ Response OrderVoucher ] : ", order)
 		logrus.Info("[ ResponseCode ] : ", order.ResponseCode)
-
-		// sugarLogger.Info("Internal Server Error : ", errOrder)
-		sugarLogger.Info("[UltraVoucherServices]-[OrderVoucher]")
-		sugarLogger.Info("[Stock not Available]-[Gagal Order Voucher]")
 
 		totalPoint := param.Point * req.Jumlah
 		param.TrxID = utils.GenTransactionId()
@@ -269,7 +256,7 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 			t := i - 1
 			coupon := RedeemVouchUV.CouponseVouch[t].CouponsID
 			param.CouponID = coupon
-			go services.SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
+			go services.SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01", timeExp)
 
 		}
 
@@ -298,14 +285,10 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 
 	if order.ResponseCode != "00" {
 
-		fmt.Println("Internal Server Error : ", errOrder)
-		fmt.Println("ResponseCode : ", order.ResponseCode)
-		fmt.Println("[UltraVoucherServices]-[OrderVoucher]")
-		fmt.Println(fmt.Sprintf("[Response %v]", order.ResponseCode))
-
-		// sugarLogger.Info("Internal Server Error : ", errOrder)
-		sugarLogger.Info("[UltraVoucherServices]-[OrderVoucher]")
-		sugarLogger.Info("[Stock not Available]-[Gagal Order Voucher]")
+		logrus.Info("[UltraVoucherServices]-[OrderVoucher]")
+		logrus.Info("[Failed order]-[Gagal Order Voucher]")
+		logrus.Info("[ Response OrderVoucher ] : ", order)
+		logrus.Info("[ ResponseCode ] : ", order.ResponseCode)
 
 		// TrxID
 		param.TrxID = utils.GenTransactionId()
@@ -348,7 +331,7 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 			t := i - 1
 			coupon := RedeemVouchUV.CouponseVouch[t].CouponsID
 			param.CouponID = coupon
-			go services.SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
+			go services.SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01", timeExp)
 
 		}
 
@@ -387,7 +370,7 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 
 		id := utils.GenerateTokenUUID()
 		go services.SaveDB(id, param.InstitutionID, param.CouponID, code, param.AccountNumber, param.AccountId, req.CampaignID)
-		go services.SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00")
+		go services.SaveTransactionUV(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00", timeExp)
 
 	}
 
@@ -395,7 +378,7 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 	logrus.Info("[ Code ] : ", "00")
 	logrus.Info("[ Coummulatif Reff Num ] : ", param.CumReffnum)
 	logrus.Info("[ Order ] : ", req.Jumlah)
-	logrus.Info("[ Success ] : ", 0)
+	logrus.Info("[ Success ] : ", req.Jumlah)
 	logrus.Info("[ Failed ] : ", 0)
 	logrus.Info("[ Pending ] : ", 0)
 

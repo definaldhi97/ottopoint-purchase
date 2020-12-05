@@ -11,7 +11,7 @@ type TSpending struct {
 	MerchantID        string     `gorm:"merchant_id"`
 	CustID            string     `gorm:"cust_id"`
 	RRN               string     `gorm:"rrn"`
-	TransactionId     string     `grom:"column:transaction_id"`
+	TransactionId     string     `grom:"transaction_id"`
 	ProductCode       string     `gorm:"product_code"`
 	Amount            int64      `gorm:"amount"`
 	TransType         string     `gorm:"trans_type"`
@@ -42,6 +42,7 @@ type TSpending struct {
 	MRewardID         string     `gorm:"m_reward_id"`
 	MProductID        string     `gorm:"m_product_id"`
 	VoucherLink       string     `gorm:"voucher_link"`
+	PointsTransferID  string     `gorm:"points_transfer_id"`
 }
 
 func (t *TSpending) TableName() string {

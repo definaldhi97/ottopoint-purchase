@@ -42,9 +42,10 @@ type VoucherDetailsManagement struct {
 // }
 
 type SpendingPointVoucher struct {
-	Rc            string
-	Rd            string
-	CouponseVouch []CouponsVoucher
+	Rc              string
+	Rd              string
+	PointTransferID string
+	CouponseVouch   []CouponsVoucher
 }
 type CouponsVoucher struct {
 	CouponsCode string

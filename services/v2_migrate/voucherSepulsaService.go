@@ -49,6 +49,7 @@ func (t VoucherSepulsaMigrateService) VoucherSepulsa(req models.VoucherComultaiv
 	textCommentSpending := param.CumReffnum + "#" + param.NamaVoucher
 	param.Comment = textCommentSpending
 	RedeemVouchSP, errRedeemVouchSP := Redeem_PointandVoucher(req.Jumlah, param)
+	param.PointTransferID = RedeemVouchSP.PointTransferID
 
 	if RedeemVouchSP.Rd == "Invalid JWT Token" {
 		fmt.Println("Error : ", errRedeemVouchSP)
@@ -122,12 +123,10 @@ func (t VoucherSepulsaMigrateService) VoucherSepulsa(req models.VoucherComultaiv
 	}
 
 	if errRedeemVouchSP != nil || RedeemVouchSP.Rc != "00" || c == "" {
-		fmt.Println("Error : ", errRedeemVouchSP)
-		fmt.Println("[SepulsaVoucherService]-[RedeemVoucher]")
-		fmt.Println("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
 
-		sugarLogger.Info("[SepulsaVoucherService]-[RedeemVoucher]")
-		sugarLogger.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
+		logrus.Info("[SepulsaVoucherService]-[RedeemVoucher]")
+		logrus.Error("Error : ", errRedeemVouchSP)
+		logrus.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -383,7 +382,7 @@ func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interf
 		UsedAt:            &redeemDate,
 		ProductType:       param.ProductType,
 		Status:            saveStatus,
-		ExpDate:           &ExpireDate,
+		ExpDate:           utils.DefaultNulTime(ExpireDate),
 		Institution:       param.InstitutionID,
 		CummulativeRef:    param.CumReffnum,
 		DateTime:          utils.GetTimeFormatYYMMDDHHMMSS(),
@@ -402,6 +401,7 @@ func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interf
 		MRewardID:         param.RewardID,
 		ProductCategoryID: param.CategoryID,
 		MProductID:        param.ProductID,
+		PointsTransferID:  param.PointTransferID,
 	}
 
 	err := db.DbCon.Create(&save).Error

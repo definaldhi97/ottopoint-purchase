@@ -97,8 +97,13 @@ func Redeem_PointandVoucher(QtyVoucher int, param models.Params) (models.Spendin
 
 	// update Usage limit voucher by rewardID
 	latestUsageLimitVouch := dtaVocher.UsageLimit - QtyVoucher
-	errDeductVouch := db.UpdateUsageLimitVoucher(param.CampaignID, latestUsageLimitVouch)
+	// errDeductVouch := db.UpdateUsageLimitVoucher(param.CampaignID, latestUsageLimitVouch)
+	errDeductVouch := UpdateUsageLimitVoucher(param.CampaignID, latestUsageLimitVouch)
 	if errDeductVouch != nil {
+
+		resReversal := Adding_PointVoucher(param, totalPoint, dtaVocher.UsageLimit)
+		logrus.Info("Reversal failed update stokc event sepending point : ", resReversal)
+
 		result.Rc = "500"
 		result.Rd = "Internal Server Error"
 		return result, errDeductVouch
@@ -118,6 +123,7 @@ func Redeem_PointandVoucher(QtyVoucher int, param models.Params) (models.Spendin
 
 	result.Rc = "00"
 	result.Rd = "Success"
+	result.PointTransferID = resSpend.PointsTransferId
 	result.CouponseVouch = couponVouc
 	return result, nil
 

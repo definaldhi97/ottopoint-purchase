@@ -178,6 +178,8 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		AccountId:       param.AccountId,
 		ProductID:       param.ProductID,
 		RewardID:        param.RewardID,
+		PointTransferID: param.PointTransferID,
+		Comment:         param.Comment,
 		DataSupplier: models.Supplier{
 			Rc: billerRes.Rc,
 			Rd: billerRes.Msg,
@@ -375,6 +377,7 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	var codeVoucher string
 	var ExpireDate time.Time
 	var redeemDate time.Time
+	trxID := utils.GenTransactionId()
 
 	if param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
 		// timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
@@ -383,6 +386,8 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		isUsed = true
 		ExpireDate = utils.ExpireDateVoucherAGt(constants.EXPDATE_VOUCHER)
 		redeemDate = time.Now()
+		trxID = param.TrxID
+
 	}
 
 	if param.Category == constants.CategoryVidio && param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
@@ -410,7 +415,8 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		MerchantID:    param.MerchantID,
 		CustID:        param.CustID,
 		RRN:           param.RRN,
-		TransactionId: param.TrxID,
+		// TransactionId: param.TrxID,
+		TransactionId: trxID,
 		ProductCode:   param.ProductCode,
 		Amount:        int64(param.Amount),
 		TransType:     param.TransType,
@@ -439,6 +445,7 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		Comment:           param.Comment,
 		MRewardID:         param.RewardID,
 		MProductID:        param.ProductID,
+		PointsTransferID:  param.PointTransferID,
 	}
 
 	err := db.DbCon.Create(&save).Error
