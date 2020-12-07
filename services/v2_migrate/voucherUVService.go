@@ -103,7 +103,7 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 		return res
 	}
 
-	if RedeemVouchUV.Rd == "Voucher not available" {
+	if RedeemVouchUV.Rc == "208" {
 
 		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
 		logrus.Error("Error : ", errRedeemVouchUV)
@@ -114,6 +114,27 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 			Meta: utils.ResponseMetaOK(),
 			Data: models.UltraVoucherResp{
 				Code:    "65",
+				Msg:     "Voucher not available",
+				Success: 0,
+				Failed:  req.Jumlah,
+				Pending: 0,
+			},
+		}
+
+		return res
+	}
+
+	if RedeemVouchUV.Rc == "209" {
+
+		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
+		logrus.Error("Error : ", errRedeemVouchUV)
+		logrus.Info("[ ResponseCode ] : ", RedeemVouchUV.Rc)
+		logrus.Info("[ ResponseDesc ] : ", RedeemVouchUV.Rd)
+
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: models.UltraVoucherResp{
+				Code:    "66",
 				Msg:     "Payment count limit exceeded",
 				Success: 0,
 				Failed:  req.Jumlah,

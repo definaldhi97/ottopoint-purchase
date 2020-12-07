@@ -21,19 +21,29 @@ func Redeem_PointandVoucher(QtyVoucher int, param models.Params) (models.Spendin
 	var msgEarning, statusEarning string
 	// validasi usage limit voucher
 
-	logrus.Info("Qty req Voucher : ", QtyVoucher)
+	logrus.Info("[ Qty req Voucher ] : ", QtyVoucher)
 	dtaVocher, _ := db.Get_MReward(param.CampaignID)
 	logrus.Info("Stock Voucher Available : ", dtaVocher.UsageLimit)
 
+	// validasi stock voucher
 	if QtyVoucher > dtaVocher.UsageLimit {
 		fmt.Println("[ Stock Voucher not Available ]")
 		result.Rc = constants.RC_VOUCHER_NOT_AVAILABLE
 		result.Rd = constants.RD_VOUCHER_NOT_AVAILABLE
 		return result, nil
 	}
+
+	// validasi limit voucher per user
+	countRedeemed, _ := db.GetVoucherRedeemed(param.AccountId, param.RewardID)
+	logrus.Info("[ Count Redeemed Voucher ] : ", countRedeemed.Count)
+	if countRedeemed.Count > dtaVocher.LimitPeruser {
+		fmt.Println("[ Payment count limit exceeded ]")
+		result.Rc = constants.RC_LIMIT_VOUCHER_USER_NOT_AVAILABLE
+		result.Rd = constants.RD_LIMIT_VOUCHER_USER_NOT_AVAILABLE
+		return result, nil
+	}
+
 	// deduct/spending point
-	// textComment := param.NamaVoucher + "," + "product code : " + param.ProductCodeInternal
-	// textComment := param.Reffnum + "#" + param.NamaVoucher
 	totalPoint := param.Point * QtyVoucher
 	fmt.Println("Comment Spending Point Redeem Voucher : ", param.Comment)
 	replCostPoint := strings.ReplaceAll(strconv.Itoa(totalPoint), ",", ".")

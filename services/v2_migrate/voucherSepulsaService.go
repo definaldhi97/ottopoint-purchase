@@ -95,7 +95,7 @@ func (t VoucherSepulsaMigrateService) VoucherSepulsa(req models.VoucherComultaiv
 		return res
 	}
 
-	if RedeemVouchSP.Rd == "Voucher not available" {
+	if RedeemVouchSP.Rc == "208" {
 		fmt.Println("Error : ", errRedeemVouchSP)
 		fmt.Println("[SepulsaVoucherService]-[RedeemVoucher]")
 		fmt.Println("[Limit exceed]-[Gagal Redeem Voucher]")
@@ -107,7 +107,28 @@ func (t VoucherSepulsaMigrateService) VoucherSepulsa(req models.VoucherComultaiv
 			Meta: utils.ResponseMetaOK(),
 			Data: models.SepulsaRes{
 				Code:    "65",
-				Msg:     "Payment count limit exceed",
+				Msg:     "Voucher not available",
+				Success: 0,
+				Failed:  req.Jumlah,
+				Pending: 0,
+			},
+		}
+
+		return res
+	}
+
+	if RedeemVouchSP.Rc == "209" {
+
+		logrus.Info("[SepulsaVoucherService]-[RedeemVoucher]")
+		logrus.Error("Error : ", RedeemVouchSP)
+		logrus.Info("[ ResponseCode ] : ", RedeemVouchSP.Rc)
+		logrus.Info("[ ResponseDesc ] : ", RedeemVouchSP.Rd)
+
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: models.SepulsaRes{
+				Code:    "66",
+				Msg:     "Payment count limit exceeded",
 				Success: 0,
 				Failed:  req.Jumlah,
 				Pending: 0,

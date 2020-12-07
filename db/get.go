@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 )
 
@@ -145,11 +146,28 @@ func GetVoucherAgSpending(orderID, transactionID string) (dbmodels.TSpending, er
 	if err != nil {
 
 		fmt.Println("[EEROR-DATABASE]")
-		fmt.Println("[db]-[GetVoucherAgSpending]")
-		fmt.Println(fmt.Sprintf("Failed to connect database Voucher UV %v", err))
+		fmt.Println("[db]-[GetVoucherAgSpending]", err.Error())
 
 		return res, err
 	}
 
 	return res, nil
+}
+
+func GetVoucherRedeemed(account_id, reward_id string) (models.CountVoucherRedeemed, error) {
+	res := models.CountVoucherRedeemed{}
+
+	fmt.Println("[ get Redeemed voucher ]")
+
+	err := DbCon.Raw(`select count(*) from public.t_spending ts where ts.account_id = ? and ts.m_reward_id = ? and ts.status = '00' and ts.trans_type = 'TSP02'`, account_id, reward_id).Scan(&res).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetVoucherRedeemed]", err.Error())
+
+		return res, err
+	}
+
+	return res, nil
+
 }

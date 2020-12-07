@@ -105,7 +105,7 @@ func (t VoucherAgMigrateServices) VoucherAg(req models.VoucherComultaiveReq, par
 		return res
 	}
 
-	if RedeemVouchAG.Rd == "Voucher not available" {
+	if RedeemVouchAG.Rc == "208" {
 
 		logrus.Info("[VoucherAgService]-[RedeemVoucher]")
 		logrus.Info("[Rc] : ", RedeemVouchAG.Rc)
@@ -117,6 +117,27 @@ func (t VoucherAgMigrateServices) VoucherAg(req models.VoucherComultaiveReq, par
 			Meta: utils.ResponseMetaOK(),
 			Data: vgmodels.ResponseVoucherAg{
 				Code:    "65",
+				Msg:     "Voucher not available",
+				Success: 0,
+				Failed:  req.Jumlah,
+				Pending: 0,
+			},
+		}
+
+		return res
+	}
+
+	if RedeemVouchAG.Rc == "209" {
+
+		logrus.Info("[VoucherAgService]-[RedeemVoucher]")
+		logrus.Error("Error : ", errRedeemVouchAG)
+		logrus.Info("[ ResponseCode ] : ", RedeemVouchAG.Rc)
+		logrus.Info("[ ResponseDesc ] : ", RedeemVouchAG.Rd)
+
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: vgmodels.ResponseVoucherAg{
+				Code:    "66",
 				Msg:     "Payment count limit exceeded",
 				Success: 0,
 				Failed:  req.Jumlah,

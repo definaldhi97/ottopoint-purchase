@@ -135,6 +135,9 @@ const (
 	RC_FAILED_DECRYPT_VOUCHER = 202
 	RD_FAILED_DECRYPT_VOUCHER = "Failed to Decrypt Voucher"
 
+	RC_LIMIT_VOUCHER_USER_NOT_AVAILABLE = "209"
+	RD_LIMIT_VOUCHER_USER_NOT_AVAILABLE = "Payment count limit exceeded"
+
 	// Nomor belum eligible
 
 	// Failed to GetBalance
