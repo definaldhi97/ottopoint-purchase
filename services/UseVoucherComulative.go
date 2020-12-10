@@ -377,6 +377,7 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	var codeVoucher string
 	var ExpireDate time.Time
 	var redeemDate time.Time
+	var usedAt time.Time
 	trxID := utils.GenTransactionId()
 
 	if param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
@@ -387,11 +388,13 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		ExpireDate = utils.ExpireDateVoucherAGt(constants.EXPDATE_VOUCHER)
 		redeemDate = time.Now()
 		trxID = param.TrxID
+		usedAt = time.Now()
 
-	}
+		if param.Category == constants.CategoryVidio {
+			isUsed = false // isUsed status untuk used
+			usedAt = time.Time{}
+		}
 
-	if param.Category == constants.CategoryVidio && param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
-		isUsed = false // isUsed status untuk used
 	}
 
 	var saveStatus string
@@ -446,6 +449,7 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		MRewardID:         param.RewardID,
 		MProductID:        param.ProductID,
 		PointsTransferID:  param.PointTransferID,
+		UsedAt:            utils.DefaultNulTime(usedAt),
 	}
 
 	err := db.DbCon.Create(&save).Error
