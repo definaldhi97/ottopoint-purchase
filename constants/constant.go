@@ -138,6 +138,9 @@ const (
 	RC_LIMIT_VOUCHER_USER_NOT_AVAILABLE = "209"
 	RD_LIMIT_VOUCHER_USER_NOT_AVAILABLE = "Payment count limit exceeded"
 
+	RC_VOUCHER_NOTFOUND = 422
+	RD_VOUCHER_NOTFOUND = "Voucher Tidak Ditemukan"
+
 	// Nomor belum eligible
 
 	// Failed to GetBalance

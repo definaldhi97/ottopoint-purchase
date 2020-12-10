@@ -34,6 +34,7 @@ var (
 	PathCSV           string
 	TopicsNotif       string
 	TopicNotifSMS     string
+	UrlImage          string
 
 	ListErrorCode []models.MappingErrorCodes
 )
@@ -49,6 +50,7 @@ func init() {
 	PathCSV = ODU.GetEnv("PATH_CSV", "/opt/ottopoint-purchase/csv/")
 	TopicsNotif = ODU.GetEnv("TOPICS_NOTIF", "ottopoint-notification-topics")
 	TopicNotifSMS = ODU.GetEnv("TOPIC_NOTIF_SMS", "ottopoint-sms-notification-topics")
+	UrlImage = ODU.GetEnv("URL_IMAGES", "https://apidev.ottopoint.id/product/v2.1/image/")
 
 }
 

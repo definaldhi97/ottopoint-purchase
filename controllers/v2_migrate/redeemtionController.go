@@ -78,7 +78,7 @@ func RedeemtionVoucherController(ctx *gin.Context) {
 	}
 
 	// Check voucher / get details voucher
-	cekVoucher, errVoucher := db.GetVoucher(req.CampaignID)
+	cekVoucher, errVoucher := db.GetVoucherDetails(req.CampaignID)
 	if errVoucher != nil || cekVoucher.RewardID == "" {
 		sugarLogger.Info(fmt.Sprintf("Failed Get Voucher/Reward Details : ", errVoucher))
 		res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))

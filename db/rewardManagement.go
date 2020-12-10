@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func GetVoucher(rewardID string) (models.VoucherDetailsManagement, error) {
+func GetVoucherDetails(rewardID string) (models.VoucherDetailsManagement, error) {
 	fmt.Println(">>>>>>>> Get Voucher/Reward Details <<<<<<<")
 	var result models.VoucherDetailsManagement
 	var dtaVoucher models.VoucherDetailsManagement1

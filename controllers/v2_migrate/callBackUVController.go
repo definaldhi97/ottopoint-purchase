@@ -96,7 +96,7 @@ func CallBackUVController(ctx *gin.Context) {
 	}
 
 	// Check voucher / get details voucher
-	dtaVoucher, errVouc := db.GetVoucher(getData.CampaignID)
+	dtaVoucher, errVouc := db.GetVoucherDetails(getData.CampaignID)
 	if errVouc != nil || dtaVoucher.RewardID == "" {
 		sugarLogger.Info(fmt.Sprintf("Failed Get Voucher/Reward Details : ", errVouc))
 		res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))

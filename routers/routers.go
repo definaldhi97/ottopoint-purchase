@@ -44,7 +44,8 @@ var (
 	callbackSepulsa string
 	callback_Agg    string
 
-	callback_uv string
+	callback_uv  string
+	view_voucher string
 )
 
 func init() {
@@ -77,6 +78,8 @@ func init() {
 
 	// callback_uv = utils.GetEnv("callback_uv", "/v2-migrate/callback/uv")
 	callback_uv = utils.GetEnv("callback_uv", "/transaction/v2/usevoucher_uv")
+
+	view_voucher = utils.GetEnv("view_voucher", "/transaction/v2.1/voucher/view")
 
 	// readto = utils.GetEnv("server.readtimeout", 30)
 	// writeto = utils.GetEnv("server.writetimeout", 30)
@@ -148,6 +151,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(redeemtionV2Migrate, v2_migrate.RedeemtionVoucherController)
 	router.POST(callbackSepulsa, v2_migrate.CallbackSepulsaController)
 	router.POST(callback_Agg, v2_migrate.CallbackVoucherAggController)
+	router.GET(view_voucher, controllers.ViewVoucherController)
 
 	ottoRouter.Router = router
 
