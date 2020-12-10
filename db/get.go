@@ -105,9 +105,9 @@ func ParamData(code string) (dbmodels.MParameters, error) {
 	return res, nil
 }
 
-func GetVoucher(phone, couponID string) (dbmodels.TransaksiRedeem, error) {
+func GetVoucher(phone, couponID string) (dbmodels.TSpending, error) {
 	fmt.Println("[ Get Voucher by Coupon Id ]")
-	result := dbmodels.TransaksiRedeem{}
+	result := dbmodels.TSpending{}
 
 	err := DbCon.Where("account_number = ? and coupon_id = ?", phone, couponID).First(&result).Error
 	if err != nil {
@@ -122,21 +122,22 @@ func GetVoucher(phone, couponID string) (dbmodels.TransaksiRedeem, error) {
 	return result, nil
 }
 
-func GetPathImageProduct(code string) (dbmodels.MProductBrand, error) {
+func GetPathImageProduct(name string) (dbmodels.MProductBrand, error) {
 	fmt.Println("[ Get path image brand by  code ]")
 
 	result := dbmodels.MProductBrand{}
 
-	err := DbCon.Where("code = ? ", code).First(&result).Error
+	err := DbCon.Where("name = ? ", name).First(&result).Error
 	if err != nil {
 
 		fmt.Println("[EEROR-DATABASE]")
 		fmt.Println("[db]-[GetPathProductBrand]")
 		fmt.Println(fmt.Sprintf("Failed to connect database", err))
 
+		fmt.Println("[db]-[GetVoucherAgSpending]", err.Error())
+
 		return result, err
 	}
 
 	return result, nil
-
 }

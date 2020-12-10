@@ -131,40 +131,40 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		saveStatus = constants.Failed
 	}
 
-	reqUV, _ := json.Marshal(&reqdata)   // Req UV
-	responseUV, _ := json.Marshal(&res)  // Response UV
+	reqUV, _ := json.Marshal(&reqdata) // Req UV
+	// responseUV, _ := json.Marshal(&res)  // Response UV
 	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
 
-	timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+	// timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
 
-	save := dbmodels.TransaksiRedeem{
+	save := dbmodels.TSpending{
 		AccountNumber: param.AccountNumber,
 		Voucher:       param.NamaVoucher,
 		MerchantID:    param.MerchantID,
 		// CustID:          param.CustID,
-		RRN:             param.RRN,
-		ProductCode:     param.ProductCode,
-		Amount:          int64(param.Amount),
-		TransType:       trasnType,
-		IsUsed:          false,
-		ProductType:     param.ProductType,
-		Status:          saveStatus,
-		ExpDate:         param.ExpDate,
-		Institution:     param.InstitutionID,
-		CummulativeRef:  param.CumReffnum,
-		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
-		ResponderData:   status,
-		Point:           param.Point,
-		ResponderRc:     param.DataSupplier.Rc,
-		ResponderRd:     param.DataSupplier.Rd,
-		RequestorData:   string(reqUV),
-		ResponderData2:  string(responseUV),
+		RRN:         param.RRN,
+		ProductCode: param.ProductCode,
+		Amount:      int64(param.Amount),
+		TransType:   trasnType,
+		IsUsed:      false,
+		ProductType: param.ProductType,
+		Status:      saveStatus,
+		// ExpDate:         param.ExpDate,
+		Institution:    param.InstitutionID,
+		CummulativeRef: param.CumReffnum,
+		DateTime:       utils.GetTimeFormatYYMMDDHHMMSS(),
+		ResponderData:  status,
+		Point:          param.Point,
+		ResponderRc:    param.DataSupplier.Rc,
+		ResponderRd:    param.DataSupplier.Rd,
+		RequestorData:  string(reqUV),
+		// ResponderData2:  string(responseUV),
 		RequestorOPData: string(reqdataOP),
 		SupplierID:      param.SupplierID,
 		CouponId:        param.CouponID,
 		CampaignId:      param.CampaignID,
 		AccountId:       param.AccountId,
-		RedeemAt:        timeRedeem,
+		// RedeemAt:        timeRedeem,
 	}
 
 	err := db.DbCon.Create(&save).Error

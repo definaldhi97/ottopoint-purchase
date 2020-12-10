@@ -199,29 +199,29 @@ func SaveTransactionPLN(param models.Params, res interface{}, reqdata interface{
 	}
 
 	reqOttoag, _ := json.Marshal(&reqdata)
-	responseOttoag, _ := json.Marshal(&res)
+	// responseOttoag, _ := json.Marshal(&res)
 	reqdataOP, _ := json.Marshal(&reqOP)
 
-	save := dbmodels.TransaksiRedeem{
-		AccountNumber:   param.AccountNumber,
-		Voucher:         param.NamaVoucher,
-		MerchantID:      param.MerchantID,
-		CustID:          param.CustID,
-		RRN:             param.RRN,
-		ProductCode:     param.ProductCode,
-		Amount:          int64(param.Amount),
-		TransType:       trasnType,
-		ProductType:     param.ProductType,
-		Status:          saveStatus,
-		ExpDate:         param.ExpDate,
-		Institution:     param.InstitutionID,
-		CummulativeRef:  param.Reffnum,
-		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
-		ResponderData:   status,
-		Point:           param.Point,
-		ResponderRc:     rc,
-		RequestorData:   string(reqOttoag),
-		ResponderData2:  string(responseOttoag),
+	save := dbmodels.TSpending{
+		AccountNumber: param.AccountNumber,
+		Voucher:       param.NamaVoucher,
+		MerchantID:    param.MerchantID,
+		CustID:        param.CustID,
+		RRN:           param.RRN,
+		ProductCode:   param.ProductCode,
+		Amount:        int64(param.Amount),
+		TransType:     trasnType,
+		ProductType:   param.ProductType,
+		Status:        saveStatus,
+		// ExpDate:         param.ExpDate,
+		Institution:    param.InstitutionID,
+		CummulativeRef: param.Reffnum,
+		DateTime:       utils.GetTimeFormatYYMMDDHHMMSS(),
+		ResponderData:  status,
+		Point:          param.Point,
+		ResponderRc:    rc,
+		RequestorData:  string(reqOttoag),
+		// ResponderData2:  string(responseOttoag),
 		RequestorOPData: string(reqdataOP),
 		SupplierID:      param.SupplierID,
 	}

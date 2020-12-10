@@ -6,8 +6,8 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-func UpdateVoucher(use, couponId string) (dbmodels.TransaksiRedeem, error) {
-	res := dbmodels.TransaksiRedeem{}
+func UpdateVoucher(use, couponId string) (dbmodels.TSpending, error) {
+	res := dbmodels.TSpending{}
 
 	err := DbCon.Raw(`update redeem_transactions set is_used = true, used_at = ? where coupon_id = ?`, use, couponId).Scan(&res).Error
 	if err != nil {

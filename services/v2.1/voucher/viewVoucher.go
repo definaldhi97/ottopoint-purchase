@@ -57,17 +57,20 @@ func (t ViewVoucherService) ViewVoucher(accountNumber, couponId string) models.R
 	}
 
 	// get path product brand
-	pathpathImg, errPath := db.GetPathImageProduct(getVouc.ProductCode)
+	pathpathImg, errPath := db.GetPathImageProduct(getVouc.ProductType)
 	if errPath != nil {
-		resp = utils.GetMessageFailedErrorNew(resp, 500, "Internal Server Error")
-		return resp
+		fmt.Println("Failed Get Path Image : ", errPath.Error())
+		// resp = utils.GetMessageFailedErrorNew(resp, 500, "Internal Server Error")
+		// return resp
 	}
 	patahProductBrand := utils.UrlImage + pathpathImg.Path
+
+	xpd := getVouc.ExpDate.Format("2006-01-02 15:04:05")
 
 	//resp view voucher
 	dataVouch := models.ViewVocuherVidio{
 		VoucherName: getVouc.Voucher,
-		ExpiredDate: getVouc.ExpDate,
+		ExpiredDate: xpd,
 		VoucherCode: plainTextVoucCod,
 		ImageUrl:    patahProductBrand,
 	}
