@@ -10,7 +10,6 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
-	"github.com/vjeantet/jodaTime"
 	"go.uber.org/zap"
 )
 
@@ -58,7 +57,8 @@ func (t CallabckUVServices) CallbackVoucherUV(req models.UseVoucherUVReq, param 
 	// 	return res
 	// }
 
-	timeUse := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+	// timeUse := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+	timeUse := time.Now()
 
 	_, errUpdate := db.UpdateVoucher(timeUse, param.CouponID)
 	if errUpdate != nil {

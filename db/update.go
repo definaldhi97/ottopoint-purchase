@@ -3,11 +3,12 @@ package db
 import (
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/models/dbmodels"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 )
 
-func UpdateVoucher(use, couponId string) (dbmodels.TSpending, error) {
+func UpdateVoucher(use time.Time, couponId string) (dbmodels.TSpending, error) {
 	res := dbmodels.TSpending{}
 
 	err := DbCon.Raw(`update t_spending set is_used = true, used_at = ? where coupon_id = ?`, use, couponId).Scan(&res).Error
