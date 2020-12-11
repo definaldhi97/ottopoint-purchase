@@ -372,7 +372,7 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[%v]", param.ProductType))
 
 	// validasi vidio is_used -> false
-	isUsed := false
+	isUsed := true
 	// codeVoucher := param.VoucherCode
 	var codeVoucher string
 	var ExpireDate time.Time
@@ -405,6 +405,7 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		saveStatus = constants.Pending
 	case "01":
 		saveStatus = constants.Failed
+		isUsed = true
 	}
 
 	reqOttoag, _ := json.Marshal(&reqdata)  // Req Ottoag
