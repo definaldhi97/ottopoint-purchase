@@ -149,8 +149,9 @@ func (t VoucherUVMigrateService) VoucherUV(req models.VoucherComultaiveReq, para
 	for _, vall := range RedeemVouchUV.CouponseVouch {
 		c = vall.CouponsCode
 	}
+	fmt.Println("Value CouponCode : ", c)
 
-	if errRedeemVouchUV != nil || RedeemVouchUV.Rc != "00" || c == "" {
+	if errRedeemVouchUV != nil || RedeemVouchUV.Rc != "00" {
 		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
 		logrus.Error("Error : ", errRedeemVouchUV)
 		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
