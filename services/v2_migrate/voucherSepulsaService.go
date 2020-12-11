@@ -142,8 +142,9 @@ func (t VoucherSepulsaMigrateService) VoucherSepulsa(req models.VoucherComultaiv
 	for _, vall := range RedeemVouchSP.CouponseVouch {
 		c = vall.CouponsCode
 	}
+	fmt.Println("Value CouponCode : ", c)
 
-	if errRedeemVouchSP != nil || RedeemVouchSP.Rc != "00" || c == "" {
+	if errRedeemVouchSP != nil || RedeemVouchSP.Rc != "00" {
 
 		logrus.Info("[SepulsaVoucherService]-[RedeemVoucher]")
 		logrus.Error("Error : ", errRedeemVouchSP)
