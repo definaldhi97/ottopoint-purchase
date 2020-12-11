@@ -44,8 +44,9 @@ var (
 	callbackSepulsa string
 	callback_Agg    string
 
-	callback_uv  string
-	view_voucher string
+	callback_uv       string
+	view_voucher      string
+	use_voucher_vidio string
 )
 
 func init() {
@@ -80,6 +81,7 @@ func init() {
 	callback_uv = utils.GetEnv("callback_uv", "/transaction/v2/usevoucher_uv")
 
 	view_voucher = utils.GetEnv("view_voucher", "/transaction/v2.1/voucher/view")
+	use_voucher_vidio = utils.GetEnv("use_voucher_vidio", "/transaction/v2.1/usevoucher")
 
 	// readto = utils.GetEnv("server.readtimeout", 30)
 	// writeto = utils.GetEnv("server.writetimeout", 30)
@@ -131,6 +133,9 @@ func (ottoRouter *OttoRouter) Routers() {
 		MaxAge: 86400,
 	}))
 
+	// declare controllers
+	useVoucherMigrate := new(v2_migrate.UseVouhcerMigrateController)
+
 	router.Use(ottoRouter.Ginfunc)
 	router.Use(gin.Recovery())
 
@@ -138,20 +143,23 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.GET(healthcheck, controllers.HealthCheckService)
 	router.POST(redeem, controllers.VoucherRedeemController)
 	// router.POST(comulative, controllers.VoucherComulativeController)
-	router.POST(use_voucher, controllers.UseVouhcerController)
+	// router.POST(use_voucher, controllers.UseVouhcerController)
+
 	router.POST(deductPoint, controllers.PointController)
 	router.POST(reversePoint, controllers.ReversePointController)
 	router.POST(earningPoint, controllers.EarningsPointController)
 	router.POST(splitbill, controllers.DeductSplitBillController)
 	// router.POST(usevoucher_uv, controllers.UseVouhcerUVController)
-	router.POST(callback_uv, v2_migrate.CallBackUVController)
 	router.POST(checkStatusEarning, controllers.CheckStatusEarningController)
-
+	router.GET(view_voucher, controllers.ViewVoucherController)
 	router.POST(csv, controllers.CreateFileCSVController)
+
 	router.POST(redeemtionV2Migrate, v2_migrate.RedeemtionVoucherController)
 	router.POST(callbackSepulsa, v2_migrate.CallbackSepulsaController)
 	router.POST(callback_Agg, v2_migrate.CallbackVoucherAggController)
-	router.GET(view_voucher, controllers.ViewVoucherController)
+	router.POST(use_voucher, useVoucherMigrate.UseVouhcerMigrateController)
+	router.GET(use_voucher_vidio, useVoucherMigrate.UseVoucherVidioController)
+	router.POST(callback_uv, v2_migrate.CallBackUVController)
 
 	ottoRouter.Router = router
 

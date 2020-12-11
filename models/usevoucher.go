@@ -92,3 +92,11 @@ type CouponDetail struct {
 type Photo struct {
 	URLPhoto string `json:"url_photo"`
 }
+
+type RespUseVoucher struct {
+	Code       string `json:"code"`
+	CouponID   string `json:"couponId"`
+	Used       bool   `json:"used"`
+	CampaignID string `json:"campaignId"`
+	CustomerID string `json:"customerId"`
+}
