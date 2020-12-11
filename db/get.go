@@ -176,7 +176,7 @@ func GetVoucher(phone, couponID string) (dbmodels.TSpending, error) {
 	fmt.Println("[ Get Voucher by Coupon Id ]")
 	result := dbmodels.TSpending{}
 
-	err := DbCon.Where("account_number = ? and coupon_id = ?", phone, couponID).First(&result).Error
+	err := DbCon.Where("account_number = ? and coupon_id = ? and trans_type = 'TSP02'", phone, couponID).First(&result).Error
 	if err != nil {
 
 		fmt.Println("[EEROR-DATABASE]")

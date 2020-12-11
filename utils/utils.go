@@ -432,6 +432,8 @@ func EncryptAES(plaintext []byte, key []byte) ([]byte, error) {
 }
 
 func DecryptAES(ciphertext []byte, key []byte) ([]byte, error) {
+
+	fmt.Println("Prosess decrytp ")
 	c, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -443,6 +445,8 @@ func DecryptAES(ciphertext []byte, key []byte) ([]byte, error) {
 	}
 
 	nonceSize := gcm.NonceSize()
+	fmt.Println("value nonceSize Decrypt : ", nonceSize)
+	fmt.Println("value len ciphertext Decrypt : ", len(ciphertext))
 	if len(ciphertext) < nonceSize {
 		return nil, errors.New("ciphertext too short")
 	}

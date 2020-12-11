@@ -51,6 +51,7 @@ func (t ViewVoucherService) ViewVoucher(accountNumber, couponId string) models.R
 	fmt.Println("voucher code : ")
 	fmt.Println(plainText)
 	if errDec != nil {
+		fmt.Println("error decrytp : ", errDec)
 		resp = utils.GetMessageFailedErrorNew(resp, constants.RC_FAILED_DECRYPT_VOUCHER, constants.RD_FAILED_DECRYPT_VOUCHER)
 		return resp
 	}
