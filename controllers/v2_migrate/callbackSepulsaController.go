@@ -3,8 +3,6 @@ package v2_migrate
 import (
 	"net/http"
 	"ottopoint-purchase/models"
-	"ottopoint-purchase/utils"
-	"time"
 
 	sepulsaModels "ottopoint-purchase/hosts/sepulsa/models"
 	"ottopoint-purchase/services/v2_migrate"
@@ -12,7 +10,6 @@ import (
 	"ottopoint-purchase/controllers"
 
 	"github.com/gin-gonic/gin"
-	zaplog "github.com/opentracing-contrib/go-zap/log"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"go.uber.org/zap"
@@ -54,13 +51,13 @@ func CallbackSepulsaController(ctx *gin.Context) {
 
 	res = VoucherSepulsaMigrateService.CallbackVoucherSepulsa(req)
 
-	sugarLogger.Info("RESPONSE : ", zap.String("SPANID", spanId), zap.String("CTRL", namectrl),
-		zap.Any("BODY : ", res))
+	// sugarLogger.Info("RESPONSE : ", zap.String("SPANID", spanId), zap.String("CTRL", namectrl),
+	// 	zap.Any("BODY : ", res))
 
-	datalog := utils.LogSpanMax(res)
-	zaplog.InfoWithSpan(span, namectrl,
-		zap.Any("RESP : ", datalog),
-		zap.Duration("backoff : ", time.Second))
+	// datalog := utils.LogSpanMax(res)
+	// zaplog.InfoWithSpan(span, namectrl,
+	// 	zap.Any("RESP : ", datalog),
+	// 	zap.Duration("backoff : ", time.Second))
 
 	defer span.Finish()
 

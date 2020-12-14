@@ -7,7 +7,6 @@ import (
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/services/v2_migrate"
 	"ottopoint-purchase/utils"
-	"time"
 
 	"ottopoint-purchase/controllers"
 	"ottopoint-purchase/db"
@@ -15,7 +14,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	zaplog "github.com/opentracing-contrib/go-zap/log"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"go.uber.org/zap"
@@ -120,13 +118,13 @@ func CallBackUVController(ctx *gin.Context) {
 
 	res = CallabckUVServices.CallbackVoucherUV(req, param, getData.CampaignID)
 
-	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
-		zap.Any("BODY", res))
+	// sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
+	// 	zap.Any("BODY", res))
 
-	datalog := utils.LogSpanMax(res)
-	zaplog.InfoWithSpan(span, namectrl,
-		zap.Any("RESP", datalog),
-		zap.Duration("backoff", time.Second))
+	// datalog := utils.LogSpanMax(res)
+	// zaplog.InfoWithSpan(span, namectrl,
+	// 	zap.Any("RESP", datalog),
+	// 	zap.Duration("backoff", time.Second))
 
 	defer span.Finish()
 	ctx.JSON(http.StatusOK, res)
