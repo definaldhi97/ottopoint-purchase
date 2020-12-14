@@ -81,7 +81,7 @@ func init() {
 	callback_uv = utils.GetEnv("callback_uv", "/transaction/v2/usevoucher_uv")
 
 	view_voucher = utils.GetEnv("view_voucher", "/transaction/v2.1/voucher/view")
-	use_voucher_vidio = utils.GetEnv("use_voucher_vidio", "/transaction/v2.1/usevoucher")
+	use_voucher_vidio = utils.GetEnv("use_voucher_vidio", "/transaction/v2.1/usevoucher/vidio")
 
 	// readto = utils.GetEnv("server.readtimeout", 30)
 	// writeto = utils.GetEnv("server.writetimeout", 30)

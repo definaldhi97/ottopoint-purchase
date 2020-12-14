@@ -13,10 +13,8 @@ import (
 	"ottopoint-purchase/services/v2_migrate"
 	"ottopoint-purchase/utils"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	zaplog "github.com/opentracing-contrib/go-zap/log"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	ottologer "ottodigital.id/library/logger"
@@ -128,13 +126,13 @@ func (controller UseVouhcerMigrateController) UseVouhcerMigrateController(ctx *g
 		res = usevoucher.UseVoucherAggregator(req, param)
 	}
 
-	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
-		zap.Any("BODY", res))
+	// sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
+	// 	zap.Any("BODY", res))
 
-	datalog := utils.LogSpanMax(res)
-	zaplog.InfoWithSpan(span, namectrl,
-		zap.Any("RESP", datalog),
-		zap.Duration("backoff", time.Second))
+	// datalog := utils.LogSpanMax(res)
+	// zaplog.InfoWithSpan(span, namectrl,
+	// 	zap.Any("RESP", datalog),
+	// 	zap.Duration("backoff", time.Second))
 
 	defer span.Finish()
 	ctx.JSON(http.StatusOK, res)
