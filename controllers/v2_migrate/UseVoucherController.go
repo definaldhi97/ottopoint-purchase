@@ -201,13 +201,13 @@ func (controller UseVouhcerMigrateController) UseVoucherVidioController(ctx *gin
 
 	resp = UseVoucher.UseVoucherVidio(couponId)
 
-	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
-		zap.Any("BODY", resp))
+	// sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
+	// 	zap.Any("BODY", resp))
 
-	datalog := utils.LogSpanMax(resp)
-	zaplog.InfoWithSpan(span, namectrl,
-		zap.Any("RESP", datalog),
-		zap.Duration("backoff", time.Second))
+	// datalog := utils.LogSpanMax(resp)
+	// zaplog.InfoWithSpan(span, namectrl,
+	// 	zap.Any("RESP", datalog),
+	// 	zap.Duration("backoff", time.Second))
 
 	defer span.Finish()
 	ctx.JSON(http.StatusOK, resp)
