@@ -37,7 +37,7 @@ type TSpending struct {
 	CreatedAT         time.Time  `gorm:"created_at" json:"created_at"`
 	UpdatedAT         time.Time  `gorm:"updated_at" json:"updated_at"`
 	VoucherCode       string     `gorm:"voucher_code"`
-	ProductCategoryID string     `gorm:"product_category_id"`
+	ProductCategoryID *string    `gorm:"product_category_id"`
 	Comment           string     `gorm:"comment"`
 	MRewardID         string     `gorm:"m_reward_id"`
 	MProductID        string     `gorm:"m_product_id"`

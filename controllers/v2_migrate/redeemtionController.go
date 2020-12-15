@@ -203,11 +203,12 @@ func SwitchDataVoucher(data models.VoucherDetailsManagement) models.Params {
 		producrType = data.BrandName
 	}
 
-	var categoriesID string
+	var categoriesID *string
 	if len(data.CategoriesID) == 0 {
 		fmt.Println("Not CategoriesID")
+		categoriesID = nil
 	} else {
-		categoriesID = data.CategoriesID[0]
+		categoriesID = &data.CategoriesID[0]
 	}
 	result = models.Params{
 		ProductType:         producrType,
