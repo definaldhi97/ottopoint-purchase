@@ -203,6 +203,12 @@ func SwitchDataVoucher(data models.VoucherDetailsManagement) models.Params {
 		producrType = data.BrandName
 	}
 
+	var categoriesID string
+	if len(data.CategoriesID) == 0 {
+		fmt.Println("Not CategoriesID")
+	} else {
+		categoriesID = data.CategoriesID[0]
+	}
 	result = models.Params{
 		ProductType:         producrType,
 		ProductCode:         data.ExternalProductCode,
@@ -212,7 +218,7 @@ func SwitchDataVoucher(data models.VoucherDetailsManagement) models.Params {
 		Point:               int(data.CostPoints),
 		Category:            strings.ToLower(producrType),
 		ExpDate:             data.ActivityActiveTo,
-		CategoryID:          data.CategoriesID[0],
+		CategoryID:          categoriesID,
 		UsageLimitVoucher:   data.UsageLimit,
 		ProductCodeInternal: data.InternalProductCode,
 		RewardID:            data.RewardID,
