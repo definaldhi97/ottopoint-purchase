@@ -770,6 +770,84 @@ func (t VoucherAgServices) RedeemVoucher(req models.VoucherComultaiveReq, param 
 
 }
 
+func (t VoucherAgServices) HandleCallback(req models.CallbackRequestVoucherAg) models.Response {
+	var res models.Response
+
+	sugarLogger := t.General.OttoZaplog
+	sugarLogger.Info("[HandleCallbackVoucherAg-Services]",
+		zap.String("Institution : ", req.InstitutionID),
+		zap.String("TransactionID : ", req.TransactionID),
+		zap.String("OrderID : ", req.Data.OrderID),
+		zap.String("VoucherID: ", req.Data.VoucherID),
+		zap.String("VoucherName: ", req.Data.VoucherName),
+		zap.String("VoucherCode: ", req.Data.VoucherCode),
+		zap.String("Status: ", req.Data.Status),
+		zap.Bool("IsRedeemed: ", req.Data.IsRedeemed),
+		zap.String("RedeemedDate: ", req.Data.RedeemedDate),
+		zap.String("UsedDate: ", req.Data.UsedDate),
+	)
+
+	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[RedeemVoucher]")
+	defer span.Finish()
+
+	// Get TSpending
+	tspending, err := db.GetVoucherAgSpending(req.Data.VoucherID, req.TransactionID)
+	if err != nil {
+
+		fmt.Println("[HandleCallbackVoucherAg]")
+		fmt.Println("[FailedGetTSpending]: ", err)
+		sugarLogger.Info("[VoucherAgServices]-[HandleCallback]-[CouponVoucherCustomer]")
+
+		res = utils.GetMessageResponse(res, 422, false, err)
+
+		return res
+	}
+
+	cekVoucher, errVoucher := opl.VoucherDetail(tspending.CampaignId)
+	if errVoucher != nil || cekVoucher.CampaignID == "" {
+		sugarLogger.Info("[HandleCallback]-[VoucherDetail]")
+		sugarLogger.Info(fmt.Sprintf("Error : ", errVoucher))
+
+		logs.Info("[HandleCallback]-[VoucherDetail]")
+		logs.Info(fmt.Sprintf("Error : ", errVoucher))
+	}
+
+	couponCode := cekVoucher.Coupons[0]
+
+	// Use Voucher
+	use, err2 := opl.CouponVoucherCustomer(tspending.CampaignId, tspending.CouponId, couponCode, tspending.AccountId, 1)
+	var useErr string
+	for _, value := range use.Coupons {
+		useErr = value.CouponID
+	}
+
+	if err2 != nil || useErr == "" {
+
+		fmt.Println("[VoucherAgServices]-[HandleCallback]-[CouponVoucherCustomer]")
+		fmt.Println(fmt.Sprintf("[VoucherAgServices]-[HandleCallback]-[Error : %v]", err2))
+		sugarLogger.Info("[VoucherAgServices]-[HandleCallback]-[CouponVoucherCustomer]")
+
+	}
+
+	// Update TSpending
+	_, err3 := db.UpdateVoucherAg(req.Data.RedeemedDate, req.Data.UsedDate, tspending.ID)
+	if err3 != nil {
+
+		fmt.Println("[VoucherAgServices]-[HandleCallback]-[FailedUpdate]")
+		fmt.Println(fmt.Sprintf("[VoucherAgServices]-[HandleCallback]-[Error : %v]", err3))
+		sugarLogger.Info("[VoucherAgServices]-[HandleCallback]-[FailedUpdateTSpending]")
+
+	}
+
+	go db.UpdateTSchedulerVoucherAG(req.Data.OrderID)
+
+	res = models.Response{
+		Meta: utils.ResponseMetaOK(),
+	}
+
+	return res
+}
+
 func SaveDBVoucherAg(id, institution, coupon, vouchercode, phone, custIdOPL, campaignID string) {
 
 	fmt.Println("[SaveDB]-[UltraVoucherServices]")
