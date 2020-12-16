@@ -9,7 +9,6 @@ import (
 
 	"github.com/astaxie/beego/logs"
 	"github.com/opentracing/opentracing-go"
-	"github.com/vjeantet/jodaTime"
 	"go.uber.org/zap"
 )
 
@@ -53,7 +52,8 @@ func (t UseVoucherServices) UseVoucherAggregator(req models.UseVoucherReq, param
 	}
 
 	// Update Status Voucher
-	timeUse := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+	// timeUse := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+	timeUse := time.Now()
 	go db.UpdateVoucher(timeUse, spend.CouponId)
 
 	codeVoucher := t.decryptVoucherCode(spend.VoucherCode, spend.CouponId)

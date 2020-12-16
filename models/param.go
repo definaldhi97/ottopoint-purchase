@@ -3,35 +3,42 @@ package models
 import "time"
 
 type Params struct {
-	AccountNumber   string
-	MerchantID      string
-	InstitutionID   string
-	TransType       string
-	AccountId       string //opl
-	Reffnum         string // internal (generate ottopoint)
-	CumReffnum      string // internal (generate ottopoint) untuk pembelian kelipatan
-	RRN             string // eksternal (from supplier exp : ottoag, uv)
-	CustID          string
-	Amount          int64
-	NamaVoucher     string
-	ProductType     string
-	ProductCode     string
-	Category        string
-	Point           int
-	ExpDate         string
-	CouponID        string
-	CouponCode      string
-	CampaignID      string
-	SupplierID      string
+	AccountNumber string
+	MerchantID    string
+	InstitutionID string
+	TransType     string
+	AccountId     string //opl
+	Reffnum       string // internal (generate ottopoint)
+	CumReffnum    string // internal (generate ottopoint) untuk pembelian kelipatan
+	RRN           string // eksternal (from supplier exp : ottoag, uv)
+	CustID        string
+	Amount        int64
+	NamaVoucher   string
+	ProductType   string
+	ProductCode   string
+	Category      string
+	Point         int
+	ExpDate       string
+	CouponID      string
+	CouponCode    string
+	CampaignID    string
+	SupplierID    string
+
 	VoucherCode     string // voucher code vidio
 	VoucherLink     string // voucher link
 	ExpireDateVidio string // Expire date Voucher Vidio
-	CategoryID      string
 	TrxID           string
 	TrxTime         time.Time
+	CategoryID      *string
 	// percobaan
-	Total        int
-	DataSupplier Supplier
+	Total               int
+	DataSupplier        Supplier
+	UsageLimitVoucher   int
+	ProductCodeInternal string
+	ProductID           string
+	Comment             string
+	RewardID            string
+	PointTransferID     string
 }
 
 type Supplier struct {

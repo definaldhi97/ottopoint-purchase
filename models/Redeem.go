@@ -24,3 +24,7 @@ type Redeem struct {
 type RedeemVoucher struct {
 	Voucher string `json:"voucher"`
 }
+
+type CountVoucherRedeemed struct {
+	Count int `gorm:"column:count" json:"count"`
+}

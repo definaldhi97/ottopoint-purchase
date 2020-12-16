@@ -53,7 +53,7 @@ func init() {
 	PathCSV = ODU.GetEnv("PATH_CSV", "/opt/ottopoint-purchase/csv/")
 	TopicsNotif = ODU.GetEnv("TOPICS_NOTIF", "ottopoint-notification-topics")
 	TopicNotifSMS = ODU.GetEnv("TOPIC_NOTIF_SMS", "ottopoint-sms-notification-topics")
-	UrlImage = ODU.GetEnv("URL_PHOTO", "https://apidev.ottopoint.id/product/v2.1/image/")
+	UrlImage = ODU.GetEnv("URL_IMAGES", "https://apidev.ottopoint.id/product/v2.1/image/")
 
 }
 
@@ -435,6 +435,8 @@ func EncryptAES(plaintext []byte, key []byte) ([]byte, error) {
 }
 
 func DecryptAES(ciphertext []byte, key []byte) ([]byte, error) {
+
+	fmt.Println("Prosess decrytp ")
 	c, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -446,6 +448,8 @@ func DecryptAES(ciphertext []byte, key []byte) ([]byte, error) {
 	}
 
 	nonceSize := gcm.NonceSize()
+	fmt.Println("value nonceSize Decrypt : ", nonceSize)
+	fmt.Println("value len ciphertext Decrypt : ", len(ciphertext))
 	if len(ciphertext) < nonceSize {
 		return nil, errors.New("ciphertext too short")
 	}
@@ -464,4 +468,20 @@ func GenerateTokenUUID() string {
 	tokenString = strings.ReplaceAll(tokenString, "\n", "")
 	tokenString = strings.ToLower(tokenString)
 	return tokenString
+}
+
+func ExpireDateVoucherAGt(value int) time.Time {
+	now := time.Now().Local()
+	layOut := "2006-01-02"
+	expierDate := now.AddDate(0, 0, value)
+	date := expierDate.Format("2006-01-02")
+	dateStamp, _ := time.Parse(layOut, date)
+	return dateStamp
+}
+
+func DefaultNulTime(date time.Time) *time.Time {
+	if !date.IsZero() {
+		return &date
+	}
+	return nil
 }

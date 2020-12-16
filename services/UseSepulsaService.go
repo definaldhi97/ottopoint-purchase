@@ -647,6 +647,9 @@ func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interf
 
 	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[Sepulsa]-[%v]", transType))
 
+	var ExpireDate time.Time
+	var redeemDate time.Time
+
 	var saveStatus string
 	switch status {
 	case "00":
@@ -657,42 +660,52 @@ func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interf
 		saveStatus = constants.Failed
 	}
 
+	if transType == constants.CODE_TRANSTYPE_REDEMPTION {
+		ExpireDate = utils.ExpireDateVoucherAGt(constants.EXPDATE_VOUCHER)
+		redeemDate = time.Now()
+	}
+
 	reqSepulsa, _ := json.Marshal(&reqdata)
 	responseSepulsa, _ := json.Marshal(&res)
 	reqdataOP, _ := json.Marshal(&reqOP)
 
-	timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+	// timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
 
 	save := dbmodels.TSpending{
-		ID:              utils.GenerateTokenUUID(),
-		AccountNumber:   param.AccountNumber,
-		Voucher:         param.NamaVoucher,
-		MerchantID:      param.MerchantID,
-		CustID:          reqOP.CustID,
-		RRN:             param.RRN,
-		TransactionId:   param.TrxID,
-		ProductCode:     param.ProductCode,
-		Amount:          int64(param.Amount),
-		TransType:       transType,
-		IsUsed:          true,
-		UsedAt:          timeRedeem,
-		ProductType:     param.ProductType,
-		Status:          saveStatus,
-		ExpDate:         param.ExpDate,
-		Institution:     param.InstitutionID,
-		CummulativeRef:  param.CumReffnum,
-		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
-		Point:           param.Point,
-		ResponderRc:     param.DataSupplier.Rc,
-		ResponderRd:     param.DataSupplier.Rd,
-		RequestorData:   string(reqSepulsa),
-		ResponderData:   string(responseSepulsa),
-		RequestorOPData: string(reqdataOP),
-		SupplierID:      param.SupplierID,
-		CouponId:        param.CouponID,
-		CampaignId:      param.CampaignID,
-		AccountId:       param.AccountId,
-		RedeemAt:        timeRedeem,
+		ID:                utils.GenerateTokenUUID(),
+		AccountNumber:     param.AccountNumber,
+		Voucher:           param.NamaVoucher,
+		MerchantID:        param.MerchantID,
+		CustID:            reqOP.CustID,
+		RRN:               param.RRN,
+		TransactionId:     param.TrxID,
+		ProductCode:       param.ProductCode,
+		Amount:            int64(param.Amount),
+		TransType:         transType,
+		IsUsed:            true,
+		UsedAt:            &redeemDate,
+		ProductType:       param.ProductType,
+		Status:            saveStatus,
+		ExpDate:           utils.DefaultNulTime(ExpireDate),
+		Institution:       param.InstitutionID,
+		CummulativeRef:    param.CumReffnum,
+		DateTime:          utils.GetTimeFormatYYMMDDHHMMSS(),
+		Point:             param.Point,
+		ResponderRc:       param.DataSupplier.Rc,
+		ResponderRd:       param.DataSupplier.Rd,
+		RequestorData:     string(reqSepulsa),
+		ResponderData:     string(responseSepulsa),
+		RequestorOPData:   string(reqdataOP),
+		SupplierID:        param.SupplierID,
+		CouponId:          param.CouponID,
+		CampaignId:        param.CampaignID,
+		AccountId:         param.AccountId,
+		RedeemAt:          utils.DefaultNulTime(redeemDate),
+		Comment:           param.Comment,
+		MRewardID:         param.RewardID,
+		ProductCategoryID: param.CategoryID,
+		MProductID:        param.ProductID,
+		PointsTransferID:  param.PointTransferID,
 	}
 
 	err := db.DbCon.Create(&save).Error

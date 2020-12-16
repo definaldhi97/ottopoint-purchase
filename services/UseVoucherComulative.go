@@ -70,7 +70,7 @@ func UseVoucherComulative(req models.VoucherComultaiveReq, redeemComu models.Red
 		param.RRN = redeemComu.Redeem.Rrn
 		param.CouponID = redeemComu.CouponID
 		param.CouponCode = redeemComu.CouponCode
-		resRedeem := RedeemUseVoucherComulative(req, param, dataUser.CustID)
+		resRedeem := RedeemUseVoucherComulative(req, param)
 
 		getRespChan <- resRedeem
 
@@ -79,7 +79,9 @@ func UseVoucherComulative(req models.VoucherComultaiveReq, redeemComu models.Red
 }
 
 // function reedem use voucher
-func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Params, custID string) models.RedeemResponse {
+func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Params) models.RedeemResponse {
+	fmt.Println("[ >>>>>>>>>>>>>>>>>> Payment Voucher Otto AG <<<<<<<<<<<<<<<< ]")
+
 	res := models.RedeemResponse{}
 
 	fmt.Println("[RedeemUseVoucherComulative]-[Package-Services]")
@@ -104,17 +106,6 @@ func RedeemUseVoucherComulative(req models.VoucherComultaiveReq, param models.Pa
 	// case constants.CategoryMobileLegend, constants.CategoryFreeFire:
 	// 	resRedeem = voucher.RedeemGameComulative(reqRedeem, req, param)
 	// }
-
-	// special case if transaction vidio failed langsung ke history
-	if resRedeem.Rc != "00" && resRedeem.Rc != "09" && resRedeem.Rc != "68" {
-		if param.Category == constants.CategoryVidio {
-			_, err2 := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.CouponCode, custID, 1)
-			fmt.Println("================ result use voucher couponId : ", param.CouponID)
-			if err2 != nil {
-				fmt.Println("================ result use voucher couponId Error: ", param.CouponID)
-			}
-		}
-	}
 
 	res = models.RedeemResponse{
 		Rc:          resRedeem.Rc,
@@ -186,6 +177,11 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 		VoucherCode:     billerRes.Data.Code,
 		CouponID:        param.CouponID,
 		ExpireDateVidio: billerRes.Data.EndDateVidio,
+		AccountId:       param.AccountId,
+		ProductID:       param.ProductID,
+		RewardID:        param.RewardID,
+		PointTransferID: param.PointTransferID,
+		Comment:         param.Comment,
 		DataSupplier: models.Supplier{
 			Rc: billerRes.Rc,
 			Rd: billerRes.Msg,
@@ -198,7 +194,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	if billerRes.Rc == "" {
 		fmt.Println(fmt.Sprintf("[Payment %v Time Out]", param.ProductType))
 
-		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09")
+		save := SaveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09")
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.UseRedeemResponse{
@@ -215,7 +211,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
 		fmt.Println(fmt.Sprintf("[Payment %v Pending]", param.ProductType))
 
-		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09")
+		save := SaveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09")
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.UseRedeemResponse{
@@ -232,7 +228,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
 		fmt.Println(fmt.Sprintf("[Payment %v Failed]", param.ProductType))
 
-		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "01")
+		save := SaveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "01")
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.UseRedeemResponse{
@@ -354,7 +350,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	}
 
 	fmt.Println(fmt.Sprintf("[Payment %v Success]", param.ProductType))
-	save := saveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "00")
+	save := SaveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "00")
 	fmt.Println(fmt.Sprintf("[Response Save Payment %v : %v]", param.ProductType, save))
 
 	res = models.UseRedeemResponse{
@@ -373,7 +369,7 @@ func PaymentVoucherOttoAg(req models.UseRedeemRequest, reqOP interface{}, param 
 	return res
 }
 
-func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, status string) string {
+func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, status string) string {
 
 	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[%v]", param.ProductType))
 
@@ -381,18 +377,26 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	isUsed := true
 	// codeVoucher := param.VoucherCode
 	var codeVoucher string
-	ExpireDate := param.ExpDate
-	var redeemDate string
+	var ExpireDate time.Time
+	var redeemDate time.Time
+	var usedAt time.Time
+	trxID := utils.GenTransactionId()
 
 	if param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
-		timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
-		redeemDate = timeRedeem
-
+		// timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+		// redeemDate = timeRedeem
 		codeVoucher = EncryptVoucherCode(param.VoucherCode, param.CouponID)
-	}
+		isUsed = true
+		ExpireDate = utils.ExpireDateVoucherAGt(constants.EXPDATE_VOUCHER)
+		redeemDate = time.Now()
+		trxID = param.TrxID
+		usedAt = time.Now()
 
-	if param.Category == constants.CategoryVidio && param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
-		isUsed = false // isUsed status untuk used
+		if param.Category == constants.CategoryVidio {
+			isUsed = false // isUsed status untuk used
+			usedAt = time.Time{}
+		}
+
 	}
 
 	var saveStatus string
@@ -403,6 +407,7 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		saveStatus = constants.Pending
 	case "01":
 		saveStatus = constants.Failed
+		isUsed = true
 	}
 
 	reqOttoag, _ := json.Marshal(&reqdata)  // Req Ottoag
@@ -416,7 +421,8 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		MerchantID:    param.MerchantID,
 		CustID:        param.CustID,
 		RRN:           param.RRN,
-		TransactionId: param.TrxID,
+		// TransactionId: param.TrxID,
+		TransactionId: trxID,
 		ProductCode:   param.ProductCode,
 		Amount:        int64(param.Amount),
 		TransType:     param.TransType,
@@ -425,21 +431,28 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		ProductType: param.ProductType,
 		Status:      saveStatus,
 		// ExpDate:         param.ExpDate,
-		ExpDate:         ExpireDate,
-		Institution:     param.InstitutionID,
-		CummulativeRef:  param.Reffnum,
-		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
-		Point:           param.Point,
-		ResponderRc:     param.DataSupplier.Rc,
-		ResponderRd:     param.DataSupplier.Rd,
-		RequestorData:   string(reqOttoag),
-		ResponderData:   string(responseOttoag),
-		RequestorOPData: string(reqdataOP),
-		SupplierID:      param.SupplierID,
-		RedeemAt:        redeemDate,
-		CampaignId:      param.CampaignID,
-		VoucherCode:     codeVoucher,
-		CouponId:        param.CouponID,
+		ExpDate:           utils.DefaultNulTime(ExpireDate),
+		Institution:       param.InstitutionID,
+		CummulativeRef:    param.Reffnum,
+		DateTime:          utils.GetTimeFormatYYMMDDHHMMSS(),
+		Point:             param.Point,
+		ResponderRc:       param.DataSupplier.Rc,
+		ResponderRd:       param.DataSupplier.Rd,
+		RequestorData:     string(reqOttoag),
+		ResponderData:     string(responseOttoag),
+		RequestorOPData:   string(reqdataOP),
+		SupplierID:        param.SupplierID,
+		RedeemAt:          utils.DefaultNulTime(redeemDate),
+		CampaignId:        param.CampaignID,
+		VoucherCode:       codeVoucher,
+		CouponId:          param.CouponID,
+		AccountId:         param.AccountId,
+		ProductCategoryID: param.CategoryID,
+		Comment:           param.Comment,
+		MRewardID:         param.RewardID,
+		MProductID:        param.ProductID,
+		PointsTransferID:  param.PointTransferID,
+		UsedAt:            utils.DefaultNulTime(usedAt),
 	}
 
 	err := db.DbCon.Create(&save).Error

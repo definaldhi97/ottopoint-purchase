@@ -117,9 +117,14 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 	return res
 }
 
-func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status string) {
+func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status string, expVoucher int) {
 
 	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[UltraVoucher]-[%v]", trasnType))
+
+	fmt.Println("Param.Mreward : ", param.RewardID)
+
+	var ExpireDate time.Time
+	var redeemDate time.Time
 
 	var saveStatus string
 	switch status {
@@ -131,11 +136,21 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		saveStatus = constants.Failed
 	}
 
+	isUsed := false
+	if status == "01" {
+		isUsed = true
+	}
+
+	if trasnType == constants.CODE_TRANSTYPE_REDEMPTION {
+		ExpireDate = utils.ExpireDateVoucherAGt(expVoucher)
+		redeemDate = time.Now()
+	}
+
 	reqUV, _ := json.Marshal(&reqdata)   // Req UV
 	responseUV, _ := json.Marshal(&res)  // Response UV
 	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
 
-	timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", param.TrxTime)
+	// timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
 
 	save := dbmodels.TSpending{
 		ID:            utils.GenerateTokenUUID(),
@@ -143,30 +158,35 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		Voucher:       param.NamaVoucher,
 		MerchantID:    param.MerchantID,
 		// CustID:          param.CustID,
-		RRN:             param.RRN,
-		TransactionId:   param.TrxID,
-		ProductCode:     param.ProductCode,
-		Amount:          int64(param.Amount),
-		TransType:       trasnType,
-		IsUsed:          false,
-		ProductType:     param.ProductType,
-		Status:          saveStatus,
-		ExpDate:         param.ExpDate,
-		Institution:     param.InstitutionID,
-		CummulativeRef:  param.CumReffnum,
-		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
-		Point:           param.Point,
-		ResponderRc:     param.DataSupplier.Rc,
-		ResponderRd:     param.DataSupplier.Rd,
-		RequestorData:   string(reqUV),
-		ResponderData:   string(responseUV),
-		RequestorOPData: string(reqdataOP),
-		SupplierID:      param.SupplierID,
-		CouponId:        param.CouponID,
-		CampaignId:      param.CampaignID,
-		AccountId:       param.AccountId,
-		RedeemAt:        timeRedeem,
-		CreatedAT:       param.TrxTime,
+		RRN:               param.RRN,
+		TransactionId:     param.TrxID,
+		ProductCode:       param.ProductCode,
+		Amount:            int64(param.Point),
+		TransType:         trasnType,
+		IsUsed:            isUsed,
+		ProductType:       param.ProductType,
+		Status:            saveStatus,
+		ExpDate:           utils.DefaultNulTime(ExpireDate),
+		Institution:       param.InstitutionID,
+		CummulativeRef:    param.CumReffnum,
+		DateTime:          utils.GetTimeFormatYYMMDDHHMMSS(),
+		Point:             param.Point,
+		ResponderRc:       param.DataSupplier.Rc,
+		ResponderRd:       param.DataSupplier.Rd,
+		RequestorData:     string(reqUV),
+		ResponderData:     string(responseUV),
+		RequestorOPData:   string(reqdataOP),
+		SupplierID:        param.SupplierID,
+		CouponId:          param.CouponID,
+		CampaignId:        param.CampaignID,
+		AccountId:         param.AccountId,
+		RedeemAt:          utils.DefaultNulTime(redeemDate),
+		Comment:           param.Comment,
+		MRewardID:         param.RewardID,
+		ProductCategoryID: param.CategoryID,
+		MProductID:        param.ProductID,
+		PointsTransferID:  param.PointTransferID,
+		CreatedAT:         param.TrxTime,
 	}
 
 	err := db.DbCon.Create(&save).Error

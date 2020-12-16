@@ -887,13 +887,13 @@ func SaveTransactionVoucherAg(param models.Params, res interface{}, reqdata inte
 	responseUV, _ := json.Marshal(&res)  // Response UV
 	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
 
-	expDate := ""
-	if param.ExpDate != "" {
-		layout := "2006-01-02 15:04:05"
-		parse, _ := time.Parse(layout, param.ExpDate)
+	// expDate := ""
+	// if param.ExpDate != "" {
+	// 	layout := "2006-01-02 15:04:05"
+	// 	parse, _ := time.Parse(layout, param.ExpDate)
 
-		expDate = jodaTime.Format("YYYY-MM-dd", parse)
-	}
+	// 	expDate = jodaTime.Format("YYYY-MM-dd", parse)
+	// }
 
 	save := dbmodels.TSpending{
 		ID:              utils.GenerateTokenUUID(),
@@ -923,7 +923,7 @@ func SaveTransactionVoucherAg(param models.Params, res interface{}, reqdata inte
 		AccountId:       param.AccountId,
 		VoucherCode:     param.CouponCode,
 		VoucherLink:     param.VoucherLink,
-		ExpDate:         expDate,
+		// ExpDate:         expDate,
 	}
 
 	err := db.DbCon.Create(&save).Error
@@ -944,37 +944,32 @@ func DataParameterOrderVoucherAg() models.ParamUV {
 
 	res := models.ParamUV{}
 
-	nama := ""
-	email := "VOUCHER_AG_EMAIL_ORDER"
-	phone := "VOUCHER_AG_PHONE_ORDER"
-	expired := "VOUCHER_AG_EXPIRED_VOUCHER"
-
-	datanama, errnama := db.ParamData(nama)
+	datanama, errnama := db.ParamData(constants.CODE_CONFIG_AGG_GROUP, constants.CODE_CONFIG_AGG_NAME)
 	if errnama != nil {
 		fmt.Println("[Error get data from Db m_paramaters]")
 		fmt.Println("Error : ", errnama)
-		fmt.Println("Code :", nama)
+		fmt.Println("Code :", constants.CODE_CONFIG_AGG_NAME)
 	}
 
-	dataemail, erremail := db.ParamData(email)
+	dataemail, erremail := db.ParamData(constants.CODE_CONFIG_AGG_GROUP, constants.CODE_CONFIG_AGG_EMAIL)
 	if erremail != nil {
 		fmt.Println("[Error get data from Db m_paramaters]")
 		fmt.Println("Error : ", erremail)
-		fmt.Println("Code :", email)
+		fmt.Println("Code :", constants.CODE_CONFIG_AGG_EMAIL)
 	}
 
-	dataphone, errphone := db.ParamData(phone)
+	dataphone, errphone := db.ParamData(constants.CODE_CONFIG_AGG_GROUP, constants.CODE_CONFIG_AGG_PHONE)
 	if errphone != nil {
 		fmt.Println("[Error get data from Db m_paramaters]")
 		fmt.Println("Error : ", errphone)
-		fmt.Println("Code :", phone)
+		fmt.Println("Code :", constants.CODE_CONFIG_AGG_PHONE)
 	}
 
-	dataexpired, errexpired := db.ParamData(expired)
+	dataexpired, errexpired := db.ParamData(constants.CODE_CONFIG_AGG_GROUP, constants.CODE_CONFIG_AGG_EXPD)
 	if errexpired != nil {
 		fmt.Println("[Error get data from Db m_paramaters]")
 		fmt.Println("Error : ", errexpired)
-		fmt.Println("Code :", expired)
+		fmt.Println("Code :", constants.CODE_CONFIG_AGG_EXPD)
 	}
 
 	res = models.ParamUV{

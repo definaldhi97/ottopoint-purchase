@@ -36,9 +36,11 @@ type RedeemResponse struct {
 }
 
 type RedeemComuResp struct {
-	Code       string         `json:"code"`
-	Message    string         `json:"message"`
-	CouponID   string         `json:"couponId"`
-	CouponCode string         `json:"couponCode"`
-	Redeem     RedeemResponse `json:"redeem"`
+	Code            string         `json:"code"`
+	Message         string         `json:"message"`
+	CouponID        string         `json:"couponId"`
+	CouponCode      string         `json:"couponCode"`
+	PointTransferID string         `json:"pointTransferID"`
+	Comment         string         `json:"comment"`
+	Redeem          RedeemResponse `json:"redeem"`
 }

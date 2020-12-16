@@ -135,7 +135,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 			Message: "Inquiry Failed",
 		}
 
-		go saveTransactionOttoAg(paramInq, dataInquery, reqInq, req, "01")
+		go SaveTransactionOttoAg(paramInq, dataInquery, reqInq, req, "01")
 
 		ErrRespRedeem <- errInquiry
 
@@ -170,7 +170,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 			Message: "Inquiry Failed",
 		}
 
-		go saveTransactionOttoAg(paramInq, dataInquery, req, inqBiller, "01")
+		go SaveTransactionOttoAg(paramInq, dataInquery, req, inqBiller, "01")
 
 		ErrRespRedeem <- errInquiry
 
@@ -185,7 +185,7 @@ func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Param
 
 	}
 
-	go saveTransactionOttoAg(paramInq, dataInquery, req, inqBiller, "00")
+	go SaveTransactionOttoAg(paramInq, dataInquery, req, inqBiller, "00")
 
 	// coupon := []models.CouponsRedeem{}
 
@@ -338,18 +338,18 @@ func SaveTransactionInq(category string, param models.Params, res interface{}, r
 	reqdataOP, _ := json.Marshal(&reqOP)    // Req Service
 
 	save := dbmodels.TSpending{
-		ID:              utils.GenerateTokenUUID(),
-		AccountNumber:   param.AccountNumber,
-		Voucher:         param.NamaVoucher,
-		MerchantID:      param.MerchantID,
-		CustID:          param.CustID,
-		RRN:             param.RRN,
-		ProductCode:     param.ProductCode,
-		Amount:          int64(param.Amount),
-		TransType:       trasnType,
-		ProductType:     category,
-		Status:          saveStatus,
-		ExpDate:         param.ExpDate,
+		ID:            utils.GenerateTokenUUID(),
+		AccountNumber: param.AccountNumber,
+		Voucher:       param.NamaVoucher,
+		MerchantID:    param.MerchantID,
+		CustID:        param.CustID,
+		RRN:           param.RRN,
+		ProductCode:   param.ProductCode,
+		Amount:        int64(param.Amount),
+		TransType:     trasnType,
+		ProductType:   category,
+		Status:        saveStatus,
+		// ExpDate:         param.ExpDate,
 		Institution:     param.InstitutionID,
 		CummulativeRef:  param.Reffnum,
 		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
