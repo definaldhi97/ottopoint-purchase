@@ -80,7 +80,7 @@ func init() {
 
 	callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/status/sepulsa")
 
-	callback_Agg = utils.GetEnv("callback_uv", "/transaction/v2/redeem/voucherag")
+	callback_Agg = utils.GetEnv("callback_Agg", "/transaction/v2/redeem/voucherag")
 
 	// callback_uv = utils.GetEnv("callback_uv", "/v2-migrate/callback/uv")
 	callback_uv = utils.GetEnv("callback_uv", "/transaction/v2/usevoucher_uv")
