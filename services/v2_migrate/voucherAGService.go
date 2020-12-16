@@ -26,8 +26,8 @@ import (
 )
 
 var (
-	hostPurcahse              = ODU.GetEnv("OTTOPOINT_PURCHASE", "http://13.228.25.85:8006")
-	callbackOttoPointPurchase = ODU.GetEnv("ENDPOINT_CALLBACK_VOUCHERAG", "/v2-migrate/callback/agregator")
+	// hostPurcahse              = ODU.GetEnv("OTTOPOINT_PURCHASE_", "http://13.228.25.85:8006")
+	callbackOttoPointPurchase = ODU.GetEnv("ENDPOINT_CALLBACK_VOUCHERAG", "http://13.228.25.85:8006/v2-migrate/callback/agregator")
 )
 
 type VoucherAgMigrateServices struct {
@@ -177,7 +177,7 @@ func (t VoucherAgMigrateServices) VoucherAg(req models.VoucherComultaiveReq, par
 		CustomerEmail:  dataOrder.Email,
 		CustomerPhone:  dataOrder.Phone,
 		DeliveryMethod: 1,
-		RedeemCallback: hostPurcahse + callbackOttoPointPurchase,
+		RedeemCallback: callbackOttoPointPurchase,
 	}
 
 	fmt.Println("Start - OrderVoucherAggregator")
