@@ -7,7 +7,6 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/kelseyhightower/envconfig"
-	hcmodels "ottodigital.id/library/healthcheck/models"
 )
 
 type EnvPostgresDb struct {
@@ -77,27 +76,16 @@ func GetDbCon() *gorm.DB {
 	return DbCon
 }
 
-func GetHealthCheck() hcmodels.DatabaseHealthCheck {
-	res := hcmodels.DatabaseHealthCheck{}
-
-	res.Name = envPostgresDb.Name
-	res.Host = envPostgresDb.Host
-	res.Port = envPostgresDb.Port
-	res.Status = "OK"
-	res.Description = ""
-
-	if err := DbCon.DB().Ping(); err != nil {
-		err = nil
-		if err = DbOpen(); err != nil {
-			res.Status = "NOT OK"
-			res.Description = err.Error()
-		}
-	}
-
-	return res
-
-}
-
 type DbPostgres struct {
 	General models.GeneralModel
+}
+
+// GetDatabaseHealthCheck ..
+func GetDatabaseHealthCheck() models.DBHealthcheckResponse {
+	// dbCon := GetDbCon()
+	return models.DBHealthcheckResponse{
+		Name:    envPostgresDb.Name,
+		Address: envPostgresDb.Host,
+		Port:    envPostgresDb.Port,
+	}
 }

@@ -3,11 +3,8 @@ package redis
 import (
 	"errors"
 	"fmt"
+	"ottopoint-purchase/models"
 	"time"
-
-	hcmodels "ottodigital.id/library/healthcheck/models"
-	hcutils "ottodigital.id/library/healthcheck/utils"
-	ODU "ottodigital.id/library/utils"
 
 	"gopkg.in/redis.v5"
 )
@@ -23,13 +20,23 @@ var (
 	queuename       string
 )
 
+type EnvRedis struct {
+	addresscluster1 string `envconfig:"REDIS_HOST_CLUSTER1" default:"13.228.23.160:8079"`
+	addresscluster2 string `envconfig:"REDIS_HOST_CLUSTER2" default:"13.228.23.160:8078"`
+	addresscluster3 string `envconfig:"REDIS_HOST_CLUSTER3" default:"13.228.23.160:8077"`
+}
+
+var (
+	envRedis EnvRedis
+)
+
 func init() {
 
-	addresscluster1 = ODU.GetEnv("REDIS_HOST_CLUSTER1", "13.228.23.160:8079")
-	addresscluster2 = ODU.GetEnv("REDIS_HOST_CLUSTER2", "13.228.23.160:8078")
-	addresscluster3 = ODU.GetEnv("REDIS_HOST_CLUSTER3", "13.228.23.160:8077")
+	// addresscluster1 = ODU.GetEnv("REDIS_HOST_CLUSTER1", "13.228.23.160:8079")
+	// addresscluster2 = ODU.GetEnv("REDIS_HOST_CLUSTER2", "13.228.23.160:8078")
+	// addresscluster3 = ODU.GetEnv("REDIS_HOST_CLUSTER3", "13.228.23.160:8077")
 	ClientRed = redis.NewClusterClient(&redis.ClusterOptions{
-		Addrs: []string{addresscluster1, addresscluster2, addresscluster3},
+		Addrs: []string{envRedis.addresscluster1, envRedis.addresscluster2, envRedis.addresscluster3},
 	})
 	pong, err := ClientRed.Ping().Result()
 
@@ -38,21 +45,9 @@ func init() {
 	fmt.Println("Redis Ping ", pong)
 	fmt.Println("Redis Ping ", err)
 
-	addres = ODU.GetEnv("REDIS_HOST_OTTOPOINT_PURCHASE", "13.228.23.160")
-	port = ODU.GetEnv("REDIS_PORT_OTTOPOINT_PURCHASE", "6077")
-	// dbtype = 0
-	queuename = ODU.GetEnv("REDIS_QUEUE", "ottopoint-purchase")
-
-	// ClientRed = redis.NewClient(&redis.Options{
-	// 	Addr:     addres + ":" + port,
-	// 	Password: "",     // no password set
-	// 	DB:       dbtype, // use default DB
-	// })
-
-	// pong, err := ClientRed.Ping().Result()
-	// fmt.Println("Redis Ping ", pong)
-	// fmt.Println("Redis Ping ", err)
-	// //RunSubscriber()
+	// addres = ODU.GetEnv("REDIS_HOST_OTTOPOINT_PURCHASE", "13.228.23.160")
+	// port = ODU.GetEnv("REDIS_PORT_OTTOPOINT_PURCHASE", "6077")
+	// queuename = ODU.GetEnv("REDIS_QUEUE", "ottopoint-purchase")
 }
 
 // GetRedisConnection ...
@@ -158,11 +153,12 @@ func GetRedisCounterIncr(key string) (int64, error) {
 
 }
 
-// GetRedisClusterHealthCheck ..
-func GetRedisClusterHealthCheck() hcmodels.RedisHealthCheck {
-	return hcutils.GetRedisClusterHealthCheck(hcmodels.RedisClusterEnv{
-		AddressCluster1: addresscluster1,
-		AddressCluster2: addresscluster2,
-		AddressCluster3: addresscluster3,
-	})
+// GetRedisHealthCheck ..
+func GetRedisHealthCheck() models.RedisHealthcheckResponse {
+	addresCluster := fmt.Sprintf("%v, %v, %v", addresscluster1, addresscluster2, addresscluster3)
+	return models.RedisHealthcheckResponse{
+		Type:    "Cluster",
+		Address: addresCluster,
+		Port:    port,
+	}
 }

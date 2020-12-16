@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"ottopoint-purchase/constants"
-	"ottopoint-purchase/db"
+	databaseHc "ottopoint-purchase/db"
+	redishc "ottopoint-purchase/redis"
 	"time"
 
 	"ottopoint-purchase/models"
-	"ottopoint-purchase/redis"
 	"ottopoint-purchase/utils"
 
 	"github.com/astaxie/beego/logs"
@@ -16,7 +16,6 @@ import (
 	zaplog "github.com/opentracing-contrib/go-zap/log"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
-	hcmodels "ottodigital.id/library/healthcheck/models"
 	ottologer "ottodigital.id/library/logger"
 	utilsgo "ottodigital.id/library/utils"
 )
@@ -55,28 +54,15 @@ func HealthCheckService(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
-func getHealthCheckStatus() hcmodels.HealthCheckResponse {
-	// redis
-	redisHc := make([]hcmodels.RedisHealthCheck, 0)
-	redisHc = append(redisHc, redis.GetRedisClusterHealthCheck())
-	// TODO more redis health check
+func getHealthCheckStatus() *models.HealthcheckResponse {
 
-	// database
-	databaseHc := make([]hcmodels.DatabaseHealthCheck, 0)
-	databaseHc = append(databaseHc, db.GetHealthCheck())
-	// TODO more database health check
+	// //service
+	// serviceHc := make([]models.ServicesHealthcheckResponse, 0)
+	// serviceHc = append(serviceHc, hostopl.GetHealthCheckOPL())
 
-	// service
-	// serviceHc := make([]hcmodels.ServiceHealthCheck, 0)
-	// serviceHc = append(serviceHc, opl.GetServiceHealthCheckOPL())
-	// serviceHc = append(serviceHc, ottoag.GetServiceHealthCheckOttoAG())
-	// serviceHc = append(serviceHc, redisToken.GetServiceHealthCheckRedisService())
-	// serviceHc = append(serviceHc, signature.GetServiceHealthCheckSignature())
-	// TODO more service health check
-
-	return hcmodels.HealthCheckResponse{
-		Redis:    redisHc,
-		Database: databaseHc,
-		// Service:  serviceHc,
+	return &models.HealthcheckResponse{
+		Redis:    redishc.GetRedisHealthCheck(),
+		Database: databaseHc.GetDatabaseHealthCheck(),
+		// Services: serviceHc,
 	}
 }
