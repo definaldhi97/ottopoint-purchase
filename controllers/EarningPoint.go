@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"ottopoint-purchase/constants"
 	kafka "ottopoint-purchase/hosts/publisher/host"
+	worker "ottopoint-purchase/hosts/worker/host"
+	modelsworker "ottopoint-purchase/hosts/worker/models"
 	"ottopoint-purchase/utils"
 	"time"
 
@@ -39,8 +41,6 @@ func EarningsPointController(ctx *gin.Context) {
 	// c := ctx.Request.Context()
 	// context := opentracing.ContextWithSpan(c, span)
 
-	// header := models.RequestHeader{}
-	// header.InstitutionID = "PSM0001"
 	// validate request
 	header, resultValidate := ValidateRequestWithoutAuth(ctx, req)
 	if !resultValidate.Meta.Status {
@@ -69,7 +69,7 @@ func EarningsPointController(ctx *gin.Context) {
 	fmt.Println(fmt.Sprintf("[Request : %v]", req))
 	fmt.Println(fmt.Sprintf("[Code : %v]", req.Earning))
 
-	if req.Earning == "" || req.TransactionTime == "" || req.AccountNumber1 == "" {
+	if req.Earning == "" || req.TransactionTime == "" || req.AccountNumber1 == "" || len(req.TransactionTime) != 19 {
 
 		res = utils.GetMessageResponse(res, 61, false, errors.New("Invalid Mandatory"))
 
@@ -108,14 +108,6 @@ func EarningsPointController(ctx *gin.Context) {
 	default:
 		fmt.Println("===== Invalid Code =====")
 		res = utils.GetMessageResponse(res, 178, false, errors.New("Earning Rule not found"))
-	}
-
-	if req.AccountNumber1 == "" || req.Earning == "" || req.TransactionTime == "" {
-		fmt.Println("===== Invalid Mandatory =====")
-		res = utils.GetMessageResponse(res, 06, false, errors.New("Invalid Mandatory"))
-
-		ctx.JSON(http.StatusOK, res)
-		return
 	}
 
 	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
@@ -159,10 +151,32 @@ func publishEarning(req models.EarningReq, header models.RequestHeader) {
 	}
 
 	kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
-	if err != nil {
+	fmt.Println("Response Publisher : ", kafkaRes)
+	if err != nil || kafkaRes.ResponseCode != "00" {
+
 		fmt.Println("Gagal Send Publisher")
 		fmt.Println("Error : ", err)
-	}
 
-	fmt.Println("Response Publisher : ", kafkaRes)
+		reqWorker := modelsworker.WorkerEarningReq{
+			InstitutionId:   header.InstitutionID,
+			AccountNumber1:  req.AccountNumber1,
+			AccountNumber2:  req.AccountNumber2,
+			Earning:         req.Earning,
+			ReferenceId:     req.ReferenceId,
+			ProductCode:     req.ProductCode,
+			ProductName:     req.ProductName,
+			Amount:          req.Amount,
+			Remark:          req.Remark,
+			TransactionTime: req.TransactionTime,
+		}
+
+		fmt.Println(">> Send to API-Worker <<")
+		workerApi, errworker := worker.WorkerEarning(reqWorker)
+		if err != nil || workerApi.Code != 200 {
+
+			fmt.Println("Gagal Sending to Worker API")
+			fmt.Println("Error : ", errworker)
+		}
+
+	}
 }

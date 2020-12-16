@@ -73,6 +73,22 @@ func GetUltraVoucher(voucherCode, accountId string) (dbmodels.UserMyVocuher, err
 	return res, nil
 }
 
+func GetSpendingSepulsa(transactionID, orderID string) (dbmodels.TSpending, error) {
+	res := dbmodels.TSpending{}
+
+	err := DbCon.Where("transaction_id = ? and rrn = ?", orderID, transactionID).First(&res).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetSpendingSepulsa]")
+		fmt.Println(fmt.Sprintf("Failed to connect database GetSpendingSepulsa %v", err))
+
+		return res, err
+	}
+
+	return res, nil
+}
+
 func CheckCouponUV(phone, campaign, couponId string) (dbmodels.UserMyVocuher, error) {
 	res := dbmodels.UserMyVocuher{}
 
@@ -118,5 +134,93 @@ func GetDataInstitution(Institution string) (dbmodels.MInstution, error) {
 		return result, err
 	}
 	return result, nil
+}
+func GetVoucher(phone, couponID string) (dbmodels.TSpending, error) {
+	fmt.Println("[ Get Voucher by Coupon Id ]")
+	result := dbmodels.TSpending{}
+
+	err := DbCon.Where("account_number = ? and coupon_id = ?", phone, couponID).First(&result).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetVoucherUV]")
+		fmt.Println(fmt.Sprintf("Failed to connect database Voucher UV %v", err))
+
+		return result, err
+	}
+
+	return result, nil
+}
+
+func GetUseVoucher(couponID string) (dbmodels.TSpending, error) {
+	fmt.Println("[ Get Voucher by Coupon Id ]")
+	result := dbmodels.TSpending{}
+
+	err := DbCon.Where("is_used = false and coupon_id = ?", couponID).First(&result).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetVoucherUV]")
+		fmt.Println(fmt.Sprintf("Failed to connect database Voucher UV %v", err))
+
+		return result, err
+	}
+
+	return result, nil
+}
+
+func GetPathImageProduct(code string) (dbmodels.MProductBrand, error) {
+	fmt.Println("[ Get path image brand by  code ]")
+
+	result := dbmodels.MProductBrand{}
+
+	err := DbCon.Where("code = ? ", code).First(&result).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetPathProductBrand]")
+		fmt.Println(fmt.Sprintf("Failed to connect database", err))
+
+		return result, err
+	}
+
+	return result, nil
+
+}
+
+func GetUser(phone string) (dbmodels.User, error) {
+	fmt.Println("[ Get Voucher by Coupon Id ]")
+	result := dbmodels.User{}
+
+	err := DbCon.Where("phone = ? and status = true", phone).First(&result).Error
+	if err != nil {
+
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetUser]")
+		fmt.Println(fmt.Sprintf("Failed to connect database", err))
+
+		return result, err
+	}
+
+	return result, nil
+}
+
+func GetBrandCode(code string) (*dbmodels.MProductBrand, error) {
+
+	result := dbmodels.MProduct{}
+
+	err := DbCon.Where("code = ?", code).First(&result).Error
+	if err != nil {
+		return nil, err
+	}
+
+	brand := dbmodels.MProductBrand{}
+
+	err = DbCon.Where("id = ?", result.MProductBrandID).First(&brand).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &brand, nil
 
 }

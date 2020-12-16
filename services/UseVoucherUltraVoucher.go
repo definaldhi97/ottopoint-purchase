@@ -46,6 +46,8 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 	// for i := req.Jumlah; i >= 1; i-- {
 
+	param.TrxTime = time.Now()
+
 	dataorder := DataParameterOrder()
 
 	// param.Reffnum = utils.GenTransactionId()
@@ -343,6 +345,11 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 		expired := ExpiredPointService()
 
+		// sleep 10 detik
+		time.Sleep(10 * time.Second)
+
+		fmt.Println("[Delay 10 detik]")
+
 		saveReversal := dbmodels.TEarning{
 			ID: utils.GenerateTokenUUID(),
 			// EarningRule     :,
@@ -366,6 +373,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			AccountId:       param.AccountId,
 			ExpiredPoint:    expired,
 			TransactionTime: time.Now(),
+			CreatedAt:       time.Now(),
 		}
 
 		errSaveReversal := db.DbCon.Create(&saveReversal).Error
@@ -556,6 +564,11 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 
 		expired := ExpiredPointService()
 
+		// sleep 10 detik
+		time.Sleep(10 * time.Second)
+
+		fmt.Println("[Delay 10 detik]")
+
 		saveReversal := dbmodels.TEarning{
 			ID: utils.GenerateTokenUUID(),
 			// EarningRule     :,
@@ -579,6 +592,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 			AccountId:       param.AccountId,
 			ExpiredPoint:    expired,
 			TransactionTime: time.Now(),
+			CreatedAt:       time.Now(),
 		}
 
 		errSaveReversal := db.DbCon.Create(&saveReversal).Error
@@ -621,7 +635,7 @@ func (t UseVoucherUltraVoucher) UltraVoucherServices(req models.VoucherComultaiv
 		bytePub, _ := json.Marshal(pubreq)
 
 		kafkaReq := kafka.PublishReq{
-			Topic: "ottopoint-notification-reversal",
+			Topic: utils.TopicsNotif,
 			Value: bytePub,
 		}
 

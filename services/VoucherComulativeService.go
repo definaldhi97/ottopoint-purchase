@@ -182,6 +182,13 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 
 		expired := ExpiredPointService()
 
+		trxtime := time.Now()
+
+		// sleep 5 detik
+		time.Sleep(10 * time.Second)
+
+		crtime := time.Now()
+
 		saveReversal := dbmodels.TEarning{
 			ID: utils.GenerateTokenUUID(),
 			// EarningRule     :,
@@ -204,7 +211,8 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 			TransType:       constants.CodeReversal,
 			AccountId:       param.AccountId,
 			ExpiredPoint:    expired,
-			TransactionTime: time.Now(),
+			TransactionTime: trxtime,
+			CreatedAt:       crtime,
 		}
 
 		errSaveReversal := db.DbCon.Create(&saveReversal).Error
@@ -387,33 +395,33 @@ func (t VoucherComulativeService) VoucherComulative(req models.VoucherComultaive
 	var m string
 	if req.Jumlah > 1 {
 		m = getMsgCummulative(rc, msg)
-	}
 
-	if s != 0 && f != 0 && p == 0 {
-		a := strings.Replace(m, "[x]", fmt.Sprintf("%v", s), 1)
-		b := strings.Replace(a, "[x]", fmt.Sprintf("%v", f), 1)
+		if s != 0 && f != 0 && p == 0 {
+			a := strings.Replace(m, "[x]", fmt.Sprintf("%v", s), 1)
+			b := strings.Replace(a, "[x]", fmt.Sprintf("%v", f), 1)
 
-		msg = b
-	}
+			msg = b
+		}
 
-	if s != 0 && f == 0 && p != 0 {
-		a := strings.Replace(m, "[x]", fmt.Sprintf("%v", s), 1)
-		b := strings.Replace(a, "[x]", fmt.Sprintf("%v", p), 1)
+		if s != 0 && f == 0 && p != 0 {
+			a := strings.Replace(m, "[x]", fmt.Sprintf("%v", s), 1)
+			b := strings.Replace(a, "[x]", fmt.Sprintf("%v", p), 1)
 
-		msg = b
-	}
+			msg = b
+		}
 
-	if s != 0 && f != 0 && p != 0 {
-		a := strings.Replace(m, "[x]", fmt.Sprintf("%v", s), 1)
-		b := strings.Replace(a, "[x]", fmt.Sprintf("%v", p), 1)
-		c := strings.Replace(b, "[x]", fmt.Sprintf("%v", f), 1)
+		if s != 0 && f != 0 && p != 0 {
+			a := strings.Replace(m, "[x]", fmt.Sprintf("%v", s), 1)
+			b := strings.Replace(a, "[x]", fmt.Sprintf("%v", p), 1)
+			c := strings.Replace(b, "[x]", fmt.Sprintf("%v", f), 1)
 
-		msg = c
-	}
+			msg = c
+		}
 
-	if s == 0 && f == 0 && p != 0 {
-		a := strings.Replace(m, "[x]", fmt.Sprintf("%v", p), 1)
-		msg = a
+		if s == 0 && f == 0 && p != 0 {
+			a := strings.Replace(m, "[x]", fmt.Sprintf("%v", p), 1)
+			msg = a
+		}
 	}
 
 	/* ------ Response UseVoucher Comulative */
