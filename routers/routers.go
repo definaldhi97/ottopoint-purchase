@@ -79,6 +79,7 @@ func init() {
 	redeemtionV2Migrate = utils.GetEnv("redeemtionV2Migrate", "/transaction/v2/redeempoint")
 
 	callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/status/sepulsa")
+
 	callback_Agg = utils.GetEnv("callback_uv", "/transaction/v2/redeem/voucherag")
 
 	// callback_uv = utils.GetEnv("callback_uv", "/v2-migrate/callback/uv")
@@ -169,6 +170,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(redeemtionV2Migrate, v2_migrate.RedeemtionVoucherController)
 	router.POST(callbackSepulsa, v2_migrate.CallbackSepulsaController)
 	router.POST(callback_Agg, v2_migrate.CallbackVoucherAggController)
+
 	router.POST(use_voucher, useVoucherMigrate.UseVouhcerMigrateController)
 	router.GET(use_voucher_vidio, useVoucherMigrate.UseVoucherVidioController)
 	router.POST(callback_uv, v2_migrate.CallBackUVController)

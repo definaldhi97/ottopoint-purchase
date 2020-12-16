@@ -6,18 +6,21 @@ import (
 	"log"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
+	"ottopoint-purchase/hosts/opl/host"
+	opl "ottopoint-purchase/hosts/opl/host"
 	kafka "ottopoint-purchase/hosts/publisher/host"
 	sepulsa "ottopoint-purchase/hosts/sepulsa/host"
 	signature "ottopoint-purchase/hosts/signature/host"
 	voucherAg "ottopoint-purchase/hosts/voucher_aggregator/host"
 	voucherModel "ottopoint-purchase/hosts/voucher_aggregator/models"
 	"ottopoint-purchase/models"
-	"ottopoint-purchase/services/v2_migrate"
+	"ottopoint-purchase/models/dbmodels"
 	"ottopoint-purchase/utils"
 	"reflect"
+	"time"
 
 	"github.com/opentracing/opentracing-go"
-	"github.com/sirupsen/logrus"
+	"github.com/vjeantet/jodaTime"
 )
 
 func (t SchedulerCheckStatusService) CheckStatusSepulsaServices(trxid string) error {
@@ -69,12 +72,12 @@ func (t SchedulerCheckStatusService) CheckStatusVoucherAgService(trxID string) e
 	}
 
 	head := models.RequestHeader{
-		InstitutionID: spendings[0].Institution,
-		DeviceID:      "ottopoint-scheduler",
-		Geolocation:   "-",
+		InstitutionID: "PSM0001",
+		DeviceID:      "12341414",
+		Geolocation:   "45453452, 25235235",
 		ChannelID:     "H2H",
-		AppsID:        "-",
-		Timestamp:     utils.GetTimeFormatMillisecond(),
+		AppsID:        "422432432435",
+		Timestamp:     "1579666534",
 	}
 
 	count := len(spendings)
@@ -113,26 +116,97 @@ func (t SchedulerCheckStatusService) CheckStatusVoucherAgService(trxID string) e
 
 	if orderStatus != nil {
 
-		if orderStatus.ResponseCode == "09" || orderStatus.ResponseCode == "01" {
+		if orderStatus.ResponseCode == "09" ||
+			orderStatus.ResponseCode == "01" {
 
 			spending := spendings[0]
 			totalPoint := int(spending.Amount) * count
-			// transactionID := utils.GenTransactionId()
-			// text := trxID + spending.Institution + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + spending.Voucher + " is failed"
+			transactionID := utils.GenTransactionId()
+			text := trxID + spending.Institution + constants.CodeReversal + "#" + "OP009 - Reversal point cause transaction " + spending.Voucher + " is failed"
 
-			param := models.Params{
-				InstitutionID: spending.Institution,
-				NamaVoucher:   spending.Voucher,
-				AccountNumber: spending.AccountNumber,
-				TrxID:         trxID,
-				AccountId:     spending.AccountId,
-				RewardID:      spending.MRewardID,
+			schedulerData := dbmodels.TSchedulerRetry{
+				Code:          constants.CodeScheduler,
+				TransactionID: utils.Before(text, "#"),
+				Count:         0,
+				IsDone:        false,
+				CreatedAT:     time.Now(),
 			}
 
-			resultReversal := v2_migrate.Adding_PointVoucher(param, totalPoint, count)
-			logrus.Info(resultReversal)
+			reversal, errReversal := opl.TransferPoint(spending.AccountId, fmt.Sprint(totalPoint), text)
 
-			fmt.Println("[ >>>>>>>>>>>>>>>>> Send Publisher Notification <<<<<<<<<<<<<<<< ]")
+			statusEarning := constants.Success
+			msgEarning := constants.MsgSuccess
+
+			if errReversal != nil || reversal.PointsTransferId == "" {
+
+				statusEarning = constants.TimeOut
+				statusEarning = constants.TimeOut
+
+				for _, val1 := range reversal.Form.Children.Customer.Errors {
+					if val1 != "" {
+						msgEarning = val1
+						statusEarning = constants.Failed
+					}
+				}
+
+				for _, val2 := range reversal.Form.Children.Points.Errors {
+					if val2 != "" {
+						msgEarning = val2
+						statusEarning = constants.Failed
+					}
+				}
+
+				if reversal.Message != "" {
+					msgEarning = reversal.Message
+					statusEarning = constants.Failed
+				}
+
+				if reversal.Error.Message != "" {
+					msgEarning = reversal.Error.Message
+					statusEarning = constants.Failed
+				}
+
+				if statusEarning == constants.TimeOut {
+					errSaveScheduler := db.DbCon.Create(&schedulerData).Error
+					if errSaveScheduler != nil {
+
+						fmt.Println("===== Gagal SaveScheduler ke DB =====")
+						fmt.Println(fmt.Sprintf("Error : %v", errSaveScheduler))
+						fmt.Println(fmt.Sprintf("===== Phone : %v || RRN : %v =====", spending.AccountNumber, spending.RRN))
+
+					}
+
+				}
+
+			}
+
+			expired := t.ExpiredPointService()
+
+			saveReversal := dbmodels.TEarning{
+				ID:               utils.GenerateTokenUUID(),
+				PartnerId:        spending.Institution,
+				TransactionId:    transactionID,
+				AccountNumber:    spending.AccountNumber,
+				Point:            int64(totalPoint),
+				Status:           statusEarning,
+				StatusMessage:    msgEarning,
+				PointsTransferId: reversal.PointsTransferId,
+				TransType:        constants.CodeReversal,
+				AccountId:        spending.AccountId,
+				ExpiredPoint:     expired,
+				TransactionTime:  time.Now(),
+			}
+
+			errSaveReversal := db.DbCon.Create(&saveReversal).Error
+			if errSaveReversal != nil {
+				fmt.Println(fmt.Sprintf("[Failed Save Reversal to DB]-[Error : %v]", errSaveReversal))
+				fmt.Println("[PackageServices]-[SaveEarning]")
+
+				fmt.Println(">>> Save CSV <<<")
+				name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
+				go utils.CreateCSVFile(saveReversal, name)
+			}
+
 			pubreq := models.NotifPubreq{
 				Type:           constants.CODE_REVERSAL_POINT,
 				NotificationTo: spending.AccountNumber,
@@ -168,5 +242,25 @@ func (t SchedulerCheckStatusService) CheckStatusVoucherAgService(trxID string) e
 	}
 
 	return nil
+
+}
+
+func (t SchedulerCheckStatusService) ExpiredPointService() string {
+
+	fmt.Println(">>> ExpiredPointService <<<")
+
+	get, err := host.SettingsOPL()
+	if err != nil || get.Settings.ProgramName == "" {
+
+		fmt.Println(fmt.Sprintf("[Error : %v]", err))
+		fmt.Println("[PackageBulkService]-[ExpiredPointService]")
+
+	}
+
+	data := get.Settings.PointsDaysActiveCount + 1
+
+	expired := utils.FormatTimeString(time.Now(), 0, 0, data)
+
+	return expired
 
 }

@@ -15,6 +15,7 @@ import (
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/redis"
+	"strconv"
 	"strings"
 	"time"
 
@@ -484,4 +485,13 @@ func DefaultNulTime(date time.Time) *time.Time {
 		return &date
 	}
 	return nil
+}
+func GetTimeFormatMillisecond() string {
+	now := time.Now().Local()
+	unixNano := now.UnixNano()
+	umillisec := unixNano / 1000000
+	// fmt.Println("(correct)Millisecond : ", umillisec)
+	convString := strconv.FormatInt(umillisec, 10)
+	return convString
+
 }
