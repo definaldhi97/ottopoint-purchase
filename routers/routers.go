@@ -6,7 +6,11 @@ import (
 	"os"
 	"ottopoint-purchase/controllers"
 
-	"ottopoint-purchase/controllers/v2_migrate"
+	v21_callabckVoucher "ottopoint-purchase/controllers/v2.1/CallbackVoucher"
+	v21_redeemtion "ottopoint-purchase/controllers/v2.1/Redeemtion"
+	"ottopoint-purchase/controllers/v2/CallbackVoucher"
+	v2_redeemtion "ottopoint-purchase/controllers/v2/Redeemtion"
+	"ottopoint-purchase/controllers/v2/UseVoucher"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -31,7 +35,7 @@ var (
 	comulative              string
 	usevoucher_uv           string
 	checkStatusEarning      string
-	callbackSepulsa         string
+	V2_callbackSepulsa      string
 	checkStatusTrx          string
 	redeemCallbackVoucherAg string
 	checkStatusScheduler    string
@@ -43,9 +47,11 @@ var (
 	debugmode               string
 	readto                  int
 	writeto                 int
-	redeemtionV2Migrate     string
+	V2_redeemtion           string
 	callback_Agg            string
 	callback_uv             string
+	V21_redeemtion          string
+	V21_callbackSepulsa     string
 )
 
 func init() {
@@ -62,8 +68,7 @@ func init() {
 	// usevoucher_uv = utils.GetEnv("usevoucher_uv", "/transaction/v2/usevoucher_uv")
 	checkStatusEarning = utils.GetEnv("checkStatusEarning", "/transaction/v2/check-status-earning")
 	view_voucher = utils.GetEnv("view_voucher", "/transaction/v2.1/voucher/view")
-	// use_voucher_vidio = utils.GetEnv("use_voucher_vidio", "/transaction/v2.1/usevoucher")
-	callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/status/sepulsa")
+
 	// redeemCallbackVoucherAg = utils.GetEnv("callbackRequestVoucherAg", "/transaction/v2/redeem/voucherag")
 	checkStatusScheduler = utils.GetEnv("checkStatusScheduler", "/transaction/v2/check-status-scheduler")
 
@@ -75,11 +80,11 @@ func init() {
 
 	agentracinghost = utils.GetEnv("AGENT_TRACING_HOST_OTTOPOINT_PURCHASE", "13.250.21.165:5775")
 
-	// redeemtionV2Migrate = utils.GetEnv("redeemtionV2Migrate", "/v2-migrate/redeempoint")
-	redeemtionV2Migrate = utils.GetEnv("redeemtionV2Migrate", "/transaction/v2/redeempoint")
+	V2_redeemtion = utils.GetEnv("redeemtionV2Migrate", "/transaction/v2/redeempoint")
+	V21_redeemtion = utils.GetEnv("redeemtionV2Migrate", "/v2-migrate/redeempoint")
 
-	callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/status/sepulsa")
-
+	V2_callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/status/sepulsa")
+	V21_callbackSepulsa = utils.GetEnv("callbackSepulsa", "/v2-migrate/callback/sepulsa")
 	callback_Agg = utils.GetEnv("callback_Agg", "/transaction/v2/redeem/voucherag")
 
 	// callback_uv = utils.GetEnv("callback_uv", "/v2-migrate/callback/uv")
@@ -139,7 +144,13 @@ func (ottoRouter *OttoRouter) Routers() {
 	}))
 
 	// declare controllers
-	useVoucherMigrate := new(v2_migrate.UseVouhcerMigrateController)
+	useVoucherMigrate := new(UseVoucher.V2_UseVouhcerController)
+	V2_redeemtionVoucher := new(v2_redeemtion.V2_RedeemtionVoucherController)
+	V21_redeemtionVoucher := new(v21_redeemtion.V21_RedeemtionVoucherController)
+	callaBckSP := new(CallbackVoucher.V2_CallbackSepulsaController)
+	v21_callaBckSP := new(v21_callabckVoucher.V21_CallbackSepulsaController)
+	callBckUV := new(CallbackVoucher.V2_CallbackUVController)
+	callBckAG := new(CallbackVoucher.V2_CallbackVoucherAggController)
 
 	router.Use(ottoRouter.Ginfunc)
 	router.Use(gin.Recovery())
@@ -157,23 +168,22 @@ func (ottoRouter *OttoRouter) Routers() {
 	// router.POST(usevoucher_uv, controllers.UseVouhcerUVController)
 	router.POST(checkStatusEarning, controllers.CheckStatusEarningController)
 
-	// router.GET(view_voucher, controller_v2_1.ViewVoucherController)
-	// router.GET(use_voucher_vidio, controller_v2_1.UseVoucherVidioController)
-	// router.POST(callbackSepulsa, controllers.HandleCallbackSepulsa)
-
 	// router.POST(redeemCallbackVoucherAg, controllers.HandleCallbackRequestVoucherAg)
 	router.POST(checkStatusScheduler, controllers.SchedulerCheckStatusController)
 
 	router.GET(view_voucher, controllers.ViewVoucherController)
 	router.POST(csv, controllers.CreateFileCSVController)
 
-	router.POST(redeemtionV2Migrate, v2_migrate.RedeemtionVoucherController)
-	router.POST(callbackSepulsa, v2_migrate.CallbackSepulsaController)
-	router.POST(callback_Agg, v2_migrate.CallbackVoucherAggController)
+	router.POST(V2_redeemtion, V2_redeemtionVoucher.V2_RedeemtionVoucherController)
+	router.POST(V21_redeemtion, V21_redeemtionVoucher.V21_RedeemtionVoucherController)
+
+	router.POST(callback_uv, callBckUV.CallBackUVController)
+	router.POST(V2_callbackSepulsa, callaBckSP.VoucherCallbackSepulsaController)
+	router.POST(V21_callbackSepulsa, v21_callaBckSP.V21_VoucherCallbackSepulsaController)
+	router.POST(callback_Agg, callBckAG.CallbackVoucherAggController)
 
 	router.POST(use_voucher, useVoucherMigrate.UseVouhcerMigrateController)
 	router.GET(use_voucher_vidio, useVoucherMigrate.UseVoucherVidioController)
-	router.POST(callback_uv, v2_migrate.CallBackUVController)
 
 	ottoRouter.Router = router
 

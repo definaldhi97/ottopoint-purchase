@@ -12,7 +12,7 @@ import (
 	voucherAg "ottopoint-purchase/hosts/voucher_aggregator/host"
 	voucherModel "ottopoint-purchase/hosts/voucher_aggregator/models"
 	"ottopoint-purchase/models"
-	"ottopoint-purchase/services/v2_migrate"
+	"ottopoint-purchase/services/v2.1/Trx"
 	"ottopoint-purchase/utils"
 	"reflect"
 
@@ -129,7 +129,18 @@ func (t SchedulerCheckStatusService) CheckStatusVoucherAgService(trxID string) e
 				RewardID:      spending.MRewardID,
 			}
 
-			resultReversal := v2_migrate.Adding_PointVoucher(param, totalPoint, count)
+			header := models.RequestHeader{
+				DeviceID:      "ottopoint-purchase",
+				InstitutionID: spending.Institution,
+				Geolocation:   "-",
+				ChannelID:     "H2H",
+				AppsID:        "-",
+				Timestamp:     utils.GetTimeFormatYYMMDDHHMMSS(),
+				Authorization: "-",
+				Signature:     "-",
+			}
+
+			resultReversal := Trx.V21_Adding_PointVoucher(param, totalPoint, count, header)
 			logrus.Info(resultReversal)
 
 			fmt.Println("[ >>>>>>>>>>>>>>>>> Send Publisher Notification <<<<<<<<<<<<<<<< ]")
