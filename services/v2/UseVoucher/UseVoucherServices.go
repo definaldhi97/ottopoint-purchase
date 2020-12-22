@@ -144,10 +144,10 @@ func (service V2_UseVoucherServices) UseVoucherAggregator(req models.UseVoucherR
 		return res
 	}
 
-	// Update Status Voucher
-	// timeUse := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
-	timeUse := time.Now()
-	go db.UpdateVoucher(timeUse, spend.CouponId)
+	// // Update Status Voucher
+	// // timeUse := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+	// timeUse := time.Now()
+	// go db.UpdateVoucher(timeUse, spend.CouponId)
 
 	codeVoucher := decryptVoucherCode(spend.VoucherCode, spend.CouponId)
 
