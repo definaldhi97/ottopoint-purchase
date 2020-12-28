@@ -6,8 +6,8 @@ import (
 	"os"
 	"ottopoint-purchase/controllers"
 
-	v21_callabckVoucher "ottopoint-purchase/controllers/v2.1/CallbackVoucher"
-	v21_redeemtion "ottopoint-purchase/controllers/v2.1/Redeemtion"
+	// v21_callabckVoucher "ottopoint-purchase/controllers/v2.1/CallbackVoucher"
+
 	"ottopoint-purchase/controllers/v2/CallbackVoucher"
 	v2_redeemtion "ottopoint-purchase/controllers/v2/Redeemtion"
 	"ottopoint-purchase/controllers/v2/UseVoucher"
@@ -50,8 +50,8 @@ var (
 	V2_redeemtion           string
 	callback_Agg            string
 	callback_uv             string
-	V21_redeemtion          string
-	V21_callbackSepulsa     string
+
+	V21_callbackSepulsa string
 )
 
 func init() {
@@ -81,10 +81,8 @@ func init() {
 	agentracinghost = utils.GetEnv("AGENT_TRACING_HOST_OTTOPOINT_PURCHASE", "13.250.21.165:5775")
 
 	V2_redeemtion = utils.GetEnv("redeemtionV2Migrate", "/transaction/v2/redeempoint")
-	V21_redeemtion = utils.GetEnv("redeemtionV2Migrate", "/v2-migrate/redeempoint")
 
 	V2_callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/status/sepulsa")
-	V21_callbackSepulsa = utils.GetEnv("callbackSepulsa", "/v2-migrate/callback/sepulsa")
 	callback_Agg = utils.GetEnv("callback_Agg", "/transaction/v2/redeem/voucherag")
 
 	// callback_uv = utils.GetEnv("callback_uv", "/v2-migrate/callback/uv")
@@ -146,9 +144,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	// declare controllers
 	useVoucherMigrate := new(UseVoucher.V2_UseVouhcerController)
 	V2_redeemtionVoucher := new(v2_redeemtion.V2_RedeemtionVoucherController)
-	V21_redeemtionVoucher := new(v21_redeemtion.V21_RedeemtionVoucherController)
 	callaBckSP := new(CallbackVoucher.V2_CallbackSepulsaController)
-	v21_callaBckSP := new(v21_callabckVoucher.V21_CallbackSepulsaController)
 	callBckUV := new(CallbackVoucher.V2_CallbackUVController)
 	callBckAG := new(CallbackVoucher.V2_CallbackVoucherAggController)
 
@@ -175,11 +171,9 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(csv, controllers.CreateFileCSVController)
 
 	router.POST(V2_redeemtion, V2_redeemtionVoucher.V2_RedeemtionVoucherController)
-	router.POST(V21_redeemtion, V21_redeemtionVoucher.V21_RedeemtionVoucherController)
 
 	router.POST(callback_uv, callBckUV.CallBackUVController)
 	router.POST(V2_callbackSepulsa, callaBckSP.VoucherCallbackSepulsaController)
-	router.POST(V21_callbackSepulsa, v21_callaBckSP.V21_VoucherCallbackSepulsaController)
 	router.POST(callback_Agg, callBckAG.CallbackVoucherAggController)
 
 	router.POST(use_voucher, useVoucherMigrate.UseVouhcerMigrateController)
