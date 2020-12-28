@@ -454,7 +454,7 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 		param.CouponID = coupon
 		// code := RedeemVouchAG.CouponseVouch[t].CouponsCode
 
-		voucherID := statusOrder.Data.Vouchers[t].VoucherID
+		// voucherID := statusOrder.Data.Vouchers[t].VoucherID
 		voucherCode := statusOrder.Data.Vouchers[t].VoucherCode
 		expDate := statusOrder.Data.Vouchers[t].ExpiredDate
 		voucherLink := statusOrder.Data.Vouchers[t].Link
@@ -470,7 +470,7 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 		}
 
 		// Use Voucher ID as a Transaction ID
-		param.TrxID = voucherID
+		param.TrxID = utils.GenTransactionId()
 		param.ExpDate = expDate
 		param.CouponCode = fmt.Sprintf("%s", plaintText)
 		param.VoucherLink = voucherLink
