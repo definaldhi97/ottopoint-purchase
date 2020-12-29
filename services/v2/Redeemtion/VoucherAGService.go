@@ -171,7 +171,7 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 
 	nama := "OTTOPOINT"
 	reqOrder := vgmodels.RequestOrderVoucherAg{
-		ProductCode:    param.ProductCode,
+		ProductCode:    param.ProductCodeInternal,
 		Qty:            req.Jumlah,
 		OrderID:        param.CumReffnum,
 		CustomerName:   nama,
