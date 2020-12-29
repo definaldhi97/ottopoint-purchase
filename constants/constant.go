@@ -254,5 +254,5 @@ const (
 )
 
 const (
-	VoucherCodeKey = "3673188"
+	VoucherCodeKey = "71435307-09f3-4d2c-845c-fdb118b95ef8"
 )
