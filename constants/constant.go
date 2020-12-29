@@ -252,3 +252,7 @@ const (
 	CODE_CONFIG_AGG_EXPD  = "VOUCHER_AG_EXPIRED_VOUCHER"
 	CODE_CONFIG_AGG_NAME  = ""
 )
+
+const (
+	VoucherCodeKey = "8867994311"
+)
