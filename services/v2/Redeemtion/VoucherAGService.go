@@ -459,11 +459,11 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 		expDate := statusOrder.Data.Vouchers[t].ExpiredDate
 		voucherLink := statusOrder.Data.Vouchers[t].Link
 
-		a := []rune(param.CouponID)
+		a := []rune(constants.VoucherCodeKey)
 		key32 := string(a[0:32])
 		key := []byte(key32)
 		chiperText := []byte(voucherCode)
-		_, err := utils.EncryptAES(chiperText, key)
+		plaintText, err := utils.EncryptAES(chiperText, key)
 		if err != nil {
 			res = utils.GetMessageFailedErrorNew(res, constants.RC_FAILED_DECRYPT_VOUCHER, constants.RD_FAILED_DECRYPT_VOUCHER)
 			return res
@@ -472,8 +472,7 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 		// Use Voucher ID as a Transaction ID
 		param.TrxID = utils.GenTransactionId()
 		param.ExpDate = expDate
-		// param.CouponCode = fmt.Sprintf("%s", plaintText)
-		param.CouponCode = voucherCode
+		param.CouponCode = fmt.Sprintf("%s", plaintText)
 		param.VoucherLink = voucherLink
 
 		id := utils.GenerateTokenUUID()
@@ -519,8 +518,10 @@ func (t V2_VoucherAgServices) CallbackVoucherAgg(req models.CallbackRequestVouch
 	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[RedeemVoucher]")
 	defer span.Finish()
 
+	codeVoucher := decryptVoucherCode(req.Data.VoucherCode, constants.VoucherCodeKey)
+
 	// Get TSpending
-	tspending, err := db.GetVoucherAgSpendingTemp(req.Data.VoucherCode, req.TransactionID)
+	tspending, err := db.GetVoucherAgSpendingTemp(codeVoucher, req.TransactionID)
 	if err != nil {
 
 		fmt.Println("[HandleCallbackVoucherAg]")
@@ -575,6 +576,24 @@ func (t V2_VoucherAgServices) CallbackVoucherAgg(req models.CallbackRequestVouch
 	}
 
 	return res
+}
+
+func decryptVoucherCode(voucherCode, couponID string) string {
+
+	var codeVoucher string
+	if voucherCode == "" {
+		return voucherCode
+	}
+
+	a := []rune(couponID)
+	key32 := string(a[0:32])
+	secretKey := []byte(key32)
+	codeByte := []byte(voucherCode)
+	chiperText, _ := utils.DecryptAES(codeByte, secretKey)
+	codeVoucher = string(chiperText)
+
+	return codeVoucher
+
 }
 
 func DataParameterOrderVoucherAg() models.ParamUV {

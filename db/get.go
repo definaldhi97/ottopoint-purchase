@@ -154,21 +154,21 @@ func GetVoucherAgSpendingTemp(voucherCode, transactionID string) (dbmodels.TSpen
 	return res, nil
 }
 
-// func GetVoucherAgSpending(orderID, transactionID string) (dbmodels.TSpending, error) {
-// 	res := dbmodels.TSpending{}
+func GetVoucherAgSpending(orderID, transactionID string) (dbmodels.TSpending, error) {
+	res := dbmodels.TSpending{}
 
-// 	err := DbCon.Where("coupon_id = ? and rrn = ?", orderID, transactionID).First(&res).Error
-// 	if err != nil {
+	err := DbCon.Where("coupon_id = ? and rrn = ?", orderID, transactionID).First(&res).Error
+	if err != nil {
 
-// 		fmt.Println("[EEROR-DATABASE]")
-// 		fmt.Println("[db]-[GetVoucherAgSpending]")
-// 		fmt.Println(fmt.Sprintf("Failed to connect database Voucher UV %v", err))
+		fmt.Println("[EEROR-DATABASE]")
+		fmt.Println("[db]-[GetVoucherAgSpending]")
+		fmt.Println(fmt.Sprintf("Failed to connect database Voucher UV %v", err))
 
-// 		return res, err
-// 	}
+		return res, err
+	}
 
-// 	return res, nil
-// }
+	return res, nil
+}
 
 func ParamData(group, code string) (dbmodels.MParameters, error) {
 

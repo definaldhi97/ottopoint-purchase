@@ -149,13 +149,13 @@ func (service V2_UseVoucherServices) UseVoucherAggregator(req models.UseVoucherR
 	// timeUse := time.Now()
 	// go db.UpdateVoucher(timeUse, spend.CouponId)
 
-	// codeVoucher := decryptVoucherCode(spend.VoucherCode, spend.CouponId)
+	codeVoucher := decryptVoucherCode(spend.VoucherCode, constants.VoucherCodeKey)
 
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
 		Data: models.GetVoucherAgResp{
 			Voucher:     param.NamaVoucher,
-			VoucherCode: spend.VoucherCode,
+			VoucherCode: codeVoucher,
 			Link:        spend.VoucherLink,
 		},
 	}
