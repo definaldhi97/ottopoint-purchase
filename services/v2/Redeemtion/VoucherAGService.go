@@ -519,7 +519,7 @@ func (t V2_VoucherAgServices) CallbackVoucherAgg(req models.CallbackRequestVouch
 	defer span.Finish()
 
 	// Get TSpending
-	tspending, err := db.GetVoucherAgSpending(req.Data.OrderID, req.TransactionID)
+	tspending, err := db.GetVoucherAgSpending(req.Data.VoucherID, req.TransactionID)
 	if err != nil {
 
 		fmt.Println("[HandleCallbackVoucherAg]")
