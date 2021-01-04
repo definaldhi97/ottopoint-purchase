@@ -171,7 +171,7 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 
 	nama := "OTTOPOINT"
 	reqOrder := vgmodels.RequestOrderVoucherAg{
-		ProductCode:    param.ProductCode,
+		ProductCode:    param.ProductCodeInternal,
 		Qty:            req.Jumlah,
 		OrderID:        param.CumReffnum,
 		CustomerName:   nama,
@@ -459,20 +459,21 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 		expDate := statusOrder.Data.Vouchers[t].ExpiredDate
 		voucherLink := statusOrder.Data.Vouchers[t].Link
 
-		a := []rune(param.CouponID)
-		key32 := string(a[0:32])
-		key := []byte(key32)
-		chiperText := []byte(voucherCode)
-		plaintText, err := utils.EncryptAES(chiperText, key)
-		if err != nil {
-			res = utils.GetMessageFailedErrorNew(res, constants.RC_FAILED_DECRYPT_VOUCHER, constants.RD_FAILED_DECRYPT_VOUCHER)
-			return res
-		}
+		// a := []rune(param.CouponID)
+		// key32 := string(a[0:32])
+		// key := []byte(key32)
+		// chiperText := []byte(voucherCode)
+		// plaintText, err := utils.EncryptAES(chiperText, key)
+		// if err != nil {
+		// 	res = utils.GetMessageFailedErrorNew(res, constants.RC_FAILED_DECRYPT_VOUCHER, constants.RD_FAILED_DECRYPT_VOUCHER)
+		// 	return res
+		// }
 
 		// Use Voucher ID as a Transaction ID
 		param.TrxID = utils.GenTransactionId()
 		param.ExpDate = expDate
-		param.CouponCode = fmt.Sprintf("%s", plaintText)
+		// param.CouponCode = fmt.Sprintf("%s", plaintText)
+		param.CouponCode = voucherCode
 		param.VoucherLink = voucherLink
 
 		id := utils.GenerateTokenUUID()
@@ -519,7 +520,7 @@ func (t V2_VoucherAgServices) CallbackVoucherAgg(req models.CallbackRequestVouch
 	defer span.Finish()
 
 	// Get TSpending
-	tspending, err := db.GetVoucherAgSpending(req.Data.VoucherID, req.TransactionID)
+	tspending, err := db.GetVoucherAgSpending(req.Data.VoucherCode, req.TransactionID)
 	if err != nil {
 
 		fmt.Println("[HandleCallbackVoucherAg]")
@@ -662,7 +663,7 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		Voucher:         param.NamaVoucher,
 		MerchantID:      param.MerchantID,
 		TransactionId:   param.TrxID,
-		ProductCode:     param.ProductCode,
+		ProductCode:     param.ProductCodeInternal,
 		Amount:          int64(param.Amount),
 		TransType:       transType,
 		IsUsed:          isUsed,
