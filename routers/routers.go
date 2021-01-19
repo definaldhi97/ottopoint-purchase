@@ -9,7 +9,6 @@ import (
 	v21_callabckVoucher "ottopoint-purchase/controllers/v2.1/CallbackVoucher"
 	v21_redeemtion "ottopoint-purchase/controllers/v2.1/Redeemtion"
 	"ottopoint-purchase/controllers/v2/CallbackVoucher"
-	v2_redeemtion "ottopoint-purchase/controllers/v2/Redeemtion"
 	"ottopoint-purchase/controllers/v2/UseVoucher"
 
 	"github.com/gin-contrib/cors"
@@ -145,9 +144,9 @@ func (ottoRouter *OttoRouter) Routers() {
 
 	// declare controllers
 	useVoucherMigrate := new(UseVoucher.V2_UseVouhcerController)
-	V2_redeemtionVoucher := new(v2_redeemtion.V2_RedeemtionVoucherController)
+	// V2_redeemtionVoucher := new(v2_redeemtion.V2_RedeemtionVoucherController)
 	V21_redeemtionVoucher := new(v21_redeemtion.V21_RedeemtionVoucherController)
-	callaBckSP := new(CallbackVoucher.V2_CallbackSepulsaController)
+	// callaBckSP := new(CallbackVoucher.V2_CallbackSepulsaController)
 	v21_callaBckSP := new(v21_callabckVoucher.V21_CallbackSepulsaController)
 	callBckUV := new(CallbackVoucher.V2_CallbackUVController)
 	callBckAG := new(CallbackVoucher.V2_CallbackVoucherAggController)
@@ -174,11 +173,11 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.GET(view_voucher, controllers.ViewVoucherController)
 	router.POST(csv, controllers.CreateFileCSVController)
 
-	router.POST(V2_redeemtion, V2_redeemtionVoucher.V2_RedeemtionVoucherController)
+	// router.POST(V2_redeemtion, V2_redeemtionVoucher.V2_RedeemtionVoucherController)
 	router.POST(V21_redeemtion, V21_redeemtionVoucher.V21_RedeemtionVoucherController)
 
 	router.POST(callback_uv, callBckUV.CallBackUVController)
-	router.POST(V2_callbackSepulsa, callaBckSP.VoucherCallbackSepulsaController)
+	// router.POST(V2_callbackSepulsa, callaBckSP.VoucherCallbackSepulsaController)
 	router.POST(V21_callbackSepulsa, v21_callaBckSP.V21_VoucherCallbackSepulsaController)
 	router.POST(callback_Agg, callBckAG.CallbackVoucherAggController)
 
