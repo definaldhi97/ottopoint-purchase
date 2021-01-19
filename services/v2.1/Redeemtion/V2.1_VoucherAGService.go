@@ -168,7 +168,7 @@ func (t V21_VoucherAgServices) V21_VoucherAg(req models.VoucherComultaiveReq, pa
 
 	nama := "OTTOPOINT"
 	reqOrder := vgmodels.RequestOrderVoucherAg{
-		ProductCode:    param.ProductCode,
+		ProductCode:    param.ProductCodeInternal,
 		Qty:            req.Jumlah,
 		OrderID:        param.CumReffnum,
 		CustomerName:   nama,

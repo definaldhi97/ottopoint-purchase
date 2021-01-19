@@ -80,11 +80,11 @@ func init() {
 
 	agentracinghost = utils.GetEnv("AGENT_TRACING_HOST_OTTOPOINT_PURCHASE", "13.250.21.165:5775")
 
-	V2_redeemtion = utils.GetEnv("redeemtionV2Migrate", "/transaction/v2/redeempoint")
-	V21_redeemtion = utils.GetEnv("redeemtionV2Migrate", "/v2-migrate/redeempoint")
+	// V2_redeemtion = utils.GetEnv("redeemtionV2Migrate", "/transaction/v2/redeempoint")
+	V21_redeemtion = utils.GetEnv("redeemtionV2Migrate", "/transaction/v2/redeempoint")
 
-	V2_callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/status/sepulsa")
-	V21_callbackSepulsa = utils.GetEnv("callbackSepulsa", "/v2-migrate/callback/sepulsa")
+	// V2_callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/status/sepulsa")
+	V21_callbackSepulsa = utils.GetEnv("callbackSepulsa", "/transaction/v2/status/sepulsa")
 	callback_Agg = utils.GetEnv("callback_Agg", "/transaction/v2/redeem/voucherag")
 
 	// callback_uv = utils.GetEnv("callback_uv", "/v2-migrate/callback/uv")
