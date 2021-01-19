@@ -340,8 +340,8 @@ func (t V21_VoucherUVService) V21_VoucherUV(req models.VoucherComultaiveReq, par
 		logrus.Info("[ Coummulatif Reff Num ] : ", param.CumReffnum)
 		logrus.Info("[ Order ] : ", req.Jumlah)
 		logrus.Info("[ Success ] : ", 0)
-		logrus.Info("[ Failed ] : ", 0)
-		logrus.Info("[ Pending ] : ", req.Jumlah)
+		logrus.Info("[ Failed ] : ", req.Jumlah)
+		logrus.Info("[ Pending ] : ", 0)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),

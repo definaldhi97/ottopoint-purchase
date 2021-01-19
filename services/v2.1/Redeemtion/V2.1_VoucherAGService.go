@@ -64,8 +64,9 @@ func (t V21_VoucherAgServices) V21_VoucherAg(req models.VoucherComultaiveReq, pa
 
 	param.PointTransferID = RedeemVouchAG.PointTransferID
 
-	if RedeemVouchAG.Rd == "Invalid JWT Token" {
+	if RedeemVouchAG.Rc == "10" || RedeemVouchAG.Rd == "Insufficient Point" {
 		logrus.Info("[VoucherAgService]-[RedeemVoucher]")
+		logrus.Info("[Not enough points]-[Gagal Redeem Voucher]")
 		logrus.Info("[Rc] : ", RedeemVouchAG.Rc)
 		logrus.Info("[Rd] : ", RedeemVouchAG.Rd)
 
@@ -74,26 +75,6 @@ func (t V21_VoucherAgServices) V21_VoucherAg(req models.VoucherComultaiveReq, pa
 			Data: vgmodels.ResponseVoucherAg{
 				Code:    "60",
 				Msg:     "Token or Session Expired Please Login Again",
-				Success: 0,
-				Failed:  req.Jumlah,
-				Pending: 0,
-			},
-		}
-
-		return res
-	}
-
-	if RedeemVouchAG.Rd == "not enough points" {
-		logrus.Info("[VoucherAgService]-[RedeemVoucher]")
-		logrus.Info("[Rc] : ", RedeemVouchAG.Rc)
-		logrus.Info("[Rd] : ", RedeemVouchAG.Rd)
-
-		// res = utils.GetMessageResponse(res, 500, false, errors.New("Point Tidak Cukup"))
-		res = models.Response{
-			Meta: utils.ResponseMetaOK(),
-			Data: vgmodels.ResponseVoucherAg{
-				Code:    "27",
-				Msg:     "Point Tidak Mencukupi",
 				Success: 0,
 				Failed:  req.Jumlah,
 				Pending: 0,

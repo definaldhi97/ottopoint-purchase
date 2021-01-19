@@ -43,43 +43,13 @@ func (t V21_VoucherSepulsaService) V21_VoucherSepulsa(req models.VoucherComultai
 
 	param.CumReffnum = utils.GenTransactionId()
 
-	// total := strconv.Itoa(req.Jumlah)
-	param.Amount = int64(param.Point)
+	// validasi usage limit voucher
+	dtaVocher, _ := db.Get_MReward(param.CampaignID)
 
-	// spending point and spending usage_limit voucher
-	textCommentSpending := param.CumReffnum + "#" + param.NamaVoucher
-	param.Comment = textCommentSpending
-	RedeemVouchSP, errRedeemVouchSP := V21_trx.V21_Redeem_PointandVoucher(req.Jumlah, param, header)
-	param.PointTransferID = RedeemVouchSP.PointTransferID
-
-	if RedeemVouchSP.Rc == "10" || RedeemVouchSP.Rd == "Insufficient Point" {
-
-		logrus.Info("[SepulsaVoucherService]-[RedeemVoucher]")
-		logrus.Info("[Not enough points]-[Gagal Redeem Voucher]")
-		logrus.Info("[Rc] : ", RedeemVouchSP.Rc)
-		logrus.Info("[Rd] : ", RedeemVouchSP.Rd)
-
-		// res = utils.GetMessageResponse(res, 500, false, errors.New("Point Tidak Cukup"))
-		res = models.Response{
-			Meta: utils.ResponseMetaOK(),
-			Data: models.UltraVoucherResp{
-				Code:    "27",
-				Msg:     "Point Tidak Mencukupi",
-				Success: 0,
-				Failed:  req.Jumlah,
-				Pending: 0,
-			},
-		}
-
-		return res
-	}
-
-	if RedeemVouchSP.Rc == "208" {
-
+	// validasi stock voucher
+	if req.Jumlah > dtaVocher.UsageLimit {
+		fmt.Println("[ Stock Voucher not Available ]")
 		logrus.Info("[SepulsaVoucherService]-[RedeemVoucher")
-		logrus.Error("Error : ", errRedeemVouchSP)
-		logrus.Info("[Rc] : ", RedeemVouchSP.Rc)
-		logrus.Info("[Rd] : ", RedeemVouchSP.Rd)
 
 		res := models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -95,12 +65,11 @@ func (t V21_VoucherSepulsaService) V21_VoucherSepulsa(req models.VoucherComultai
 		return res
 	}
 
-	if RedeemVouchSP.Rc == "209" {
-
+	// validasi limit voucher per user
+	countRedeemed, _ := db.GetVoucherRedeemed(param.AccountId, param.RewardID)
+	if countRedeemed.Count > dtaVocher.LimitPeruser {
 		logrus.Info("[SepulsaVoucherService]-[RedeemVoucher]")
-		logrus.Error("Error : ", RedeemVouchSP)
-		logrus.Info("[ ResponseCode ] : ", RedeemVouchSP.Rc)
-		logrus.Info("[ ResponseDesc ] : ", RedeemVouchSP.Rd)
+		fmt.Println("[ Payment count limit exceeded ]")
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -116,40 +85,126 @@ func (t V21_VoucherSepulsaService) V21_VoucherSepulsa(req models.VoucherComultai
 		return res
 	}
 
-	var c string
-	for _, vall := range RedeemVouchSP.CouponseVouch {
-		c = vall.CouponsCode
-	}
-	fmt.Println("Value CouponCode : ", c)
-
-	if errRedeemVouchSP != nil || RedeemVouchSP.Rc != "00" {
-
-		logrus.Info("[SepulsaVoucherService]-[RedeemVoucher]")
-		logrus.Error("Error : ", errRedeemVouchSP)
-		logrus.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
-
-		res = models.Response{
-			Meta: utils.ResponseMetaOK(),
-			Data: models.SepulsaRes{
-				Code:    "01",
-				Msg:     "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya",
-				Success: 0,
-				Failed:  req.Jumlah,
-				Pending: 0,
-			},
-		}
-
-		return res
-	}
-
+	// process order/trx to sepulsa
 	for i := req.Jumlah; i > 0; i-- {
+
+		param.Amount = int64(param.Point)
 
 		param.TrxID = utils.GenTransactionId()
 
-		t := i - 1
-		couponID := RedeemVouchSP.CouponseVouch[t].CouponsID
-		couponCode := RedeemVouchSP.CouponseVouch[t].CouponsCode
-		param.CouponID = couponID
+		// spending point and spending usage_limit voucher
+		textCommentSpending := param.TrxID + "#" + param.NamaVoucher
+		param.Comment = textCommentSpending
+		RedeemVouchSP, errRedeemVouchSP := V21_trx.V21_Redeem_PointandVoucher(1, param, header)
+		param.PointTransferID = RedeemVouchSP.PointTransferID
+
+		// if RedeemVouchSP.Rc == "10" || RedeemVouchSP.Rd == "Insufficient Point" {
+
+		// 	logrus.Info("[SepulsaVoucherService]-[RedeemVoucher]")
+		// 	logrus.Info("[Not enough points]-[Gagal Redeem Voucher]")
+		// 	logrus.Info("[Rc] : ", RedeemVouchSP.Rc)
+		// 	logrus.Info("[Rd] : ", RedeemVouchSP.Rd)
+
+		// 	// res = utils.GetMessageResponse(res, 500, false, errors.New("Point Tidak Cukup"))
+		// 	res = models.Response{
+		// 		Meta: utils.ResponseMetaOK(),
+		// 		Data: models.UltraVoucherResp{
+		// 			Code:    "27",
+		// 			Msg:     "Point Tidak Mencukupi",
+		// 			Success: 0,
+		// 			Failed:  req.Jumlah,
+		// 			Pending: 0,
+		// 		},
+		// 	}
+
+		// 	return res
+		// }
+
+		// if RedeemVouchSP.Rc == "208" {
+
+		// 	logrus.Info("[SepulsaVoucherService]-[RedeemVoucher")
+		// 	logrus.Error("Error : ", errRedeemVouchSP)
+		// 	logrus.Info("[Rc] : ", RedeemVouchSP.Rc)
+		// 	logrus.Info("[Rd] : ", RedeemVouchSP.Rd)
+
+		// 	res := models.Response{
+		// 		Meta: utils.ResponseMetaOK(),
+		// 		Data: models.SepulsaRes{
+		// 			Code:    "65",
+		// 			Msg:     "Voucher not available",
+		// 			Success: 0,
+		// 			Failed:  req.Jumlah,
+		// 			Pending: 0,
+		// 		},
+		// 	}
+
+		// 	return res
+		// }
+
+		// if RedeemVouchSP.Rc == "209" {
+
+		// 	logrus.Info("[SepulsaVoucherService]-[RedeemVoucher]")
+		// 	logrus.Error("Error : ", RedeemVouchSP)
+		// 	logrus.Info("[ ResponseCode ] : ", RedeemVouchSP.Rc)
+		// 	logrus.Info("[ ResponseDesc ] : ", RedeemVouchSP.Rd)
+
+		// 	res = models.Response{
+		// 		Meta: utils.ResponseMetaOK(),
+		// 		Data: models.SepulsaRes{
+		// 			Code:    "66",
+		// 			Msg:     "Payment count limit exceeded",
+		// 			Success: 0,
+		// 			Failed:  req.Jumlah,
+		// 			Pending: 0,
+		// 		},
+		// 	}
+
+		// 	return res
+		// }
+
+		var c string
+		for _, vall := range RedeemVouchSP.CouponseVouch {
+			c = vall.CouponsCode
+		}
+		fmt.Println("Value CouponCode : ", c)
+
+		if errRedeemVouchSP != nil || RedeemVouchSP.Rc != "00" {
+
+			logrus.Info("[SepulsaVoucherService]-[RedeemVoucher]")
+			logrus.Error("Error : ", errRedeemVouchSP)
+			logrus.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
+
+			res = models.Response{
+				Meta: utils.ResponseMetaOK(),
+				Data: models.SepulsaRes{
+					Code:    "01",
+					Msg:     "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya",
+					Success: 0,
+					Failed:  req.Jumlah,
+					Pending: 0,
+				},
+			}
+
+			return res
+		}
+
+		//////////////////////////////////////-----Before----//////////////////////////////////
+
+		// for i := req.Jumlah; i > 0; i-- {
+
+		// param.TrxID = utils.GenTransactionId()
+
+		// t := i - 1
+		// couponID := RedeemVouchSP.CouponseVouch[t].CouponsID
+		// couponCode := RedeemVouchSP.CouponseVouch[t].CouponsCode
+		// param.CouponID = couponID
+
+		var couponID, couponCode string
+		if RedeemVouchSP.Rc == "00" {
+			couponID = RedeemVouchSP.CouponseVouch[0].CouponsID
+			couponCode = RedeemVouchSP.CouponseVouch[0].CouponsCode
+			param.CouponID = couponID
+		}
 
 		productID, _ := strconv.Atoi(param.ProductCode)
 		reqOrder := sepulsaModels.EwalletInsertTrxReq{
@@ -164,6 +219,12 @@ func (t V21_VoucherSepulsaService) V21_VoucherSepulsa(req models.VoucherComultai
 		if errTransaction != nil {
 			logrus.Info("[SepulsaService]-[InsertTransaction]")
 			logrus.Error("ResponseDesc : ", errTransaction.Error())
+
+			// Save Error Transaction
+			go v2_redeemtion.SaveTransactionSepulsa(param, errTransaction.Error(), reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
+
+			trxIDReversal := utils.GenTransactionId()
+			param.TrxID = trxIDReversal
 
 			resultReversal := V21_trx.V21_Adding_PointVoucher(param, param.Point, 1, header)
 			fmt.Println(resultReversal)
@@ -195,8 +256,8 @@ func (t V21_VoucherSepulsaService) V21_VoucherSepulsa(req models.VoucherComultai
 
 			logrus.Info("[ Response Publisher ] : ", kafkaRes)
 
-			// Save Error Transaction
-			go v2_redeemtion.SaveTransactionSepulsa(param, errTransaction.Error(), reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
+			// // Save Error Transaction
+			// go v2_redeemtion.SaveTransactionSepulsa(param, errTransaction.Error(), reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
 
 			res = models.Response{
 				Meta: utils.ResponseMetaOK(),
@@ -272,7 +333,7 @@ func (t V21_VoucherSepulsaService) V21_CallbackVoucherSepulsa(req sepulsaModels.
 			AccountId:     spending.AccountId,
 			AccountNumber: spending.AccountNumber,
 			RRN:           spending.RRN,
-			TrxID:         spending.TransactionId,
+			TrxID:         utils.GenTransactionId(),
 			RewardID:      spending.MRewardID,
 			Point:         spending.Point,
 		}

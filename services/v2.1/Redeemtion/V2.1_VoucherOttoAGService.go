@@ -113,6 +113,8 @@ func (t V21_VoucherOttoAgService) V21_VoucherOttoAg(req models.VoucherComultaive
 	if rcUseVoucher.AccountNumber != "" {
 		fmt.Println("============= Reversal to Point ===========")
 
+		trxIDReversal := utils.GenTransactionId()
+		param.TrxID = trxIDReversal
 		resultReversal := Trx.V21_Adding_PointVoucher(param, rcUseVoucher.Count, rcUseVoucher.CountFailed, header)
 		fmt.Println(resultReversal)
 

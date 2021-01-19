@@ -30,7 +30,7 @@ func V21_Adding_PointVoucher(param models.Params, countPoint, countVoucher int, 
 
 	addingPoinReq := op_corepoint.AddingPointReq{
 		AccountID:     param.AccountId,
-		TransactionID: utils.Before(textComment, "#"),
+		TransactionID: param.TrxID,
 		ExpiredDays:   expPoint.Value,
 		Point:         countPoint,
 		Comment:       textComment,
@@ -40,7 +40,7 @@ func V21_Adding_PointVoucher(param models.Params, countPoint, countVoucher int, 
 	schedulerData := dbmodels.TSchedulerRetry{
 		// ID
 		Code:          constants.CodeScheduler,
-		TransactionID: utils.Before(textComment, "#"),
+		TransactionID: param.TrxID,
 		Count:         0,
 		IsDone:        false,
 		CreatedAT:     time.Now(),
@@ -94,7 +94,7 @@ func V21_Adding_PointVoucher(param models.Params, countPoint, countVoucher int, 
 		// ResponderData   :,
 		TransType:       constants.CodeReversal,
 		AccountId:       param.AccountId,
-		ExpiredPoint:    expPoint.Value,
+		ExpiredPoint:    label.ExpiredPoint.Format("2006-01-02"),
 		TransactionTime: time.Now(),
 	}
 

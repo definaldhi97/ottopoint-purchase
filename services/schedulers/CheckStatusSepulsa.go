@@ -124,7 +124,7 @@ func (t SchedulerCheckStatusService) CheckStatusVoucherAgService(trxID string) e
 				InstitutionID: spending.Institution,
 				NamaVoucher:   spending.Voucher,
 				AccountNumber: spending.AccountNumber,
-				TrxID:         trxID,
+				TrxID:         utils.GenTransactionId(),
 				AccountId:     spending.AccountId,
 				RewardID:      spending.MRewardID,
 			}
