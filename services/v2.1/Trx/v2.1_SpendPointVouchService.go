@@ -59,7 +59,7 @@ func V21_Redeem_PointandVoucher(QtyVoucher int, param models.Params, header mode
 	schedulerData := dbmodels.TSchedulerRetry{
 		// ID
 		Code:          constants.CodeSchedulerSpending,
-		TransactionID: utils.Before(param.Comment, "#"),
+		TransactionID: param.Comment,
 		Count:         0,
 		IsDone:        false,
 		CreatedAT:     time.Now(),
