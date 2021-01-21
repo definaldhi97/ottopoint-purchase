@@ -23,7 +23,7 @@ func GetEarningRuleController(ctx *gin.Context) {
 	sugarLogger := ottologer.GetLogger()
 	namectrl := "[GetEarningRuleController]"
 
-	productCode := ctx.Request.URL.Query().Get("productCode")
+	productCode := ctx.Request.URL.Query().Get("code")
 
 	span := TracingFirstControllerCtx(ctx, "", namectrl)
 	c := ctx.Request.Context()

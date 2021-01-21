@@ -25,11 +25,11 @@ func GetEarningCodebyProductCode(productCode string) (dbmodels.MEarningRule, err
 
 	fmt.Println("[Select from GeneralSpending]")
 
-	include := "like '%" + productCode + "%'"
-	exclude := "like '%" + productCode + "%'"
-	query := fmt.Sprintf("select * from m_earning_rule where code like '%GSR%' and included_skus like ? or excluded_skus like ?", include, exclude, productCode, productCode)
+	include := "%" + productCode + "%"
+	exclude := "%" + productCode + "%"
+	// query := fmt.Sprintf("select * from m_earning_rule where code like '%GSR%' and included_skus like %v or excluded_skus like %v", include, exclude, productCode, productCode)
 
-	err := DbCon.Raw(query).Scan(&res).Error
+	err := DbCon.Raw(`select * from m_earning_rule where code like '%GSR%' and (included_skus like ? or excluded_skus like ?)`, include, exclude).Scan(&res).Error
 	if err != nil {
 
 		fmt.Println(fmt.Sprintf("[Failed to Get EarningCode from GeneralSpending]-[Error : %v]", err.Error()))
