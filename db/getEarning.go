@@ -25,8 +25,9 @@ func GetEarningCodebyProductCode(productCode string) (dbmodels.MEarningRule, err
 
 	fmt.Println("[Select from GeneralSpending]")
 
-	like := "like '%" + productCode + "%'"
-	query := fmt.Sprintf("select * from m_earning_rule where lower(sku_ids) like %v", like)
+	include := "like '%" + productCode + "%'"
+	exclude := "like '%" + productCode + "%'"
+	query := fmt.Sprintf("select * from m_earning_rule where code like '%GSR%' and included_skus like ? or excluded_skus like ?", include, exclude, productCode, productCode)
 
 	err := DbCon.Raw(query).Scan(&res).Error
 	if err != nil {
@@ -35,7 +36,7 @@ func GetEarningCodebyProductCode(productCode string) (dbmodels.MEarningRule, err
 		fmt.Println("[PackageDB]-[GetEarningCodebyProductCode]")
 
 		fmt.Println("[Select from CustoomeEventRule]")
-		err = DbCon.Raw(`select * from m_earning_rule where event_name = ?`, productCode).Scan(&res).Error
+		err = DbCon.Raw(`select * from m_earning_rule where code like '%CER%' and event_name = ?`, productCode).Scan(&res).Error
 		if err != nil {
 
 			fmt.Println(fmt.Sprintf("[Failed to Get EarningCode from CustoomeEventRule]-[Error : %v]", err.Error()))
