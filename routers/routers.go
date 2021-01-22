@@ -46,6 +46,7 @@ var (
 	redeemtionV2Migrate     string
 	callback_Agg            string
 	callback_uv             string
+	getEarningRule     string
 )
 
 func init() {
@@ -67,6 +68,7 @@ func init() {
 	// redeemCallbackVoucherAg = utils.GetEnv("callbackRequestVoucherAg", "/transaction/v2/redeem/voucherag")
 	checkStatusScheduler = utils.GetEnv("checkStatusScheduler", "/transaction/v2/check-status-scheduler")
 
+	getEarningRule = utils.GetEnv("getEarningRule", "/transaction/v2/getEarning")
 	csv = utils.GetEnv("csv", "/csv")
 
 	debugmode = utils.GetEnv("apps.debug", "debug")
@@ -156,6 +158,7 @@ func (ottoRouter *OttoRouter) Routers() {
 	router.POST(splitbill, controllers.DeductSplitBillController)
 	// router.POST(usevoucher_uv, controllers.UseVouhcerUVController)
 	router.POST(checkStatusEarning, controllers.CheckStatusEarningController)
+	router.GET(getEarningRule, controllers.GetEarningRuleController)
 
 	// router.GET(view_voucher, controller_v2_1.ViewVoucherController)
 	// router.GET(use_voucher_vidio, controller_v2_1.UseVoucherVidioController)

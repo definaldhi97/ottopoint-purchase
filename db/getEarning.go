@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"ottopoint-purchase/models/dbmodels"
 
 	"github.com/astaxie/beego/logs"
@@ -15,6 +16,36 @@ func GetEarningCode(code string) (dbmodels.MEarningRule, error) {
 		return res, err
 	}
 	logs.Info("Data MEarning :", res)
+
+	return res, nil
+}
+
+func GetEarningCodebyProductCode(productCode string) (dbmodels.MEarningRule, error) {
+	res := dbmodels.MEarningRule{}
+
+	fmt.Println("[Select from GeneralSpending]")
+
+	include := "%" + productCode + "%"
+	exclude := "%" + productCode + "%"
+	// query := fmt.Sprintf("select * from m_earning_rule where code like '%GSR%' and included_skus like %v or excluded_skus like %v", include, exclude, productCode, productCode)
+
+	err := DbCon.Raw(`select * from m_earning_rule where code like '%GSR%' and (included_skus like ? or excluded_skus like ?)`, include, exclude).Scan(&res).Error
+	if err != nil {
+
+		fmt.Println("[PackageDB]-[GetEarningCodebyProductCode]")
+		fmt.Println(fmt.Sprintf("[Failed to Get EarningCode from GeneralSpending]-[Error : %v]", err.Error()))
+
+		fmt.Println("[Select from CustoomeEventRule]")
+		err = DbCon.Raw(`select * from m_earning_rule where code like '%CER%' and event_name = ?`, productCode).Scan(&res).Error
+		if err != nil {
+
+			fmt.Println("[PackageDB]-[GetEarningCodebyProductCode]")
+			fmt.Println(fmt.Sprintf("[Failed to Get EarningCode from CustoomeEventRule]-[Error : %v]", err.Error()))
+
+			return res, err
+		}
+
+	}
 
 	return res, nil
 }

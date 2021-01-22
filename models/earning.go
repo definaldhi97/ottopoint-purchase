@@ -49,3 +49,8 @@ type EarningResp struct {
 type CheckStatusEarningReq struct {
 	ReferenceId string `json:"referenceId"`
 }
+
+// ============== Get Earning Rule ==============
+type GetEarningRuleResp struct {
+	Code string `json:"code"`
+}
