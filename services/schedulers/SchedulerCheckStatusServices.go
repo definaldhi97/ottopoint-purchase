@@ -5,7 +5,6 @@ import (
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/models"
-	"ottopoint-purchase/utils"
 
 	"github.com/opentracing/opentracing-go"
 )
@@ -55,7 +54,8 @@ func (t SchedulerCheckStatusService) NewSchedulerCheckStatusService() interface{
 			supplierSepulsa = "Sepulsa"
 			total := getData[i].Count
 
-			errSepulsa := t.CheckStatusSepulsaServices(utils.Before(getData[i].TransactionID, "PSM"))
+			// errSepulsa := t.CheckStatusSepulsaServices(utils.Before(getData[i].TransactionID, "PSM"))
+			errSepulsa := t.CheckStatusSepulsaServices(getData[i].TransactionID)
 			if errSepulsa != nil {
 
 				total = total + 1
@@ -84,7 +84,8 @@ func (t SchedulerCheckStatusService) NewSchedulerCheckStatusService() interface{
 			supplierSepulsa = "Voucher Aggregator"
 			total := getData[i].Count
 
-			errSepulsa := t.CheckStatusVoucherAgService(utils.Before(getData[i].TransactionID, "PSM"))
+			// errSepulsa := t.CheckStatusVoucherAgService(utils.Before(getData[i].TransactionID, "PSM"))
+			errSepulsa := t.CheckStatusVoucherAgService(getData[i].TransactionID)
 			if errSepulsa != nil {
 
 				total = total + 1
