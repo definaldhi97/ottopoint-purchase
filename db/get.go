@@ -141,7 +141,11 @@ func GetVoucherSpending(accountID, couponID string) (dbmodels.TSpending, error) 
 func GetVoucherAgSpending(voucherCode, transactionID string) (dbmodels.TSpending, error) {
 	res := dbmodels.TSpending{}
 
-	err := DbCon.Where("voucher_code = ? and rrn = ?", voucherCode, transactionID).First(&res).Error
+	// err := DbCon.Where("voucher_code = ? and rrn = ?", voucherCode, transactionID).First(&res).Error
+	err := DbCon.Raw(`
+		select ts.* from public.user_myvoucher um 
+		join public.t_spending ts on ts.coupon_id = um.coupon_id
+		where um.voucher_code = ? and ts.rrn = ?`, voucherCode, transactionID).Scan(&res).Error
 	if err != nil {
 
 		fmt.Println("[EEROR-DATABASE]")
