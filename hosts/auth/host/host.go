@@ -2,10 +2,13 @@ package host
 
 import (
 	"encoding/json"
+	"net/http"
+	https "ottopoint-purchase/hosts"
 	authModel "ottopoint-purchase/hosts/auth/models"
 
+	"ottopoint-purchase/utils"
+
 	"github.com/astaxie/beego/logs"
-	ODU "ottodigital.id/library/utils"
 )
 
 var (
@@ -15,9 +18,9 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("HOST_ADDRESS_OTTOPOINT_AUTH", "http://13.228.25.85:8666")
-	endpointClearCacheGetBalance = ODU.GetEnv("ENDPOINT_CLEAR_CACHE_BALANCE", "/auth/v2/clear-cache-balance-point")
-	// HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_REDIS_TOKEN", "OTTOPOINT-PURCHASE:REDIS_TOKEN_OTTOPOINT")
+	host = utils.GetEnv("HOST_ADDRESS_OTTOPOINT_AUTH", "http://13.228.25.85:8666")
+	endpointClearCacheGetBalance = utils.GetEnv("ENDPOINT_CLEAR_CACHE_BALANCE", "/auth/v2/clear-cache-balance-point")
+	// HealthCheckKey = utils.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_REDIS_TOKEN", "OTTOPOINT-PURCHASE:REDIS_TOKEN_OTTOPOINT")
 }
 
 func ClearCacheBalance(phone string) (authModel.RespClearCacheBalance, error) {
@@ -25,16 +28,10 @@ func ClearCacheBalance(phone string) (authModel.RespClearCacheBalance, error) {
 
 	urlSvr := host + endpointClearCacheGetBalance + "?phone=" + phone
 
-	// header := make(http.Header)
-	// header.Set("DeviceId", headerReq.DeviceID)
-	// header.Set("InstitutionId", headerReq.InstitutionID)
-	// header.Set("Geolocation", headerReq.Geolocation)
-	// header.Set("ChannelId", headerReq.ChannelID)
-	// header.Set("AppsId", headerReq.AppsID)
-	// header.Set("Timestamp", headerReq.Timestamp)
-	// header.Set("Authorization", headerReq.Authorization)
+	header := make(http.Header)
+	header.Set("Content-Type", "application/json")
 
-	data, err := HTTPGet(urlSvr, nil)
+	data, err := https.HTTPxGET(urlSvr, header)
 	if err != nil {
 		logs.Error("Check error", err.Error())
 

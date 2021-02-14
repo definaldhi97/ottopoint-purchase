@@ -1,4 +1,4 @@
-package Redeemtion
+package redeemtion
 
 import (
 	"fmt"

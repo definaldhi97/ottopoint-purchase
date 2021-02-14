@@ -1,4 +1,4 @@
-package Redeemtion
+package redeemtion
 
 import (
 	"encoding/json"
@@ -16,30 +16,20 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/logs"
-	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"github.com/vjeantet/jodaTime"
-	"go.uber.org/zap"
 )
 
-type V2_VoucherSepulsaService struct {
-	General models.GeneralModel
-}
+// func (t V2_VoucherSepulsaService) VoucherSepulsa(req models.VoucherComultaiveReq, param models.Params) models.Response {
+func RedeemtionSepulsaServices(req models.VoucherComultaiveReq, param models.Params) models.Response {
+	// fmt.Println("[ >>>>>>>>>>>>>>>>>> V2 Migrate Voucher Sepulsa Service <<<<<<<<<<<<<<<< ]")
 
-func (t V2_VoucherSepulsaService) VoucherSepulsa(req models.VoucherComultaiveReq, param models.Params) models.Response {
-	fmt.Println("[ >>>>>>>>>>>>>>>>>> V2 Migrate Voucher Sepulsa Service <<<<<<<<<<<<<<<< ]")
+	nameservice := "[PackageRedeemtion]-[RedeemtionSepulsaServices]"
+	logReq := fmt.Sprintf("[AccountNumber : %v, RewardID : %v]", param.AccountNumber, param.RewardID)
+
+	logrus.Info(nameservice)
 
 	var res models.Response
-
-	sugarLogger := t.General.OttoZaplog
-	sugarLogger.Info("[SepulsaServices]",
-		zap.String("NameVoucher : ", param.NamaVoucher), zap.Int("Jumlah : ", req.Jumlah),
-		zap.String("CampaignID : ", req.CampaignID), zap.String("CampaignID : ", req.CampaignID),
-		zap.String("CustID2 : ", req.CustID2), zap.String("ProductCode : ", param.ProductCode),
-		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID))
-
-	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[SepulsaServices]")
-	defer span.Finish()
 
 	param.CumReffnum = utils.GenTransactionId()
 
@@ -53,12 +43,12 @@ func (t V2_VoucherSepulsaService) VoucherSepulsa(req models.VoucherComultaiveReq
 	param.PointTransferID = RedeemVouchSP.PointTransferID
 
 	if RedeemVouchSP.Rd == "Invalid JWT Token" {
-		fmt.Println("Error : ", errRedeemVouchSP)
-		fmt.Println("[SepulsaVoucherService]-[RedeemVoucher]")
-		fmt.Println("[Internal Server Error]-[Gagal Redeem Voucher]")
 
-		sugarLogger.Info("[SepulsaVoucherService]-[RedeemVoucher]")
-		sugarLogger.Info("[Internal Server Error]-[Gagal Redeem Voucher]")
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[V2_Redeem_PointandVoucher]-[Response : %v]", RedeemVouchSP))
+		logrus.Info("[ ResponseCode ] : ", RedeemVouchSP.Rc)
+		logrus.Info("[ ResponseDesc ] : ", RedeemVouchSP.Rd)
+		logrus.Println(logReq)
 
 		res := models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -75,12 +65,12 @@ func (t V2_VoucherSepulsaService) VoucherSepulsa(req models.VoucherComultaiveReq
 	}
 
 	if RedeemVouchSP.Rd == "not enough points" {
-		fmt.Println("Error : ", errRedeemVouchSP)
-		fmt.Println("[SepulsaVoucherService]-[RedeemVoucher]")
-		fmt.Println("[Not enough points]-[Gagal Redeem Voucher]")
 
-		sugarLogger.Info("[SepulsaVoucherService]-[RedeemVoucher]")
-		sugarLogger.Info("[Not enough points]-[Gagal Redeem Voucher]")
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[V2_Redeem_PointandVoucher]-[Response : %v]", RedeemVouchSP))
+		logrus.Info("[ ResponseCode ] : ", RedeemVouchSP.Rc)
+		logrus.Info("[ ResponseDesc ] : ", RedeemVouchSP.Rd)
+		logrus.Println(logReq)
 
 		res := models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -97,12 +87,12 @@ func (t V2_VoucherSepulsaService) VoucherSepulsa(req models.VoucherComultaiveReq
 	}
 
 	if RedeemVouchSP.Rc == "208" {
-		fmt.Println("Error : ", errRedeemVouchSP)
-		fmt.Println("[SepulsaVoucherService]-[RedeemVoucher]")
-		fmt.Println("[Limit exceed]-[Gagal Redeem Voucher]")
 
-		sugarLogger.Info("[SepulsaVoucherService]-[RedeemVoucher]")
-		sugarLogger.Info("[Limit exceed]-[Gagal Redeem Voucher]")
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[V2_Redeem_PointandVoucher]-[Response : %v]", RedeemVouchSP))
+		logrus.Info("[ ResponseCode ] : ", RedeemVouchSP.Rc)
+		logrus.Info("[ ResponseDesc ] : ", RedeemVouchSP.Rd)
+		logrus.Println(logReq)
 
 		res := models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -120,10 +110,11 @@ func (t V2_VoucherSepulsaService) VoucherSepulsa(req models.VoucherComultaiveReq
 
 	if RedeemVouchSP.Rc == "209" {
 
-		logrus.Info("[SepulsaVoucherService]-[RedeemVoucher]")
-		logrus.Error("Error : ", RedeemVouchSP)
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[V2_Redeem_PointandVoucher]-[Response : %v]", RedeemVouchSP))
 		logrus.Info("[ ResponseCode ] : ", RedeemVouchSP.Rc)
 		logrus.Info("[ ResponseDesc ] : ", RedeemVouchSP.Rd)
+		logrus.Println(logReq)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -147,9 +138,11 @@ func (t V2_VoucherSepulsaService) VoucherSepulsa(req models.VoucherComultaiveReq
 
 	if errRedeemVouchSP != nil || RedeemVouchSP.Rc != "00" {
 
-		logrus.Info("[SepulsaVoucherService]-[RedeemVoucher]")
-		logrus.Error("Error : ", errRedeemVouchSP)
-		logrus.Info("[Failed Redeem Voucher]-[Gagal Redeem Voucher]")
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[V2_Redeem_PointandVoucher]-[Error : %v]", errRedeemVouchSP))
+		logrus.Info("[ ResponseCode ] : ", RedeemVouchSP.Rc)
+		logrus.Info("[ ResponseDesc ] : ", RedeemVouchSP.Rd)
+		logrus.Println(logReq)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -185,8 +178,10 @@ func (t V2_VoucherSepulsaService) VoucherSepulsa(req models.VoucherComultaiveReq
 		sepulsaRes, errTransaction := sepulsa.EwalletInsertTransaction(reqOrder)
 
 		if errTransaction != nil {
-			logrus.Info("[SepulsaService]-[InsertTransaction]")
-			logrus.Error("ResponseDesc : ", errTransaction.Error())
+
+			logrus.Error(nameservice)
+			logrus.Error(fmt.Sprintf("[EwalletInsertTransaction]-[Error : %v]", errTransaction))
+			logrus.Println(logReq)
 
 			resultReversal := Trx.V2_Adding_PointVoucher(param, param.Point, 1)
 			fmt.Println(resultReversal)
@@ -211,12 +206,16 @@ func (t V2_VoucherSepulsaService) VoucherSepulsa(req models.VoucherComultaiveReq
 				Value: bytePub,
 			}
 
-			kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
-			if err != nil {
-				logrus.Error("Gagal Send Publisher : ", err)
+			_, errKafka := kafka.SendPublishKafka(kafkaReq)
+			if errKafka != nil {
+
+				logrus.Error(nameservice)
+				logrus.Error(fmt.Sprintf("[SendPublishKafka]-[Error : %v]", errKafka))
+				logrus.Println(logReq)
+
 			}
 
-			logrus.Info("[ Response Publisher ] : ", kafkaRes)
+			// logrus.Info("[ Response Publisher ] : ", kafkaRes)
 
 			// Save Error Transaction
 			go SaveTransactionSepulsa(param, errTransaction.Error(), reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
@@ -258,108 +257,6 @@ func (t V2_VoucherSepulsaService) VoucherSepulsa(req models.VoucherComultaiveReq
 
 	return res
 
-}
-
-func (t V2_VoucherSepulsaService) CallbackVoucherSepulsa(req sepulsaModels.CallbackTrxReq) models.Response {
-	fmt.Println("[ >>>>>>>>>>>>>>>>>> V2 Migrate CallBack Sepulsa Service <<<<<<<<<<<<<<<< ]")
-	var res models.Response
-
-	sugarLogger := t.General.OttoZaplog
-	sugarLogger.Info("[SepulsaService]",
-		zap.String("TransactionID : ", req.TransactionID), zap.String("OrderID : ", req.OrderID),
-		zap.String("Status : ", req.Status), zap.String("Desc : ", req.ResponseCode),
-	)
-
-	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[SepulsaService]")
-	defer span.Finish()
-
-	fmt.Println("Start Delay ", time.Now().Unix())
-	time.Sleep(10 * time.Second)
-
-	go func(args sepulsaModels.CallbackTrxReq) {
-		// Get Spending By TransactionID and OrderID
-		spending, err := db.GetSpendingSepulsa(args.TransactionID, args.OrderID)
-		if err != nil {
-			fmt.Println("[GetSpendingSepulsa] : ", err.Error())
-			logrus.Error("[ Failed Get SpendingSepulsa ] : ", err.Error())
-		}
-
-		responseCode := models.GetErrorMsg(args.ResponseCode)
-
-		logrus.Info("[HandleCallbackSepulsa] - [ResponseCode] : ", args.ResponseCode)
-		logrus.Info("[HandleCallbackSepulsa] - [ResponseDesc] : ", responseCode)
-
-		param := models.Params{
-			InstitutionID: spending.Institution,
-			NamaVoucher:   spending.Voucher,
-			AccountId:     spending.AccountId,
-			AccountNumber: spending.AccountNumber,
-			RRN:           spending.RRN,
-			TrxID:         spending.TransactionId,
-			RewardID:      spending.MRewardID,
-			Point:         spending.Point,
-		}
-
-		if (responseCode != "Success") && (responseCode != "Pending") {
-
-			resultReversal := Trx.V2_Adding_PointVoucher(param, spending.Point, 1)
-			fmt.Println(resultReversal)
-
-			fmt.Println("[ >>>>>>>>>>>>>>>>>>>>>>> Send Publisher <<<<<<<<<<<<<<<<<<<< ]")
-
-			pubreq := models.NotifPubreq{
-				Type:           constants.CODE_REVERSAL_POINT,
-				NotificationTo: spending.AccountNumber,
-				Institution:    spending.Institution,
-				ReferenceId:    spending.RRN,
-				TransactionId:  spending.CummulativeRef,
-				Data: models.DataValue{
-					RewardValue: "point",
-					Value:       fmt.Sprint(spending.Point),
-				},
-			}
-
-			bytePub, _ := json.Marshal(pubreq)
-
-			kafkaReq := kafka.PublishReq{
-				Topic: constants.TOPIC_PUSHNOTIF_GENERAL,
-				Value: bytePub,
-			}
-
-			kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
-			if err != nil {
-				logrus.Error("Gagal Send Publisher : ", err)
-			}
-			logrus.Info("[ Response Publisher ] : ", kafkaRes)
-
-		}
-
-		responseSepulsa, _ := json.Marshal(args)
-
-		// Update TSpending
-		_, errUpdate := db.UpdateVoucherSepulsa(responseCode, args.ResponseCode, string(responseSepulsa), args.TransactionID, args.OrderID)
-
-		if errUpdate != nil {
-			logrus.Error("[UpdateVoucherSepulsa] : ", errUpdate.Error())
-
-		}
-
-		// Update TSchedulerRetry
-		_, err = db.UpdateTSchedulerRetry(spending.RRN)
-		if err != nil {
-
-			logrus.Error("[SepulsaService]-[FailedUpdateTSchedulerRetry] : ", errUpdate.Error())
-		}
-
-	}(req)
-
-	fmt.Println("End Process ", time.Now().Unix())
-	res = models.Response{
-		Meta: utils.ResponseMetaOK(),
-		Data: nil,
-	}
-
-	return res
 }
 
 func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interface{}, reqOP models.VoucherComultaiveReq, transType, status string) {

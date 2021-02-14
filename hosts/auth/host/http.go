@@ -2,9 +2,11 @@ package host
 
 import (
 	"net/http"
+	"ottopoint-purchase/utils"
+	"strconv"
+	"strings"
 	"time"
 
-	"github.com/astaxie/beego"
 	"github.com/parnurzeal/gorequest"
 )
 
@@ -15,9 +17,18 @@ var (
 )
 
 func init() {
-	debugClientHTTP = beego.AppConfig.DefaultBool("debugClientHTTP", true)
-	timeout = beego.AppConfig.DefaultString("timeout", "60s")
-	retrybad = beego.AppConfig.DefaultInt("retrybad", 1)
+	debugClientHTTP = true //defaultValue
+	if dch := utils.GetEnv("HTTP_DEBUG_CLIENT_OTTOPOINT_AUTH", "true"); strings.EqualFold(dch, "true") || strings.EqualFold(dch, "false") {
+		debugClientHTTP, _ = strconv.ParseBool(strings.ToLower(dch))
+	}
+	timeout = utils.GetEnv("HTTP_TIMEOUT_OTTOPOINT_AUTH", "60s")
+	retrybad = 1
+	if rb := utils.GetEnv("HTTP_RETRY_BAD_OTTOPOINT_AUTH", "1"); strings.TrimSpace(rb) != "" {
+		if val, err := strconv.Atoi(rb); err == nil {
+			retrybad = val
+		}
+	}
+
 }
 
 // HTTPGet func

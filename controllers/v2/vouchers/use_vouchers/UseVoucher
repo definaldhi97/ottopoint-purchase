@@ -1,0 +1,177 @@
+package use_voucher
+
+import (
+	"errors"
+	"fmt"
+	"strings"
+
+	"ottopoint-purchase/constants"
+	validate "ottopoint-purchase/controllers"
+	modelsopl "ottopoint-purchase/hosts/opl/models"
+	"ottopoint-purchase/models"
+	"ottopoint-purchase/utils"
+
+	"ottopoint-purchase/db"
+	opl "ottopoint-purchase/hosts/opl/host"
+	token "ottopoint-purchase/hosts/redis_token/host"
+
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+
+	"net/http"
+)
+
+func UseVouhcerController(ctx *gin.Context) {
+	req := models.UseVoucherReq{}
+	res := models.Response{}
+
+	namectrl := "[PackageUseVoucher]-[UseVoucherController]"
+	logReq := fmt.Sprintf("[CouponID : %v]", req.CouponID)
+
+	logrus.Info(namectrl)
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+
+		logrus.Error(namectrl)
+		logrus.Error(fmt.Sprintf("[ShouldBindJSON]-[Error : %v]", err))
+		logrus.Println(logReq)
+
+		res.Meta.Code = 03
+		res.Meta.Message = "Transaksi gagal, silahkan dicoba kembali. Jika masih gagal silahkan hubungi customer support kami."
+		// res.Meta.Message = "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."
+		ctx.JSON(http.StatusOK, res)
+
+		return
+	}
+
+	//validate request
+	header, resultValidate := validate.ValidateRequest(ctx, true, req, true)
+	if !resultValidate.Meta.Status {
+		ctx.JSON(http.StatusOK, resultValidate)
+		return
+	}
+
+	dataToken, _ := token.CheckToken(header)
+
+	cekVoucher, errVoucher := opl.VoucherDetail(req.CampaignID)
+	if errVoucher != nil || cekVoucher.CampaignID == "" {
+
+		logrus.Error(namectrl)
+		logrus.Error(fmt.Sprintf("[VoucherDetail]-[Error : %v]", errVoucher))
+		logrus.Println(logReq)
+
+		res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
+		ctx.JSON(http.StatusOK, res)
+		return
+	}
+
+	data := SwitchCheckData(cekVoucher)
+
+	var custIdOPL, merchant string
+	if data.SupplierID == "Ultra Voucher" {
+		fmt.Println("[Voucher Ultra Voucher]")
+		getData, errData := db.CheckCouponUV(dataToken.Data, req.CampaignID, req.CouponID)
+		if errData != nil || getData.AccountId == "" {
+
+			logrus.Error(namectrl)
+			logrus.Error(fmt.Sprintf("[CheckCouponUV]-[Error : %v]", errData))
+			logrus.Println(logReq)
+
+			res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
+			ctx.JSON(http.StatusOK, res)
+			return
+		}
+
+		custIdOPL = getData.AccountId
+	} else {
+		fmt.Println("[Voucher OttoAG]")
+		dataUser, errUser := db.CheckUser(dataToken.Data)
+		if errUser != nil || dataUser.CustID == "" {
+
+			logrus.Error(namectrl)
+			logrus.Error(fmt.Sprintf("[CheckUser]-[Error : %v]", errUser))
+			logrus.Println(logReq)
+
+			res = utils.GetMessageResponse(res, 500, false, errors.New("User belum Eligible"))
+		}
+		custIdOPL = dataUser.CustID
+		merchant = dataUser.MerchantID
+	}
+
+	fmt.Println("SupplierID : ", data.SupplierID)
+	fmt.Println("producrType : ", data.ProductType)
+
+	param := models.Params{
+		AccountNumber: dataToken.Data,
+		MerchantID:    merchant,
+		InstitutionID: header.InstitutionID,
+		SupplierID:    data.SupplierID,
+		AccountId:     custIdOPL,
+		CampaignID:    req.CampaignID,
+		ProductType:   data.ProductType,
+		ProductCode:   data.ProductCode,
+		NamaVoucher:   data.NamaVoucher,
+		Category:      data.Category,
+		CouponID:      req.CouponID,
+		Point:         data.Point,
+		ExpDate:       data.ExpDate,
+	}
+
+	switch data.SupplierID {
+	case constants.UV:
+		res = usevoucher.GetVoucherUV(req, param)
+	case constants.OttoAG:
+		res = usevoucher.UseVoucherOttoAG(req, param)
+	case constants.VoucherAg:
+		res = usevoucher.UseVoucherAggregator(req, param)
+	}
+
+	ctx.JSON(http.StatusOK, res)
+
+	return
+
+}
+
+func SwitchCheckData(data modelsopl.VoucherDetailResp) models.Params {
+	res := models.Params{}
+
+	coupon := data.Coupons[0]
+
+	supplierid := coupon[:2]
+	var supplierID string
+	if supplierid == "UV" {
+		supplierID = "Ultra Voucher"
+		coupon = coupon[3:]
+	} else if supplierid == "SP" {
+		supplierID = "Sepulsa"
+		coupon = coupon[3:]
+	} else if supplierid == "VG" {
+		supplierID = "Voucher Aggregator"
+		coupon = coupon[3:]
+	} else {
+		supplierID = "OttoAG"
+	}
+
+	var producrType string
+	t := strings.ToLower(data.BrandName)
+	switch t {
+	case constants.CategoryFreeFire, constants.CategoryMobileLegend:
+		producrType = "Game"
+	default:
+		producrType = data.BrandName
+	}
+
+	res = models.Params{
+		ProductType: producrType,
+		ProductCode: coupon,
+		CouponCode:  coupon,
+		SupplierID:  supplierID,
+		NamaVoucher: data.Name,
+		Point:       data.CostInPoints,
+		Category:    strings.ToLower(producrType),
+		ExpDate:     data.CampaignActivity.ActiveTo,
+		CategoryID:  &data.Categories[0],
+	}
+
+	return res
+}

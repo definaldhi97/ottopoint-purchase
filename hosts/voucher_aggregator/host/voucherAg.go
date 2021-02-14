@@ -3,12 +3,15 @@ package host
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	https "ottopoint-purchase/hosts"
 	vgmodel "ottopoint-purchase/hosts/voucher_aggregator/models"
 	"ottopoint-purchase/models"
 
+	"ottopoint-purchase/utils"
+
 	"github.com/astaxie/beego/logs"
 	"github.com/google/go-querystring/query"
-	ODU "ottodigital.id/library/utils"
 )
 
 var (
@@ -20,11 +23,11 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAG", "http://13.228.25.85:8480/api")
-	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_VOUCHERAG", "VOUCHER AGGREGATOR")
+	host = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAG", "http://13.228.25.85:8480/api")
+	name = utils.GetEnv("OTTOPOINT_PURCHASE_NAME_VOUCHERAG", "VOUCHER AGGREGATOR")
 
-	endpointOrderVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_ORDER", "/v1/order")
-	endpointCheckStatusOrder = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_CHECK_STATUS", "/v1/order/status")
+	endpointOrderVoucher = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_ORDER", "/v1/order")
+	endpointCheckStatusOrder = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_CHECK_STATUS", "/v1/order/status")
 
 }
 
@@ -35,7 +38,18 @@ func OrderVoucher(req vgmodel.RequestOrderVoucherAg, head models.RequestHeader) 
 
 	urlSvr := host + endpointOrderVoucher
 
-	data, err := HTTPxFormPostVoucherAg(urlSvr, head, req)
+	header := make(http.Header)
+	header.Set("Content-Type", "application/json")
+	header.Set("InstitutionId", head.InstitutionID)
+	header.Set("DeviceId", head.DeviceID)
+	header.Set("Geolocation", head.Geolocation)
+	header.Set("ChannelId", head.ChannelID)
+	header.Set("Signature", head.Signature)
+	header.Set("AppsId", head.AppsID)
+	header.Set("Timestamp", head.Timestamp)
+
+	data, err := https.HTTPxPOSTwithRequest(urlSvr, req, header)
+	// data, err := HTTPxFormPostVoucherAg(urlSvr, head, req)
 	if err != nil {
 		logs.Error("Check error : ", err.Error())
 
@@ -61,7 +75,18 @@ func CheckStatusOrder(req vgmodel.RequestCheckOrderStatus, head models.RequestHe
 
 	urlSvr := host + endpointCheckStatusOrder + fmt.Sprintf("?%s", v.Encode())
 
-	data, err := HTTPxFormGetVoucherAg(urlSvr, head)
+	header := make(http.Header)
+	header.Set("Content-Type", "application/json")
+	header.Set("InstitutionId", head.InstitutionID)
+	header.Set("DeviceId", head.DeviceID)
+	header.Set("Geolocation", head.Geolocation)
+	header.Set("ChannelId", head.ChannelID)
+	header.Set("Signature", head.Signature)
+	header.Set("AppsId", head.AppsID)
+	header.Set("Timestamp", head.Timestamp)
+
+	data, err := https.HTTPxGET(urlSvr, header)
+	// data, err := HTTPxFormGetVoucherAg(urlSvr, head)
 	if err != nil {
 		logs.Error("Check error : ", err.Error())
 

@@ -2,13 +2,13 @@ package host
 
 import (
 	"encoding/json"
+	"net/http"
 	"ottopoint-purchase/hosts/ultra_voucher/models"
-	"ottopoint-purchase/redis"
+
+	https "ottopoint-purchase/hosts"
+	"ottopoint-purchase/utils"
 
 	"github.com/astaxie/beego/logs"
-	hcmodels "ottodigital.id/library/healthcheck/models"
-	hcutils "ottodigital.id/library/healthcheck/utils"
-	ODU "ottodigital.id/library/utils"
 )
 
 var (
@@ -23,15 +23,15 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_UV", "http://13.228.25.85:8704/uv-service/v0.1.0")
+	host = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_UV", "http://13.228.25.85:8704/uv-service/v0.1.0")
 
-	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_UV", "ULTRA VOUCHER")
+	name = utils.GetEnv("OTTOPOINT_PURCHASE_NAME_UV", "ULTRA VOUCHER")
 
-	endpointOrderVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_UV_ORDER", "/purchase/order")
-	endpointUseVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_UV_USE", "/voucher/use")
-	endpointCheckStatusOrder = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_UV_CHECK_ORDER", "/check/status-order-voucher")
+	endpointOrderVoucher = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_UV_ORDER", "/purchase/order")
+	endpointUseVoucher = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_UV_USE", "/voucher/use")
+	endpointCheckStatusOrder = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_UV_CHECK_ORDER", "/check/status-order-voucher")
 
-	// healthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_UV", "OTTOPOINT-PURCHASE:OTTOPOINT-UV")
+	// healthCheckKey = utils.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_UV", "OTTOPOINT-PURCHASE:OTTOPOINT-UV")
 }
 
 // OrderVoucher
@@ -42,7 +42,17 @@ func OrderVoucher(req models.OrderVoucherReq, institutionID string) (*models.Ord
 
 	urlSvr := host + endpointOrderVoucher
 
-	data, err := HTTPxFormPostUV(urlSvr, institutionID, req)
+	header := make(http.Header)
+
+	if institutionID == "" {
+		header.Set("Content-Type", "application/json")
+	} else {
+		header.Set("Content-Type", "application/json")
+		header.Set("InstitutionId", institutionID)
+	}
+
+	data, err := https.HTTPxPOSTwithRequest(urlSvr, req, header)
+	// data, err := HTTPxFormPostUV(urlSvr, institutionID, req)
 	if err != nil {
 		logs.Error("Check error : ", err.Error())
 
@@ -65,14 +75,13 @@ func UseVoucherUV(req models.UseVoucherUVReq) (*models.UseVoucherUVResp, error) 
 
 	logs.Info("[Package Host UV]-[UseVoucher]")
 
-	// req := models.UseVoucherUVReq{
-	// 	Account:     accountNumber,
-	// 	VoucherCode: code,
-	// }
-
 	urlSvr := host + endpointUseVoucher
 
-	data, err := HTTPxFormPostUV(urlSvr, "", req)
+	header := make(http.Header)
+	header.Set("Content-Type", "application/json")
+
+	data, err := https.HTTPxPOSTwithRequest(urlSvr, req, header)
+	// data, err := HTTPxFormPostUV(urlSvr, "", req)
 	if err != nil {
 		logs.Error("Check error : ", err.Error())
 
@@ -95,14 +104,15 @@ func CheckStatusOrder(InstitutionReff, InstitutionId string) (models.OrderVouche
 
 	logs.Info("[Package Host UV]-[CheckStatusOrder]")
 
-	// req := models.UseVoucherUVReq{
-	// 	Account:     accountNumber,
-	// 	VoucherCode: code,
-	// }
-
 	urlSvr := host + endpointCheckStatusOrder
 
-	data, err := HTTPxFormGETUV(urlSvr, InstitutionReff, InstitutionId)
+	header := make(http.Header)
+	header.Set("Content-Type", "application/json")
+	header.Set("InstitutionId", InstitutionId)
+	header.Set("InstitutionRefno", InstitutionReff)
+
+	data, err := https.HTTPxGET(urlSvr, header)
+	// data, err := HTTPxFormGETUV(urlSvr, InstitutionReff, InstitutionId)
 	if err != nil {
 		logs.Error("Check error : ", err.Error())
 
@@ -117,14 +127,4 @@ func CheckStatusOrder(InstitutionReff, InstitutionId string) (models.OrderVouche
 	}
 
 	return resp, nil
-}
-
-// GetServiceHealthCheck ..
-func GetServiceHealthCheck() hcmodels.ServiceHealthCheck {
-	redisClient := redis.GetRedisConnection()
-	return hcutils.GetServiceHealthCheck(&redisClient, &hcmodels.ServiceEnv{
-		Name:    name,
-		Address: host,
-		// HealthCheckKey: healthCheckKey,
-	})
 }

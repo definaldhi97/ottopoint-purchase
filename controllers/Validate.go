@@ -3,10 +3,11 @@ package controllers
 import (
 	"fmt"
 	"ottopoint-purchase/constants"
+	"ottopoint-purchase/db"
 	hostAuth "ottopoint-purchase/hosts/auth/host"
+	redisService "ottopoint-purchase/hosts/redis_token/host"
 	signature "ottopoint-purchase/hosts/signature/host"
 	"ottopoint-purchase/models"
-	"ottopoint-purchase/services"
 	"ottopoint-purchase/utils"
 	"strings"
 
@@ -40,17 +41,17 @@ func ValidateRequest(ctx *gin.Context, isCheckAuth bool, reqBody interface{}, is
 
 	//check token
 	if isCheckAuth {
-		var RedisService = new(services.RedisService)
+		// var RedisService = new(services.RedisService)
 		auth := strings.ReplaceAll(header.Authorization, "Bearer ", "")
 		keyRedis := header.InstitutionID + "-" + auth
-		dataRedis := RedisService.GetData(keyRedis)
+		dataRedis, _ := redisService.GetToken(keyRedis)
 
 		if dataRedis.ResponseCode != "00" {
 			result = utils.GetMessageFailedErrorNew(result, constants.RC_ERROR_INVALID_TOKEN, constants.RD_ERROR_INVALID_TOKEN)
 			return header, result
 		}
 
-		phone = dataRedis.Value
+		phone = dataRedis.Data
 
 		// result := ValidateUser(ctx, dataRedis.Value, result, header)
 
@@ -127,4 +128,85 @@ func ClearCaceheBalancePoint(phone string) {
 	fmt.Println("Clear Cache Get Balance: ", clearCacheBalance.Messages)
 	return
 
+}
+
+func ValidatePerfix(CustID, ProductCode, category string) bool {
+	// res := models.Response{Meta: utils.ResponseMetaOK()}
+	fmt.Println("[Category : " + category + " ]")
+	category1 := strings.ToLower(category)
+	if category1 == constants.CategoryPulsa || category1 == constants.CategoryPaketData {
+		// validate prefix
+		fmt.Println("Process validasi verfix : ", category1)
+		validate, _ := ValidatePrefixComulative(CustID, ProductCode, category1)
+		if validate == false {
+
+			fmt.Println("Invalid Prefix")
+			// res = utils.GetMessageResponse(res, 500, false, errors.New("Nomor akun ini tidak terdafatr"))
+			return false
+		}
+
+	}
+
+	return true
+}
+
+func ValidatePrefixComulative(custID, productCode, category string) (bool, error) {
+
+	var err error
+	var product string
+	var prefix string
+
+	// validate panjang nomor, Jika nomor kurang dari 4
+	if len(custID) < 4 {
+
+		fmt.Println("[Kurang dari 4]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
+		fmt.Println(fmt.Sprintf("invalid Prefix %v", custID))
+
+		return false, err
+	}
+
+	// validate panjang nomor, Jika nomor kurang dari 11 & lebih dari 15
+	if len(custID) <= 10 || len(custID) > 15 {
+
+		fmt.Println("[Kurang dari 10 atau lebih dari 15]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
+		fmt.Println(fmt.Sprintf("invalid Prefix %v", custID))
+
+		return false, err
+
+	}
+
+	// get Prefix
+	dataPrefix, errPrefix := db.GetOperatorCodebyPrefix(custID)
+	if errPrefix != nil {
+
+		fmt.Println("[ErrorPrefix]-[RedeemComulativeVoucher]")
+		fmt.Println(fmt.Sprintf("dataPrefix = %v", dataPrefix))
+		fmt.Println(fmt.Sprintf("Prefix tidak ditemukan %v", errPrefix))
+
+		return false, err
+	}
+
+	// check operator by OperatorCode
+	prefix = utils.Operator(dataPrefix.OperatorCode)
+	// check operator by ProductCode
+	// product = utils.ProductPulsa(productCode[0:4])
+
+	if category == constants.CategoryPulsa {
+		product = utils.ProductPulsa(productCode[0:4])
+	}
+	if category == constants.CategoryPaketData {
+		product = utils.ProductPaketData(productCode[0:5])
+	}
+
+	// Jika Nomor tidak sesuai dengan operator
+	if prefix != product {
+
+		fmt.Println("[Operator]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
+		fmt.Println(fmt.Sprintf("invalid Prefix %v", prefix))
+
+		return false, err
+
+	}
+
+	return true, nil
 }

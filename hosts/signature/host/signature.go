@@ -2,16 +2,13 @@ package host
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
+	https "ottopoint-purchase/hosts"
 	"ottopoint-purchase/hosts/signature/models"
 	headermodels "ottopoint-purchase/models"
-	"time"
+	"ottopoint-purchase/utils"
 
 	"github.com/astaxie/beego/logs"
-	hcmodels "ottodigital.id/library/healthcheck/models"
-	ODU "ottodigital.id/library/utils"
 )
 
 var (
@@ -23,23 +20,34 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_SIGNATURE", "http://13.228.25.85:8666")
-	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_SIGNATURE", "SIGNATURE")
+	host = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_SIGNATURE", "http://13.228.25.85:8666")
+	name = utils.GetEnv("OTTOPOINT_PURCHASE_NAME_SIGNATURE", "SIGNATURE")
 
-	endpointSignature = ODU.GetEnv("OTTOPOINT_PURCHASE_ENDPOINT_VALIDATE_SIGNATURE", "/auth/v2/signature")
+	endpointSignature = utils.GetEnv("OTTOPOINT_PURCHASE_ENDPOINT_VALIDATE_SIGNATURE", "/auth/v2/signature")
 
-	HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_SIGNATURE", "OTTOPOINT-PURCHASE:SIGNATURE")
+	HealthCheckKey = utils.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_SIGNATURE", "OTTOPOINT-PURCHASE:SIGNATURE")
 }
 
 // Signature
-func Signature(signature interface{}, header headermodels.RequestHeader) (*models.SignatureResp, error) {
+func Signature(signature interface{}, headers headermodels.RequestHeader) (*models.SignatureResp, error) {
 	var resp models.SignatureResp
 
 	logs.Info("[Hit to API Signature]")
 
 	urlSvr := host + endpointSignature
 
-	data, err := HTTPxFormPostWithHeader(urlSvr, HealthCheckKey, signature, header)
+	header := make(http.Header)
+	header.Set("Content-Type", "application/json")
+	header.Set("DeviceId", headers.DeviceID)
+	header.Set("InstitutionId", headers.InstitutionID)
+	header.Set("Geolocation", headers.Geolocation)
+	header.Set("ChannelId", headers.ChannelID)
+	header.Set("AppsId", headers.AppsID)
+	header.Set("Timestamp", headers.Timestamp)
+	header.Set("Signature", headers.Signature)
+
+	data, err := https.HTTPxPOSTwithRequest(urlSvr, signature, header)
+	// data, err := HTTPxFormPostWithHeader(urlSvr, HealthCheckKey, signature, header)
 	if err != nil {
 		logs.Error("Check error", err.Error())
 
@@ -54,37 +62,4 @@ func Signature(signature interface{}, header headermodels.RequestHeader) (*model
 	}
 
 	return &resp, nil
-}
-
-// GetServiceHealthCheck ..
-func GetServiceHealthCheckSignature() hcmodels.ServiceHealthCheck {
-	res := hcmodels.ServiceHealthCheck{}
-	var erorr interface{}
-	// sugarLogger := service.General.OttoZapLog
-
-	PublicAddress := host
-	log.Print("url : ", PublicAddress)
-	res.Name = name
-	res.Address = PublicAddress
-	res.UpdatedAt = time.Now().UTC()
-
-	d, err := http.Get(PublicAddress)
-
-	erorr = err
-	if err != nil {
-		log.Print("masuk error")
-		res.Status = "Not OK"
-		res.Description = fmt.Sprintf("%v", erorr)
-		return res
-	}
-	if d.StatusCode != 200 {
-		res.Status = "Not OK"
-		res.Description = d.Status
-		return res
-	}
-
-	res.Status = "OK"
-	res.Description = ""
-
-	return res
 }

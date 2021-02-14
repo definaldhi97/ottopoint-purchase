@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	https "ottopoint-purchase/hosts"
 	"ottopoint-purchase/models"
 
+	"ottopoint-purchase/utils"
+
 	"github.com/sirupsen/logrus"
-	ODU "ottodigital.id/library/utils"
 )
 
 var (
@@ -17,9 +19,9 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("HOST_OTTOPOINT_COREPOINT", "http://13.228.25.85:8402")
-	endpointAdding = ODU.GetEnv("ENDPOINT_ADDING_OTTOPOINT_COREPOINT", "/v1/points/transfer/add")
-	endpointSpending = ODU.GetEnv("ENDPOINT_SEPENDING_OTTOPOINT_COREPOINT", "/v1/points/transfer/spend")
+	host = utils.GetEnv("HOST_OTTOPOINT_COREPOINT", "http://13.228.25.85:8402")
+	endpointAdding = utils.GetEnv("ENDPOINT_ADDING_OTTOPOINT_COREPOINT", "/v1/points/transfer/add")
+	endpointSpending = utils.GetEnv("ENDPOINT_SEPENDING_OTTOPOINT_COREPOINT", "/v1/points/transfer/spend")
 }
 
 func AddingPoint(req AddingPointReq, headerReq models.RequestHeader) (*TrxPointRes, error) {
@@ -36,7 +38,7 @@ func AddingPoint(req AddingPointReq, headerReq models.RequestHeader) (*TrxPointR
 	header.Set("ChannelId", headerReq.ChannelID)
 	header.Set("AppsId", headerReq.AppsID)
 
-	data, err := HTTPPostWithHeader(urlSvr, req, header)
+	data, err := https.HTTPxPOSTwithRequest(urlSvr, req, header)
 	logrus.Info("Response Trx Adding Point to wallet ottopoint-corepoint : ", data)
 
 	if err != nil {
@@ -70,7 +72,7 @@ func SependingPoint(req SpendingPointReq, headerReq models.RequestHeader) (*TrxP
 	header.Set("ChannelId", headerReq.ChannelID)
 	header.Set("AppsId", headerReq.AppsID)
 
-	data, err := HTTPPostWithHeader(urlSvr, req, header)
+	data, err := https.HTTPxPOSTwithRequest(urlSvr, req, header)
 	logrus.Info("Response Trx Spending Point to wallet ottopoint-corepoint : ", data)
 
 	if err != nil {

@@ -1,4 +1,4 @@
-package Redeemtion
+package redeemtion
 
 import (
 	"encoding/json"
@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"ottopoint-purchase/constants"
-	"ottopoint-purchase/db"
 	kafka "ottopoint-purchase/hosts/publisher/host"
 	uv "ottopoint-purchase/hosts/ultra_voucher/host"
 	uvmodels "ottopoint-purchase/hosts/ultra_voucher/models"
@@ -16,31 +15,19 @@ import (
 	"ottopoint-purchase/services/v2/Trx"
 	"ottopoint-purchase/utils"
 
-	"github.com/astaxie/beego/logs"
-	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
-	"go.uber.org/zap"
 )
 
-type V2_VoucherUVService struct {
-	General models.GeneralModel
-}
-
-func (t V2_VoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param models.Params) models.Response {
-	fmt.Println("[ >>>>>>>>>>>>>>>>>> V2 Migrate Voucher UV Service <<<<<<<<<<<<<<<< ]")
+// func (t V2_VoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param models.Params) models.Response {
+func RedeemtionUVServices(req models.VoucherComultaiveReq, param models.Params) models.Response {
+	// fmt.Println("[ >>>>>>>>>>>>>>>>>> V2 Migrate Voucher UV Service <<<<<<<<<<<<<<<< ]")
 
 	var res models.Response
 
-	sugarLogger := t.General.OttoZaplog
-	sugarLogger.Info("[UltraVoucherServices]",
-		zap.String("NameVoucher : ", param.NamaVoucher), zap.Int("Jumlah : ", req.Jumlah),
-		zap.String("CampaignID : ", req.CampaignID), zap.String("CampaignID : ", req.CampaignID),
-		zap.String("CustID2 : ", req.CustID2), zap.String("ProductCode : ", param.ProductCode),
-		// zap.Int("Point : ", req.Point),
-		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID))
+	nameservice := "[PackageRedeemtion]-[RedeemtionUVServices]"
+	logReq := fmt.Sprintf("[AccountNumber : %v, RewardID : %v]", param.AccountNumber, param.RewardID)
 
-	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[UltraVoucherServices]")
-	defer span.Finish()
+	logrus.Info(nameservice)
 
 	dataorder := services.DataParameterOrder()
 	param.CumReffnum = utils.GenTransactionId()
@@ -63,12 +50,11 @@ func (t V2_VoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 
 	if RedeemVouchUV.Rd == "Invalid JWT Token" {
 
-		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
-		logrus.Error("Error : ", errRedeemVouchUV)
-		logrus.Info("[ ResponseCode ] : ", RedeemVouchUV.Rc)
-		logrus.Info("[ ResponseDesc ] : ", RedeemVouchUV.Rd)
-
-		// res = utils.GetMessageResponse(res, 422, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[V2_Redeem_PointandVoucher]-[Response : %v]", RedeemVouchUV))
+		logrus.Println("[ ResponseCode ] : ", RedeemVouchUV.Rc)
+		logrus.Println("[ ResponseDesc ] : ", RedeemVouchUV.Rd)
+		logrus.Println(logReq)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -86,10 +72,11 @@ func (t V2_VoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 
 	if RedeemVouchUV.Rd == "not enough points" {
 
-		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
-		logrus.Error("Error : ", errRedeemVouchUV)
-		logrus.Info("[ ResponseCode ] : ", RedeemVouchUV.Rc)
-		logrus.Info("[ ResponseDesc ] : ", RedeemVouchUV.Rd)
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[V2_Redeem_PointandVoucher]-[Response : %v]", RedeemVouchUV))
+		logrus.Println("[ ResponseCode ] : ", RedeemVouchUV.Rc)
+		logrus.Println("[ ResponseDesc ] : ", RedeemVouchUV.Rd)
+		logrus.Println(logReq)
 
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Point Tidak Cukup"))
 		res = models.Response{
@@ -108,10 +95,11 @@ func (t V2_VoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 
 	if RedeemVouchUV.Rc == "208" {
 
-		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
-		logrus.Error("Error : ", errRedeemVouchUV)
-		logrus.Info("[ ResponseCode ] : ", RedeemVouchUV.Rc)
-		logrus.Info("[ ResponseDesc ] : ", RedeemVouchUV.Rd)
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[V2_Redeem_PointandVoucher]-[Response : %v]", RedeemVouchUV))
+		logrus.Println("[ ResponseCode ] : ", RedeemVouchUV.Rc)
+		logrus.Println("[ ResponseDesc ] : ", RedeemVouchUV.Rd)
+		logrus.Println(logReq)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -129,10 +117,11 @@ func (t V2_VoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 
 	if RedeemVouchUV.Rc == "209" {
 
-		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
-		logrus.Error("Error : ", errRedeemVouchUV)
-		logrus.Info("[ ResponseCode ] : ", RedeemVouchUV.Rc)
-		logrus.Info("[ ResponseDesc ] : ", RedeemVouchUV.Rd)
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[V2_Redeem_PointandVoucher]-[Response : %v]", RedeemVouchUV))
+		logrus.Println("[ ResponseCode ] : ", RedeemVouchUV.Rc)
+		logrus.Println("[ ResponseDesc ] : ", RedeemVouchUV.Rd)
+		logrus.Println(logReq)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -155,9 +144,12 @@ func (t V2_VoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 	fmt.Println("Value CouponCode : ", c)
 
 	if errRedeemVouchUV != nil || RedeemVouchUV.Rc != "00" {
-		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
-		logrus.Error("Error : ", errRedeemVouchUV)
-		logrus.Info("[UltraVoucherServices]-[RedeemVoucher]")
+
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[V2_Redeem_PointandVoucher]-[Error : %v]", errRedeemVouchUV))
+		logrus.Println("[ ResponseCode ] : ", RedeemVouchUV.Rc)
+		logrus.Println("[ ResponseDesc ] : ", RedeemVouchUV.Rd)
+		logrus.Println(logReq)
 
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
 		res = models.Response{
@@ -198,10 +190,10 @@ func (t V2_VoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 
 	if errOrder != nil || order.ResponseCode == "" {
 
-		logrus.Info("[UltraVoucherServices]-[OrderVoucher]")
-		logrus.Info("[Failed Order Voucher]-[Gagal Order Voucher]")
-		logrus.Error("Error oreder UV : ", errOrder)
-		logrus.Info("Response OrderVoucher : ", order)
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[OrderVoucher]-[Error : %v]", errOrder))
+		logrus.Error(fmt.Sprintf("[Response %v]", order))
+		logrus.Println(logReq)
 
 		for i := req.Jumlah; i > 0; i-- {
 
@@ -235,10 +227,11 @@ func (t V2_VoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 
 	if order.ResponseCode == "02" {
 
-		logrus.Info("[UltraVoucherServices]-[OrderVoucher]")
-		logrus.Info("[Stock not Available]-[Gagal Order Voucher]")
-		logrus.Info("[ Response OrderVoucher ] : ", order)
-		logrus.Info("[ ResponseCode ] : ", order.ResponseCode)
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[OrderVoucher]-[Response : %v]", order))
+		logrus.Println("[ ResponseCode ] : ", order.ResponseCode)
+		logrus.Println("[ ResponseDesc ] : ", order.ResponseDesc)
+		logrus.Println(logReq)
 
 		totalPoint := param.Point * req.Jumlah
 		param.TrxID = utils.GenTransactionId()
@@ -266,10 +259,13 @@ func (t V2_VoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 			Value: bytePub,
 		}
 
-		kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
-		if err != nil {
-			fmt.Println("Gagal Send Publisher")
-			fmt.Println("Error : ", err)
+		kafkaRes, errKafka := kafka.SendPublishKafka(kafkaReq)
+		if errKafka != nil {
+
+			logrus.Error(nameservice)
+			logrus.Error(fmt.Sprintf("[SendPublishKafka]-[Error : %v]", errKafka))
+			logrus.Println(logReq)
+
 		}
 		fmt.Println("Response Publisher : ", kafkaRes)
 
@@ -310,10 +306,11 @@ func (t V2_VoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 
 	if order.ResponseCode != "00" {
 
-		logrus.Info("[UltraVoucherServices]-[OrderVoucher]")
-		logrus.Info("[Failed order]-[Gagal Order Voucher]")
-		logrus.Info("[ Response OrderVoucher ] : ", order)
-		logrus.Info("[ ResponseCode ] : ", order.ResponseCode)
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[OrderVoucher]-[Response : %v]", order))
+		logrus.Println("[ ResponseCode ] : ", order.ResponseCode)
+		logrus.Println("[ ResponseDesc ] : ", order.ResponseDesc)
+		logrus.Println(logReq)
 
 		// TrxID
 		param.TrxID = utils.GenTransactionId()
@@ -342,10 +339,13 @@ func (t V2_VoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 			Value: bytePub,
 		}
 
-		kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
-		if err != nil {
-			fmt.Println("Gagal Send Publisher")
-			fmt.Println("Error : ", err)
+		kafkaRes, errKafka := kafka.SendPublishKafka(kafkaReq)
+		if errKafka != nil {
+
+			logrus.Error(nameservice)
+			logrus.Error(fmt.Sprintf("[SendPublishKafka]-[Error : %v]", errKafka))
+			logrus.Println(logReq)
+
 		}
 		fmt.Println("Response Publisher : ", kafkaRes)
 
@@ -420,66 +420,4 @@ func (t V2_VoucherUVService) VoucherUV(req models.VoucherComultaiveReq, param mo
 	}
 
 	return res
-}
-
-func (t V2_VoucherUVService) CallbackVoucherUV(req models.UseVoucherUVReq, param models.Params, campaignID string) models.Response {
-	var res models.Response
-
-	fmt.Println("[ >>>>>>>>>>>>>>>>>>>>> V2 Migrate Callbakc Voucher UV Service <<<<<<<<<<<<<<<<<< ]")
-
-	sugarLogger := t.General.OttoZaplog
-	sugarLogger.Info("[UseVoucherUV]",
-		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID),
-		zap.String("category : ", param.Category), zap.String("campaignId : ", campaignID),
-		zap.String("AccountID : ", param.AccountId), zap.String("AccountNumber : ", param.AccountNumber),
-		zap.String("VoucherCode : ", req.VoucherCode))
-
-	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[UseVoucherUV]")
-	defer span.Finish()
-
-	logrus.Info("Campaign : ", campaignID)
-	logrus.Info("CouponID : ", param.CouponID)
-	logrus.Info("ProductCode : ", param.CouponCode)
-	logrus.Info("AccountID : ", param.AccountId)
-
-	// // Use Voucher to Openloyalty
-	// use, err2 := opl.CouponVoucherCustomer(campaignID, param.CouponID, param.CouponCode, param.AccountId, 1)
-
-	// var useErr string
-	// for _, value := range use.Coupons {
-	// 	useErr = value.CouponID
-	// }
-
-	// if err2 != nil || useErr == "" {
-
-	// 	logs.Info(fmt.Sprintf("[Error : %v]", err2))
-	// 	logs.Info(fmt.Sprintf("[Response : %v]", use))
-	// 	logs.Info("[Error from OPL]-[CouponVoucherCustomer]")
-
-	// 	// go SaveTransactionUV(param, useUV, reqUV, req, "Used", "01", "")
-
-	// 	res = utils.GetMessageResponse(res, 400, false, errors.New("Gagal Use Voucher, Harap coba lagi"))
-	// 	return res
-	// }
-
-	// timeUse := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
-	timeUse := time.Now()
-
-	_, errUpdate := db.UpdateVoucher(timeUse, param.CouponID)
-	if errUpdate != nil {
-
-		logs.Info(fmt.Sprintf("[Error : %v]", errUpdate))
-		logs.Info("[Gagal Update Voucher]")
-		logs.Info("[UseVoucherUV]-[Package-Services]")
-
-	}
-
-	res = models.Response{
-		Meta: utils.ResponseMetaOK(),
-		Data: models.UseVoucherUVResp{
-			Voucher: param.NamaVoucher,
-		},
-	}
-	return res
-
 }

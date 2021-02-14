@@ -3,6 +3,7 @@ package models
 import "time"
 
 type Params struct {
+	ResponseCode  int
 	AccountNumber string
 	MerchantID    string
 	InstitutionID string

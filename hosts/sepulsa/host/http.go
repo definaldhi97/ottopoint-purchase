@@ -3,24 +3,39 @@ package host
 import (
 	"crypto/tls"
 	"errors"
+	"strconv"
 	"strings"
+
+	"ottopoint-purchase/utils"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/parnurzeal/gorequest"
 	"github.com/prometheus/common/log"
-	ODU "ottodigital.id/library/utils"
 )
 
 var (
-	debugClientHTTP bool = true
+	debugClientHTTP bool
+	timeout         string
+	retrybad        int
 	username        string
 	password        string
 )
 
 func init() {
-	debugClientHTTP = true
-	username = ODU.GetEnv("OTTOPOINT_PURCHASE_USERNAME_SEPULSA", "ottopoint")
-	password = ODU.GetEnv("OTTOPOINT_PURCHASE_PASSWORD_SEPULSA", "DoXptIfK6rOeqxMDa0uxEGXjlzvEVfST")
+	debugClientHTTP = true //defaultValue
+	if dch := utils.GetEnv("HTTP_DEBUG_CLIENT_SEPULSA", "true"); strings.EqualFold(dch, "true") || strings.EqualFold(dch, "false") {
+		debugClientHTTP, _ = strconv.ParseBool(strings.ToLower(dch))
+	}
+	timeout = utils.GetEnv("HTTP_TIMEOUT_SEPULSA", "60s")
+	retrybad = 1
+	if rb := utils.GetEnv("HTTP_RETRY_BAD_SEPULSA", "1"); strings.TrimSpace(rb) != "" {
+		if val, err := strconv.Atoi(rb); err == nil {
+			retrybad = val
+		}
+	}
+
+	username = utils.GetEnv("OTTOPOINT_PURCHASE_USERNAME_SEPULSA", "ottopoint")
+	password = utils.GetEnv("OTTOPOINT_PURCHASE_PASSWORD_SEPULSA", "DoXptIfK6rOeqxMDa0uxEGXjlzvEVfST")
 }
 
 func HTTPxFormPostSepulsa(url string, jsonReq interface{}) ([]byte, error) {

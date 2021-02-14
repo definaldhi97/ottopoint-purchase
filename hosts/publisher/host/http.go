@@ -3,25 +3,35 @@ package publisher
 import (
 	"crypto/tls"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
-	"github.com/astaxie/beego"
+	"ottopoint-purchase/utils"
+
 	"github.com/astaxie/beego/logs"
 	"github.com/parnurzeal/gorequest"
 )
 
 var (
 	debugClientHTTP bool
-	instuition      string
 	timeout         string
 	retrybad        int
 )
 
 func init() {
-	debugClientHTTP = beego.AppConfig.DefaultBool("debugClientHTTP", true)
-	timeout = beego.AppConfig.DefaultString("timeout", "60s")
-	retrybad = beego.AppConfig.DefaultInt("retrybad", 1)
+	debugClientHTTP = true //defaultValue
+	if dch := utils.GetEnv("HTTP_DEBUG_CLIENT_PUBLISHER", "true"); strings.EqualFold(dch, "true") || strings.EqualFold(dch, "false") {
+		debugClientHTTP, _ = strconv.ParseBool(strings.ToLower(dch))
+	}
+	timeout = utils.GetEnv("HTTP_TIMEOUT_OTTOPOINT_PUBLISHER", "60s")
+	retrybad = 1
+	if rb := utils.GetEnv("HTTP_RETRY_BAD_OTTOPOINT_PUBLISHER", "1"); strings.TrimSpace(rb) != "" {
+		if val, err := strconv.Atoi(rb); err == nil {
+			retrybad = val
+		}
+	}
+
 }
 
 func HTTPPostKafka(url string, jsondata interface{}) ([]byte, error) {

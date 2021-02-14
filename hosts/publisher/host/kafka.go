@@ -2,10 +2,13 @@ package publisher
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/astaxie/beego/logs"
 	jsoniter "github.com/json-iterator/go"
-	ODU "ottodigital.id/library/utils"
+
+	https "ottopoint-purchase/hosts"
+	"ottopoint-purchase/utils"
 )
 
 type PublishReq struct {
@@ -24,8 +27,8 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("HOST_PUBLISHER", "http://13.228.25.85:8703")
-	endpointPublisher = ODU.GetEnv("endpoint.publish", "/ottopoint/v0.1.0/kafka/publish")
+	host = utils.GetEnv("HOST_PUBLISHER", "http://13.228.25.85:8703")
+	endpointPublisher = utils.GetEnv("endpoint.publish", "/ottopoint/v0.1.0/kafka/publish")
 }
 
 // SendPublishKafka ...
@@ -39,7 +42,10 @@ func SendPublishKafka(request PublishReq) (PublisherResp, error) {
 
 	url := host + endpointPublisher
 
-	data, err := HTTPPostKafka(url, request)
+	header := make(http.Header)
+	header.Set("Content-Type", "application/json")
+
+	data, err := https.HTTPxPOSTwithRequest(url, request, header)
 	fmt.Println("xxxx-----------xxxx")
 	fmt.Println("urlSvr", url)
 	fmt.Println("msgreq", request)

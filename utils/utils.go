@@ -14,7 +14,6 @@ import (
 	"os"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/models"
-	"ottopoint-purchase/redis"
 	"strconv"
 	"strings"
 	"time"
@@ -22,12 +21,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/leekchan/accounting"
 	"github.com/vjeantet/jodaTime"
-
-	ODU "ottodigital.id/library/utils"
 )
 
 var (
-	rrnkey            string
 	DefaultStatusCode int
 	DefaultStatusMsg  string
 	RedisKeyAuth      string
@@ -35,27 +31,36 @@ var (
 	MemberID          string
 	PathCSV           string
 
+	// Topics
+	TopicsEarning string
 	TopicsNotif   string
 	TopicNotifSMS string
 
-	UrlImage string
-
+	// URL
+	UrlImage      string
 	ListErrorCode []models.MappingErrorCodes
 )
 
 func init() {
 	DefaultStatusCode = 200
 	DefaultStatusMsg = "OK"
-	rrnkey = ODU.GetEnv("REDISKEY.OTTOFIN.RRN", "OTTOFIN:KEYRRN")
-	RedisKeyAuth = ODU.GetEnv("redis.key.auth", "Ottopoint-Token-Admin :")
-	LimitTRXPoint = ODU.GetEnv("limit.trx.point", "999999999999999")
-	MemberID = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_MEMBERID", "OTPOINT")
-	// PathCSV = ODU.GetEnv("PATH_CSV", "//Users/abdulrohmat/Documents/Golang/src/ottopoint-purchase/utils/")
-	PathCSV = ODU.GetEnv("PATH_CSV", "/opt/ottopoint-purchase/csv/")
-	TopicsNotif = ODU.GetEnv("TOPICS_NOTIF", "ottopoint-notification-topics")
-	TopicNotifSMS = ODU.GetEnv("TOPIC_NOTIF_SMS", "ottopoint-sms-notification-topics")
-	UrlImage = ODU.GetEnv("URL_IMAGES", "https://apidev.ottopoint.id/product/v2.1/image/")
+	RedisKeyAuth = GetEnv("redis.key.auth", "Ottopoint-Token-Admin :")
+	LimitTRXPoint = GetEnv("limit.trx.point", "999999999999999")
+	MemberID = GetEnv("OTTOPOINT_PURCHASE_OTTOAG_MEMBERID", "OTPOINT")
+	PathCSV = GetEnv("PATH_CSV", "/opt/ottopoint-purchase/csv/")
+	TopicsNotif = GetEnv("TOPICS_NOTIF", "ottopoint-notification-topics")
+	TopicsEarning = GetEnv("TOPICS_EARNING", "ottopoint-earning-topics")
+	TopicNotifSMS = GetEnv("TOPIC_NOTIF_SMS", "ottopoint-sms-notification-topics")
+	UrlImage = GetEnv("URL_IMAGES", "https://apidev.ottopoint.id/product/v2.1/image/")
 
+}
+
+func GetEnv(key string, defaultVal string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+
+	return defaultVal
 }
 
 func GetMessageResponse(res models.Response, code int, status bool, err error) models.Response {
@@ -121,15 +126,6 @@ func ResponseMetaOK() models.MetaData {
 		Code:    200,
 		Message: "SUCCESS",
 	}
-}
-func GetRrn() string {
-	//res, err := redis.GetRedisKey(rrnkey)
-	counter, err := redis.SaveRedisCounter(rrnkey)
-	if err != nil {
-		counter = 1
-	}
-	t11 := time.Now().Local()
-	return fmt.Sprintf("%02d%02d%02d%02d%04d", t11.Day(), t11.Hour(), t11.Minute(), t11.Second(), counter)
 }
 
 func GetTimeFormatYYMMDDHHMMSS() string {
@@ -486,6 +482,7 @@ func DefaultNulTime(date time.Time) *time.Time {
 	}
 	return nil
 }
+
 func GetTimeFormatMillisecond() string {
 	now := time.Now().Local()
 	unixNano := now.UnixNano()
@@ -494,4 +491,20 @@ func GetTimeFormatMillisecond() string {
 	convString := strconv.FormatInt(umillisec, 10)
 	return convString
 
+}
+
+func EncryptVoucherCode(data, key string) string {
+
+	var codeVoucher string
+	if data == "" {
+		return codeVoucher
+	}
+
+	a := []rune(key)
+	key32 := string(a[0:32])
+	screetKey := []byte(key32)
+	codeByte := []byte(data)
+	chiperText, _ := EncryptAES(codeByte, screetKey)
+	codeVoucher = string(chiperText)
+	return codeVoucher
 }

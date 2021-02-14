@@ -565,24 +565,6 @@ func (t UseSepulsaService) HandleCallbackRequest(req sepulsaModels.CallbackTrxRe
 	return res
 }
 
-func (t UseSepulsaService) CheckStatusTrx(transactionID string) models.Response {
-	var res models.Response
-
-	resp, err := sepulsa.EwalletDetailTransaction(transactionID)
-	if err != nil {
-		res = models.Response{
-			Meta: utils.ResponseMetaOK(),
-		}
-	}
-
-	res = models.Response{
-		Meta: utils.ResponseMetaOK(),
-		Data: resp,
-	}
-
-	return res
-}
-
 func (t UseSepulsaService) clearCacheBalance(phone string) {
 	fmt.Println(">>>>>>> Clear Cache Get Balance <<<<<<")
 	clearCacheBalance, err := auth.ClearCacheBalance(phone)

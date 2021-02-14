@@ -3,9 +3,10 @@ package host
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	https "ottopoint-purchase/hosts"
 	"ottopoint-purchase/hosts/worker/models"
-
-	ODU "ottodigital.id/library/utils"
+	"ottopoint-purchase/utils"
 )
 
 var (
@@ -18,10 +19,10 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("OTTOPOINT_HOST_WORKER", "http://13.228.25.85:8011")
-	name = ODU.GetEnv("OTTOPOINT_NAME_WORKER", "OTTOMART")
+	host = utils.GetEnv("OTTOPOINT_HOST_WORKER", "http://13.228.25.85:8011")
+	name = utils.GetEnv("OTTOPOINT_NAME_WORKER", "OTTOMART")
 
-	endpointEarning = ODU.GetEnv("OTTOPOINT_ENDPOINT_WORKER", "/ottopoint-worker-earning/earningPoint")
+	endpointEarning = utils.GetEnv("OTTOPOINT_ENDPOINT_WORKER", "/ottopoint-worker-earning/earningPoint")
 
 }
 
@@ -32,7 +33,11 @@ func WorkerEarning(req models.WorkerEarningReq) (*models.WorkerEarningResp, erro
 
 	urlSvr := host + endpointEarning
 
-	data, err := HTTPxFormWithBody(urlSvr, req)
+	header := make(http.Header)
+	header.Set("Content-Type", "application/json")
+
+	data, err := https.HTTPxPOSTwithRequest(urlSvr, req, header)
+	// data, err := HTTPxFormWithBody(urlSvr, req)
 	if err != nil {
 		fmt.Println("Check error : ", err)
 

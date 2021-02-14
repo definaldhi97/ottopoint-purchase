@@ -2,18 +2,15 @@ package host
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 	redismodels "ottopoint-purchase/hosts/redis_token/models"
 	"ottopoint-purchase/models"
 	"strings"
-	"time"
 
-	hcmodels "ottodigital.id/library/healthcheck/models"
+	https "ottopoint-purchase/hosts"
+	"ottopoint-purchase/utils"
 
 	"github.com/astaxie/beego/logs"
-	ODU "ottodigital.id/library/utils"
 )
 
 var (
@@ -24,22 +21,27 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_REIDS_TOKEN", "http://13.228.25.85:8703")
-	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_REDIS_TOKEN", "REDIS-TOKEN-OTTOPOINT")
-	endpointToken = ODU.GetEnv("OTTOPOINT_PURCHASE_ENDPOINT_REDIS_TOKEN", "/ottopoint/v0.1.0/redis/service")
-	// HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_REDIS_TOKEN", "OTTOPOINT-PURCHASE:REDIS_TOKEN_OTTOPOINT")
+	host = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_REIDS_TOKEN", "http://13.228.25.85:8703")
+	name = utils.GetEnv("OTTOPOINT_PURCHASE_NAME_REDIS_TOKEN", "REDIS-TOKEN-OTTOPOINT")
+	endpointToken = utils.GetEnv("OTTOPOINT_PURCHASE_ENDPOINT_REDIS_TOKEN", "/ottopoint/v0.1.0/redis/service")
+	// HealthCheckKey = utils.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_REDIS_TOKEN", "OTTOPOINT-PURCHASE:REDIS_TOKEN_OTTOPOINT")
 }
 
-func CheckToken(header models.RequestHeader) (redismodels.TokenResp, error) {
+func CheckToken(headers models.RequestHeader) (redismodels.TokenResp, error) {
 	var resp redismodels.TokenResp
 
 	urlSvr := host + endpointToken
 
-	t := strings.ReplaceAll(header.Authorization, "Bearer ", "")
-	token := header.InstitutionID + "-" + t
+	t := strings.ReplaceAll(headers.Authorization, "Bearer ", "")
+	token := headers.InstitutionID + "-" + t
 	logs.Info("Token : ", token)
 
-	data, err := HTTPxFormWithHeader(urlSvr, token)
+	header := make(http.Header)
+	header.Set("Key", token)
+	header.Set("Action", "GET")
+
+	data, err := https.HTTPxPOSTwithoutRequest(urlSvr, header)
+	// data, err := HTTPxFormWithHeader(urlSvr, token)
 	if err != nil {
 		logs.Error("Check error", err.Error())
 
@@ -61,7 +63,14 @@ func GetToken(Key string) (*redismodels.TokenResp, error) {
 	var resp redismodels.TokenResp
 
 	url := host + endpointToken
-	data, err := HTTPPostWithHeader_GetRedis(url, Key)
+
+	header := make(http.Header)
+	// header.Set("Content-Type", "application/json")
+	header.Set("Action", "GET")
+	header.Set("Key", Key)
+
+	data, err := https.HTTPxPOSTwithoutRequest(url, header)
+	// data, err := HTTPPostWithHeader_GetRedis(url, Key)
 
 	if err != nil {
 		logs.Error("generate mpan ", err.Error())
@@ -76,37 +85,4 @@ func GetToken(Key string) (*redismodels.TokenResp, error) {
 
 	return &resp, err
 
-}
-
-// GetServiceHealthCheck ..
-func GetServiceHealthCheckRedisService() hcmodels.ServiceHealthCheck {
-	res := hcmodels.ServiceHealthCheck{}
-	var erorr interface{}
-	// sugarLogger := service.General.OttoZapLog
-
-	PublicAddress := host
-	log.Print("url : ", PublicAddress)
-	res.Name = name
-	res.Address = PublicAddress
-	res.UpdatedAt = time.Now().UTC()
-
-	d, err := http.Get(PublicAddress)
-
-	erorr = err
-	if err != nil {
-		log.Print("masuk error")
-		res.Status = "Not OK"
-		res.Description = fmt.Sprintf("%v", erorr)
-		return res
-	}
-	if d.StatusCode != 200 {
-		res.Status = "Not OK"
-		res.Description = d.Status
-		return res
-	}
-
-	res.Status = "OK"
-	res.Description = ""
-
-	return res
 }

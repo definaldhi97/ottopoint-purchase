@@ -9,9 +9,10 @@ import (
 
 	headermodels "ottopoint-purchase/models"
 
+	"ottopoint-purchase/utils"
+
 	"github.com/astaxie/beego/logs"
 	"github.com/parnurzeal/gorequest"
-	ODU "ottodigital.id/library/utils"
 )
 
 var (
@@ -22,12 +23,12 @@ var (
 
 func init() {
 	debugClientHTTP = true //defaultValue
-	if dch := ODU.GetEnv("HTTP_DEBUG_CLIENT", "true"); strings.EqualFold(dch, "true") || strings.EqualFold(dch, "false") {
+	if dch := utils.GetEnv("HTTP_DEBUG_CLIENT_SIGNATURE", "true"); strings.EqualFold(dch, "true") || strings.EqualFold(dch, "false") {
 		debugClientHTTP, _ = strconv.ParseBool(strings.ToLower(dch))
 	}
-	timeout = ODU.GetEnv("HTTP_TIMEOUT", "60s")
+	timeout = utils.GetEnv("HTTP_TIMEOUT_SIGNATURE", "60s")
 	retrybad = 1
-	if rb := ODU.GetEnv("HTTP_RETRY_BAD", "1"); strings.TrimSpace(rb) != "" {
+	if rb := utils.GetEnv("HTTP_RETRY_BAD_SIGNATURE", "1"); strings.TrimSpace(rb) != "" {
 		if val, err := strconv.Atoi(rb); err == nil {
 			retrybad = val
 		}

@@ -2,10 +2,13 @@ package host
 
 import (
 	"encoding/json"
+	"net/http"
 	"ottopoint-purchase/hosts/ottomart/models"
 
+	https "ottopoint-purchase/hosts"
+	"ottopoint-purchase/utils"
+
 	"github.com/astaxie/beego/logs"
-	ODU "ottodigital.id/library/utils"
 )
 
 var (
@@ -18,12 +21,12 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_OTTOMART", "http://13.228.25.85:8186/v1.0")
-	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_OTTOMART", "OTTOMART")
+	host = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_OTTOMART", "http://13.228.25.85:8186/v1.0")
+	name = utils.GetEnv("OTTOPOINT_PURCHASE_NAME_OTTOMART", "OTTOMART")
 
-	endpointNotifAndInbox = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_NOTIF_INBOX", "/notifications")
+	endpointNotifAndInbox = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_NOTIF_INBOX", "/notifications")
 
-	// healthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_OTTOMART", "OTTOPOINT-PURCHASE:OTTOPOINT-OTTOMART")
+	// healthCheckKey = utils.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_OTTOMART", "OTTOPOINT-PURCHASE:OTTOPOINT-OTTOMART")
 }
 
 // Send Notif & Inbox
@@ -32,9 +35,12 @@ func NotifAndInbox(req models.NotifRequest) (*models.NotifResp, error) {
 
 	logs.Info("[Package Host OTTOMART]-[NotifAndInbox]")
 
+	header := make(http.Header)
+	header.Set("Content-Type", "application/json")
+
 	urlSvr := host + endpointNotifAndInbox
 
-	data, err := HTTPxFormOTTOMART(urlSvr, req)
+	data, err := https.HTTPxPOSTwithRequest(urlSvr, req, header)
 	if err != nil {
 		logs.Error("Check error", err.Error())
 

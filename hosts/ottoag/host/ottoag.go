@@ -2,19 +2,16 @@ package host
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
 	//"fmt"
 	"net/http"
+	https "ottopoint-purchase/hosts"
 	"ottopoint-purchase/utils"
 
 	"github.com/astaxie/beego/logs"
 	jsoniter "github.com/json-iterator/go"
-
-	hcmodels "ottodigital.id/library/healthcheck/models"
-	ODU "ottodigital.id/library/utils"
 )
 
 var (
@@ -39,13 +36,13 @@ type HeaderHTTP struct {
 func init() {
 	// http://13.228.25.85:8089/ottoaggo/biller/v1.0.0/inquiry
 
-	host = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_HOST", "http://13.228.25.85:8089/")
-	endpointInquiry = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_ENDPOINT_INQUIRY", "v1/inquiry")
-	endpointPayment = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_ENDPOINT_PAYMENT", "v1/payment")
-	authorization = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_AUTHORIZATION", "T1RQT0lOVA==")              // dev
-	serverkey = ODU.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_SESSIONKEY", "052CFD8A04F99AC48E4656BBDF19FE60") // dev
-	HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_HEALTHCHECK_OTTOAG", "OTTOPOINT_HEALTH_CHECK:OTTOAG")
-	Name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_OTTOAG", "OTTOAG")
+	host = utils.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_HOST", "http://13.228.25.85:8089/")
+	endpointInquiry = utils.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_ENDPOINT_INQUIRY", "v1/inquiry")
+	endpointPayment = utils.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_ENDPOINT_PAYMENT", "v1/payment")
+	authorization = utils.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_AUTHORIZATION", "T1RQT0lOVA==")              // dev
+	serverkey = utils.GetEnv("OTTOPOINT_PURCHASE_OTTOAG_SESSIONKEY", "052CFD8A04F99AC48E4656BBDF19FE60") // dev
+	HealthCheckKey = utils.GetEnv("OTTOPOINT_PURCHASE_HEALTHCHECK_OTTOAG", "OTTOPOINT_HEALTH_CHECK:OTTOAG")
+	Name = utils.GetEnv("OTTOPOINT_PURCHASE_NAME_OTTOAG", "OTTOAG")
 }
 
 // PackMessageHeader ..
@@ -89,41 +86,8 @@ func Send(msgreq interface{}, head HeaderHTTP, typetrans string) ([]byte, error)
 
 	datareq, _ := json.Marshal(msgreq)
 	logs.Info(fmt.Sprintf("[Request %s]", typetrans), fmt.Sprintf("[%s]", string(datareq)))
-	data, err := HTTPPostWithHeader(urlSvr, msgreq, header)
+	data, err := https.HTTPxPOSTwithRequest(urlSvr, msgreq, header)
 
 	logs.Info(fmt.Sprintf("[Response %s]", typetrans), fmt.Sprintf("[%s]", string(data)))
 	return data, err
-}
-
-// GetServiceHealthCheck ..
-func GetServiceHealthCheckOttoAG() hcmodels.ServiceHealthCheck {
-	res := hcmodels.ServiceHealthCheck{}
-	var erorr interface{}
-	// sugarLogger := service.General.OttoZapLog
-
-	PublicAddress := host + endpointInquiry
-	log.Print("url : ", PublicAddress)
-	res.Name = Name
-	res.Address = PublicAddress
-	res.UpdatedAt = time.Now().UTC()
-
-	d, err := http.Get(PublicAddress)
-
-	erorr = err
-	if err != nil {
-		log.Print("masuk error")
-		res.Status = "Not OK"
-		res.Description = fmt.Sprintf("%v", erorr)
-		return res
-	}
-	if d.StatusCode != 200 {
-		res.Status = "Not OK"
-		res.Description = d.Status
-		return res
-	}
-
-	res.Status = "OK"
-	res.Description = ""
-
-	return res
 }

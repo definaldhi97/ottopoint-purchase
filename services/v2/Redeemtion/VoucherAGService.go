@@ -1,4 +1,4 @@
-package Redeemtion
+package redeemtion
 
 import (
 	"encoding/json"
@@ -19,10 +19,8 @@ import (
 	vg "ottopoint-purchase/hosts/voucher_aggregator/host"
 
 	"github.com/astaxie/beego/logs"
-	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"github.com/vjeantet/jodaTime"
-	"go.uber.org/zap"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -31,25 +29,16 @@ var (
 	CallbackOttoPointPurchase = ODU.GetEnv("OTTOPOINT_PURCHASE_CALLBACK_VOUCHERAG", "/transaction/v2/redeem/voucherag")
 )
 
-type V2_VoucherAgServices struct {
-	General models.GeneralModel
-}
+// func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param models.Params, head models.RequestHeader) models.Response {
+func RedeemtionAggServices(req models.VoucherComultaiveReq, param models.Params, head models.RequestHeader) models.Response {
+	// fmt.Println("[ >>>>>>>>>>>>>>>>>> V2 Migrate Voucher Agregator Service <<<<<<<<<<<<<<<< ]")
 
-func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param models.Params, head models.RequestHeader) models.Response {
-	fmt.Println("[ >>>>>>>>>>>>>>>>>> V2 Migrate Voucher Agregator Service <<<<<<<<<<<<<<<< ]")
+	nameservice := "[PackageRedeemtion]-[RedeemtionAggServices]"
+	logReq := fmt.Sprintf("[AccountNumber : %v, RewardID : %v]", param.AccountNumber, param.RewardID)
+
+	logrus.Info(nameservice)
 
 	var res models.Response
-
-	sugarLogger := t.General.OttoZaplog
-	sugarLogger.Info("[VoucherComulative-Services]",
-		zap.String("NameVoucher : ", param.NamaVoucher), zap.Int("Jumlah : ", req.Jumlah),
-		zap.String("CampaignID : ", req.CampaignID), zap.String("CustID : ", req.CustID),
-		zap.String("CustID2 : ", req.CustID2), zap.String("ProductCode : ", param.ProductCode),
-		// zap.Int("Point : ", reiq.Pont),
-		zap.String("AccountNumber : ", param.AccountNumber), zap.String("InstitutionID : ", param.InstitutionID))
-
-	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[RedeemVoucher]")
-	defer span.Finish()
 
 	dataOrder := DataParameterOrderVoucherAg()
 
@@ -68,9 +57,12 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 	param.PointTransferID = RedeemVouchAG.PointTransferID
 
 	if RedeemVouchAG.Rd == "Invalid JWT Token" {
-		logrus.Info("[VoucherAgService]-[RedeemVoucher]")
-		logrus.Info("[Rc] : ", RedeemVouchAG.Rc)
-		logrus.Info("[Rd] : ", RedeemVouchAG.Rd)
+
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[V2_Redeem_PointandVoucher]-[Response : %v]", RedeemVouchAG))
+		logrus.Println("[ ResponseCode ] : ", RedeemVouchAG.Rc)
+		logrus.Println("[ ResponseDesc ] : ", RedeemVouchAG.Rd)
+		logrus.Println(logReq)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -87,9 +79,12 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 	}
 
 	if RedeemVouchAG.Rd == "not enough points" {
-		logrus.Info("[VoucherAgService]-[RedeemVoucher]")
-		logrus.Info("[Rc] : ", RedeemVouchAG.Rc)
-		logrus.Info("[Rd] : ", RedeemVouchAG.Rd)
+
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[V2_Redeem_PointandVoucher]-[Response : %v]", RedeemVouchAG))
+		logrus.Println("[ ResponseCode ] : ", RedeemVouchAG.Rc)
+		logrus.Println("[ ResponseDesc ] : ", RedeemVouchAG.Rd)
+		logrus.Println(logReq)
 
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Point Tidak Cukup"))
 		res = models.Response{
@@ -108,9 +103,11 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 
 	if RedeemVouchAG.Rc == "208" {
 
-		logrus.Info("[VoucherAgService]-[RedeemVoucher]")
-		logrus.Info("[Rc] : ", RedeemVouchAG.Rc)
-		logrus.Info("[Rd] : ", RedeemVouchAG.Rd)
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[V2_Redeem_PointandVoucher]-[Response : %v]", RedeemVouchAG))
+		logrus.Println("[ ResponseCode ] : ", RedeemVouchAG.Rc)
+		logrus.Println("[ ResponseDesc ] : ", RedeemVouchAG.Rd)
+		logrus.Println(logReq)
 
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Voucher Sudah Limit"))
 
@@ -130,10 +127,11 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 
 	if RedeemVouchAG.Rc == "209" {
 
-		logrus.Info("[VoucherAgService]-[RedeemVoucher]")
-		logrus.Error("Error : ", errRedeemVouchAG)
-		logrus.Info("[ ResponseCode ] : ", RedeemVouchAG.Rc)
-		logrus.Info("[ ResponseDesc ] : ", RedeemVouchAG.Rd)
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[V2_Redeem_PointandVoucher]-[Response : %v]", RedeemVouchAG))
+		logrus.Println("[ ResponseCode ] : ", RedeemVouchAG.Rc)
+		logrus.Println("[ ResponseDesc ] : ", RedeemVouchAG.Rd)
+		logrus.Println(logReq)
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -150,9 +148,12 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 	}
 
 	if errRedeemVouchAG != nil || RedeemVouchAG.Rc != "00" {
-		logrus.Info("[VoucherAgService]-[RedeemVoucher]")
-		logrus.Info("[Rc] : ", RedeemVouchAG.Rc)
-		logrus.Info("[Rd] : ", RedeemVouchAG.Rd)
+
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[V2_Redeem_PointandVoucher]-[Error : %v]", errRedeemVouchAG))
+		logrus.Println("[ ResponseCode ] : ", RedeemVouchAG.Rc)
+		logrus.Println("[ ResponseDesc ] : ", RedeemVouchAG.Rd)
+		logrus.Println(logReq)
 
 		// res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."))
 		res = models.Response{
@@ -210,9 +211,11 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 	param.DataSupplier.Rc = order.ResponseCode
 
 	if errorder != nil || order.ResponseCode == "" {
+
 		// Reversal Start Here
-		logrus.Info("[VoucherAgServices]-[OrderVoucher]")
-		logrus.Error("[Failed Order Voucher]-[Gagal Order Voucher] : ", errorder.Error())
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[OrderVoucher]-[Error : %v]", errorder))
+		logrus.Println(logReq)
 
 		for i := req.Jumlah; i > 0; i-- {
 			// TrxId
@@ -243,10 +246,11 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 	// Handle Stock Not Available
 	if order.ResponseCode == "04" {
 
-		logrus.Info("[VoucherAgServices]-[OrderVoucher]")
-		logrus.Info("[Stock not Available]-[Gagal Order Voucher]")
-		logrus.Info("[Response Code ] : ", order.ResponseCode)
-		logrus.Info("[Response Desc] : ", order.ResponseDesc)
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[OrderVoucher]-[Response : %v]", order))
+		logrus.Println("[ ResponseCode ] : ", order.ResponseCode)
+		logrus.Println("[ ResponseDesc ] : ", order.ResponseDesc)
+		logrus.Println(logReq)
 
 		totalPoint := param.Point * req.Jumlah
 		param.TrxID = utils.GenTransactionId()
@@ -313,10 +317,11 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 	// Handle Pending Status
 	if order.ResponseCode == "09" {
 
-		logrus.Info("[VoucherAgServices]-[OrderVoucher]")
-		logrus.Info("[VoucherAggregator pending]-[OrderVoucher]")
-		logrus.Info("[Response Code ] : ", order.ResponseCode)
-		logrus.Info("[Response Desc] : ", order.ResponseDesc)
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[OrderVoucher]-[Response : %v]", order))
+		logrus.Println("[ ResponseCode ] : ", order.ResponseCode)
+		logrus.Println("[ ResponseDesc ] : ", order.ResponseDesc)
+		logrus.Println(logReq)
 
 		for i := req.Jumlah; i > 0; i-- {
 			fmt.Println(fmt.Sprintf("[Line : %v]", i))
@@ -352,13 +357,11 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 	if order.ResponseCode != "00" {
 
 		// Reversal Start Here
-		fmt.Println("Internal Server Error : ", errorder)
-		fmt.Println("ResponseCode : ", order.ResponseCode)
-		fmt.Println("[VoucherAgServices]-[FailedOrder]")
-		fmt.Println(fmt.Sprintf("[Response %v]", order.ResponseCode))
-
-		sugarLogger.Info("[VoucherAgServices]-[FailedOrder]")
-		sugarLogger.Info("[VoucherAgServices]-[Gagal Order Voucher]")
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[OrderVoucher]-[Response : %v]", order))
+		logrus.Println("[ ResponseCode ] : ", order.ResponseCode)
+		logrus.Println("[ ResponseDesc ] : ", order.ResponseDesc)
+		logrus.Println(logReq)
 
 		totalPoint := param.Point * req.Jumlah
 		param.TrxID = utils.GenTransactionId()
@@ -386,13 +389,15 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 			Value: bytePub,
 		}
 
-		kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
-		if err != nil {
-			fmt.Println("Gagal Send Publisher")
-			fmt.Println("Error : ", err)
+		_, errKafka := kafka.SendPublishKafka(kafkaReq)
+		if errKafka != nil {
+
+			logrus.Error(nameservice)
+			logrus.Error(fmt.Sprintf("[SendPublishKafka]-[Error : %v]", errKafka))
+			logrus.Println(logReq)
 		}
 
-		fmt.Println("Response Publisher : ", kafkaRes)
+		// fmt.Println("Response Publisher : ", kafkaRes)
 
 		for i := req.Jumlah; i > 0; i-- {
 
@@ -434,13 +439,9 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 	if errStatus != nil {
 
 		// Handle Error Here
-		fmt.Println("Internal Server Error : ", errorder)
-		fmt.Println("ResponseCode : ", order.ResponseCode)
-		fmt.Println("[VoucherAgServices]-[FailedCheckOrderStatus]")
-		fmt.Println(fmt.Sprintf("[Response %v]", order.ResponseCode))
-
-		sugarLogger.Info("[VoucherAgServices]-[FailedCheckOrderStatus]")
-		sugarLogger.Info("[Failed Check Order Status]-[Gagal Order Voucher]")
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[CheckStatusOrder]-[Error : %v]", errStatus))
+		logrus.Println(logReq)
 
 	}
 
@@ -495,86 +496,6 @@ func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param m
 
 	return res
 
-}
-
-func (t V2_VoucherAgServices) CallbackVoucherAgg(req models.CallbackRequestVoucherAg) models.Response {
-
-	fmt.Println("[ >>>>>>>>>>>>>>>>>>>>> V2 Migrate Callbakc Voucher Agg Service <<<<<<<<<<<<<<<<<< ]")
-	var res models.Response
-
-	sugarLogger := t.General.OttoZaplog
-	sugarLogger.Info("[HandleCallbackVoucherAg-Services]",
-		zap.String("Institution : ", req.InstitutionID),
-		zap.String("TransactionID : ", req.TransactionID),
-		zap.String("OrderID : ", req.Data.OrderID),
-		zap.String("VoucherID: ", req.Data.VoucherID),
-		zap.String("VoucherName: ", req.Data.VoucherName),
-		zap.String("VoucherCode: ", req.Data.VoucherCode),
-		zap.String("Status: ", req.Data.Status),
-		zap.Bool("IsRedeemed: ", req.Data.IsRedeemed),
-		zap.String("RedeemedDate: ", req.Data.RedeemedDate),
-		zap.String("UsedDate: ", req.Data.UsedDate),
-	)
-
-	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[RedeemVoucher]")
-	defer span.Finish()
-
-	// Get TSpending
-	tspending, err := db.GetVoucherAgSpending(req.Data.VoucherCode, req.TransactionID)
-	if err != nil {
-
-		fmt.Println("[HandleCallbackVoucherAg]")
-		fmt.Println("[FailedGetTSpending]: ", err)
-		sugarLogger.Info("[VoucherAgServices]-[HandleCallback]-[CouponVoucherCustomer]")
-
-		res = utils.GetMessageResponse(res, 422, false, err)
-
-		return res
-	}
-
-	// cekVoucher, errVoucher := opl.VoucherDetail(tspending.CampaignId)
-	// if errVoucher != nil || cekVoucher.CampaignID == "" {
-	// 	sugarLogger.Info("[HandleCallback]-[VoucherDetail]")
-	// 	sugarLogger.Info(fmt.Sprintf("Error : ", errVoucher))
-
-	// 	logs.Info("[HandleCallback]-[VoucherDetail]")
-	// 	logs.Info(fmt.Sprintf("Error : ", errVoucher))
-	// }
-
-	// couponCode := cekVoucher.Coupons[0]
-
-	// // Use Voucher
-	// use, err2 := opl.CouponVoucherCustomer(tspending.CampaignId, tspending.CouponId, couponCode, tspending.AccountId, 1)
-	// var useErr string
-	// for _, value := range use.Coupons {
-	// 	useErr = value.CouponID
-	// }
-
-	// if err2 != nil || useErr == "" {
-
-	// 	fmt.Println("[VoucherAgServices]-[HandleCallback]-[CouponVoucherCustomer]")
-	// 	fmt.Println(fmt.Sprintf("[VoucherAgServices]-[HandleCallback]-[Error : %v]", err2))
-	// 	sugarLogger.Info("[VoucherAgServices]-[HandleCallback]-[CouponVoucherCustomer]")
-
-	// }
-
-	// Update TSpending
-	_, err3 := db.UpdateVoucherAg(req.Data.RedeemedDate, req.Data.UsedDate, tspending.ID)
-	if err3 != nil {
-
-		fmt.Println("[VoucherAgServices]-[HandleCallback]-[FailedUpdate]")
-		fmt.Println(fmt.Sprintf("[VoucherAgServices]-[HandleCallback]-[Error : %v]", err3))
-		sugarLogger.Info("[VoucherAgServices]-[HandleCallback]-[FailedUpdateTSpending]")
-
-	}
-
-	go db.UpdateTSchedulerVoucherAG(req.Data.OrderID)
-
-	res = models.Response{
-		Meta: utils.ResponseMetaOK(),
-	}
-
-	return res
 }
 
 func DataParameterOrderVoucherAg() models.ParamUV {

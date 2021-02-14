@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	hcmodels "ottodigital.id/library/healthcheck/models"
-	hcutils "ottodigital.id/library/healthcheck/utils"
-	ODU "ottodigital.id/library/utils"
+	"ottopoint-purchase/models"
+	"ottopoint-purchase/utils"
 
 	"gopkg.in/redis.v5"
 )
@@ -25,9 +24,9 @@ var (
 
 func init() {
 
-	addresscluster1 = ODU.GetEnv("REDIS_HOST_CLUSTER1", "13.228.23.160:8079")
-	addresscluster2 = ODU.GetEnv("REDIS_HOST_CLUSTER2", "13.228.23.160:8078")
-	addresscluster3 = ODU.GetEnv("REDIS_HOST_CLUSTER3", "13.228.23.160:8077")
+	addresscluster1 = utils.GetEnv("REDIS_HOST_CLUSTER1", "13.228.23.160:8079")
+	addresscluster2 = utils.GetEnv("REDIS_HOST_CLUSTER2", "13.228.23.160:8078")
+	addresscluster3 = utils.GetEnv("REDIS_HOST_CLUSTER3", "13.228.23.160:8077")
 	ClientRed = redis.NewClusterClient(&redis.ClusterOptions{
 		Addrs: []string{addresscluster1, addresscluster2, addresscluster3},
 	})
@@ -38,10 +37,10 @@ func init() {
 	fmt.Println("Redis Ping ", pong)
 	fmt.Println("Redis Ping ", err)
 
-	addres = ODU.GetEnv("REDIS_HOST_OTTOPOINT_PURCHASE", "13.228.23.160")
-	port = ODU.GetEnv("REDIS_PORT_OTTOPOINT_PURCHASE", "6077")
+	addres = utils.GetEnv("REDIS_HOST_OTTOPOINT_PURCHASE", "13.228.23.160")
+	port = utils.GetEnv("REDIS_PORT_OTTOPOINT_PURCHASE", "6077")
 	// dbtype = 0
-	queuename = ODU.GetEnv("REDIS_QUEUE", "ottopoint-purchase")
+	queuename = utils.GetEnv("REDIS_QUEUE", "ottopoint-purchase")
 
 	// ClientRed = redis.NewClient(&redis.Options{
 	// 	Addr:     addres + ":" + port,
@@ -158,11 +157,21 @@ func GetRedisCounterIncr(key string) (int64, error) {
 
 }
 
+func GetRrn(rrnkey string) string {
+	//res, err := redis.GetRedisKey(rrnkey)
+	counter, err := SaveRedisCounter(rrnkey)
+	if err != nil {
+		counter = 1
+	}
+	t11 := time.Now().Local()
+	return fmt.Sprintf("%02d%02d%02d%02d%04d", t11.Day(), t11.Hour(), t11.Minute(), t11.Second(), counter)
+}
+
 // GetRedisClusterHealthCheck ..
-func GetRedisClusterHealthCheck() hcmodels.RedisHealthCheck {
-	return hcutils.GetRedisClusterHealthCheck(hcmodels.RedisClusterEnv{
-		AddressCluster1: addresscluster1,
-		AddressCluster2: addresscluster2,
-		AddressCluster3: addresscluster3,
-	})
+func GetRedisClusterHealthCheck() models.RedisHealthcheckResponse {
+	return models.RedisHealthcheckResponse{
+		Type:    "Cluster",
+		Address: addres,
+		Port:    port,
+	}
 }
