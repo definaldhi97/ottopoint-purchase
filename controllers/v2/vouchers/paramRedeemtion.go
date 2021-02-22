@@ -10,6 +10,8 @@ import (
 
 func ParamRedeemtion(custId string, data models.VoucherDetailsManagement) models.Params {
 
+	fmt.Println("[Start]-[ParamRedeemtion]")
+
 	var result models.Params
 
 	var category string
@@ -28,10 +30,6 @@ func ParamRedeemtion(custId string, data models.VoucherDetailsManagement) models
 	} else {
 		categoriesID = &data.CategoriesID[0]
 	}
-
-	// if category == constants.CategoryVidio {
-	// 	req.CustID = "0"
-	// }
 
 	if data.CodeSuplier == constants.CODE_VENDOR_OTTOAG {
 		validateVerfix := controllers.ValidatePerfix(custId, data.ExternalProductCode, category)
@@ -59,6 +57,7 @@ func ParamRedeemtion(custId string, data models.VoucherDetailsManagement) models
 	result = models.Params{
 		// AccountNumber:       dataToken.Data,
 		// MerchantID:          dataUser.MerchantID,
+		ResponseCode:        200,
 		ProductType:         category,
 		ProductCode:         data.ExternalProductCode,
 		CouponCode:          data.ExternalProductCode,
