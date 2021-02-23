@@ -116,6 +116,9 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 	logrus.Info("CampaignId : ", req.CampaignID, "CustID : ", req.CustID, "CustID2 : ", req.CustID2, "Jumlah : ", req.Jumlah)
 
 	switch param.SupplierID {
+	case constants.CODE_VENDOR_DUMY:
+		logrus.Println(" [ Product Dummy ]")
+		res = redeemtion.RedeemtionDummyService(req, param, header)
 	case constants.CODE_VENDOR_OTTOAG:
 		logrus.Println(" [ Product OTTOAG ]")
 		res = redeemtion.RedeemtionOttoAG_V21_Service(req, param, header)
