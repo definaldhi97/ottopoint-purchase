@@ -14,13 +14,13 @@ import (
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/utils"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/sirupsen/logrus"
 )
 
 func RedeemPLN(req models.UseRedeemRequest, reqOP interface{}, param models.Params) models.UseRedeemResponse {
 	res := models.UseRedeemResponse{}
 
-	logs.Info("[Start]-[Package-Voucher]-[RedeemPLN]")
+	logrus.Info("[Start]-[Package-Voucher]-[RedeemPLN]")
 	// ===== Inquiry OttoAG =====
 
 	inqBiller := ottoagmodels.BillerInquiryDataReq{
@@ -69,8 +69,8 @@ func RedeemPLN(req models.UseRedeemRequest, reqOP interface{}, param models.Para
 
 	if inqRespOttoag.Rc != "00" {
 
-		logs.Info("[Error-InquiryResponse]-[RedeemPLN]")
-		logs.Info("[Error : %v]", errinqRespOttoag)
+		logrus.Info("[Error-InquiryResponse]-[RedeemPLN]")
+		logrus.Info("[Error : %v]", errinqRespOttoag)
 
 		go SaveTransactionPLN(paramInq, inqRespOttoag, inqBiller, reqOP, "Inquiry", "01", inqRespOttoag.Rc)
 
@@ -82,11 +82,11 @@ func RedeemPLN(req models.UseRedeemRequest, reqOP interface{}, param models.Para
 		return res
 	}
 
-	logs.Info("[Response Inquiry %v]", inqRespOttoag.Rc)
+	logrus.Info("[Response Inquiry %v]", inqRespOttoag.Rc)
 	go SaveTransactionPLN(paramInq, inqRespOttoag, inqBiller, reqOP, "Inquiry", "00", inqRespOttoag.Rc)
 
 	// ===== Payment OttoAG =====
-	logs.Info("[PAYMENT-BILLER][START]")
+	logrus.Info("[PAYMENT-BILLER][START]")
 
 	// payment to ottoag
 	billerReq := ottoagmodels.OttoAGPaymentReq{
@@ -118,7 +118,7 @@ func RedeemPLN(req models.UseRedeemRequest, reqOP interface{}, param models.Para
 	}
 
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
-		logs.Info("[Response Payment %v]", billerRes.Rc)
+		logrus.Info("[Response Payment %v]", billerRes.Rc)
 
 		go SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
 
@@ -130,7 +130,7 @@ func RedeemPLN(req models.UseRedeemRequest, reqOP interface{}, param models.Para
 	}
 
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
-		logs.Info("[Response Payment %v]", billerRes.Rc)
+		logrus.Info("[Response Payment %v]", billerRes.Rc)
 
 		go SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
 
@@ -155,16 +155,16 @@ func RedeemPLN(req models.UseRedeemRequest, reqOP interface{}, param models.Para
 	// send notif & inbox
 	dataNotif, errNotif := ottomart.NotifAndInbox(notifReq)
 	if errNotif != nil {
-		logs.Info("Error to send Notif & Inbox")
+		logrus.Info("Error to send Notif & Inbox")
 	}
 
 	if dataNotif.RC != "00" {
-		logs.Info("[Response Notif PLN]")
-		logs.Info("Gagal Send Notif & Inbox")
-		logs.Info("Error : ", errNotif)
+		logrus.Info("[Response Notif PLN]")
+		logrus.Info("Gagal Send Notif & Inbox")
+		logrus.Info("Error : ", errNotif)
 	}
 
-	logs.Info("[Response Payment %v]", billerRes.Rc)
+	logrus.Info("[Response Payment %v]", billerRes.Rc)
 
 	go SaveTransactionPLN(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
 
@@ -186,7 +186,7 @@ func RedeemPLN(req models.UseRedeemRequest, reqOP interface{}, param models.Para
 
 func SaveTransactionPLN(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) string {
 
-	logs.Info("[Start-SaveDB]-[PLN]")
+	logrus.Info("[Start-SaveDB]-[PLN]")
 
 	var saveStatus string
 	switch status {

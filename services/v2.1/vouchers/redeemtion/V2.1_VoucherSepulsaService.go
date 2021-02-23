@@ -9,7 +9,7 @@ import (
 	sepulsa "ottopoint-purchase/hosts/sepulsa/host"
 	sepulsaModels "ottopoint-purchase/hosts/sepulsa/models"
 	"ottopoint-purchase/models"
-	v2_redeemtion "ottopoint-purchase/services/v2/Redeemtion"
+	v2_redeemtion "ottopoint-purchase/services/v2/vouchers/redeemtion"
 
 	V21_trx "ottopoint-purchase/services/v2.1/Trx"
 

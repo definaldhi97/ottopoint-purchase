@@ -8,7 +8,7 @@ import (
 	signature "ottopoint-purchase/hosts/signature/host"
 	vgmodels "ottopoint-purchase/hosts/voucher_aggregator/models"
 	"ottopoint-purchase/models"
-	v2_redeemtion "ottopoint-purchase/services/v2/Redeemtion"
+	v2_redeemtion "ottopoint-purchase/services/v2/vouchers/redeemtion"
 
 	"ottopoint-purchase/services/v2.1/Trx"
 

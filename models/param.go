@@ -4,11 +4,15 @@ import "time"
 
 type Params struct {
 	ResponseCode  int
+	PaymentMethod int
 	AccountNumber string
+	Email         string
+	FirstName     string
+	LastName      string
 	MerchantID    string
 	InstitutionID string
 	TransType     string
-	AccountId     string //opl
+	AccountId     string
 	Reffnum       string // internal (generate ottopoint)
 	CumReffnum    string // internal (generate ottopoint) untuk pembelian kelipatan
 	RRN           string // eksternal (from supplier exp : ottoag, uv)

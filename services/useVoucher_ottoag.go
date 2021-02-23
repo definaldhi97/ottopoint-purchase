@@ -9,7 +9,8 @@ import (
 	"ottopoint-purchase/utils"
 	"strings"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/sirupsen/logrus"
+
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
@@ -59,18 +60,18 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 	}
 
 	if resRedeem.Msg == "Prefix Failed" {
-		logs.Info("[Prefix Failed]")
-		logs.Info("[UseVoucherOttoAG]")
+		logrus.Info("[Prefix Failed]")
+		logrus.Info("[UseVoucherOttoAG]")
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Gagal"))
 		return res
 	}
 
 	if resRedeem.Msg == "Inquiry Failed" {
-		logs.Info("[Inquiry Failed]")
-		logs.Info("[UseVoucherOttoAG]")
+		logrus.Info("[Inquiry Failed]")
+		logrus.Info("[UseVoucherOttoAG]")
 
-		logs.Info("[Reversal Voucher")
+		logrus.Info("[Reversal Voucher")
 		_, erv := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.AccountId, 0)
 		if erv != nil {
 			res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Reversal Voucher"))
@@ -82,10 +83,10 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 	}
 
 	if resRedeem.Msg == "Payment Failed" {
-		logs.Info("[Payment Failed]")
-		logs.Info("[UseVoucherOttoAG]")
+		logrus.Info("[Payment Failed]")
+		logrus.Info("[UseVoucherOttoAG]")
 
-		logs.Info("[Reversal Voucher")
+		logrus.Info("[Reversal Voucher")
 		_, erv := opl.CouponVoucherCustomer(req.CampaignID, param.CouponID, param.ProductCode, param.AccountId, 0)
 		if erv != nil {
 			res = utils.GetMessageResponse(res, 500, false, errors.New("Gagal Reversal Voucher"))
@@ -97,8 +98,8 @@ func (t UseVoucherServices) UseVoucherOttoAG(req models.UseVoucherReq, param mod
 	}
 
 	if resRedeem.Msg == "Request in progress" {
-		logs.Info("[Prefix Failed]")
-		logs.Info("[UseVoucherOttoAG]")
+		logrus.Info("[Prefix Failed]")
+		logrus.Info("[UseVoucherOttoAG]")
 
 		res = utils.GetMessageResponse(res, 500, false, errors.New("Transaksi Pending"))
 		return res

@@ -6,7 +6,7 @@ import (
 	"ottopoint-purchase/models"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/sirupsen/logrus"
 )
 
 // type InquiryBillerServices struct {
@@ -16,7 +16,7 @@ import (
 func InquiryBiller(reqdata interface{}, reqOP interface{}, req models.UseRedeemRequest, param models.Params) (ottoagmodels.OttoAGInquiryResponse, error) {
 	resOttAG := ottoagmodels.OttoAGInquiryResponse{}
 
-	logs.Info("[InquiryBiller-SERVICES][START]")
+	logrus.Info("[InquiryBiller-SERVICES][START]")
 
 	// sugarLogger := t.General.OttoZaplog
 	// sugarLogger.Info("[ottoag-Services]",
@@ -24,12 +24,12 @@ func InquiryBiller(reqdata interface{}, reqOP interface{}, req models.UseRedeemR
 	// span, _ := opentracing.StartSpanFromContext(t.General.Context, "[ottoag-Services]")
 	// defer span.Finish()
 
-	logs.Info("[InquiryBiller-SERVICES][REQUEST :]", reqdata)
+	logrus.Info("[InquiryBiller-SERVICES][REQUEST :]", reqdata)
 	headOttoAg := ottoag.PackMessageHeader(reqdata)
 	billerDataHost, err := ottoag.Send(reqdata, headOttoAg, "INQUIRY")
 	if err = json.Unmarshal(billerDataHost, &resOttAG); err != nil {
-		logs.Info("[INQUIRY-SERVICES-01]")
-		logs.Error("Failed to unmarshaling json response from ottoag", err)
+		logrus.Info("[INQUIRY-SERVICES-01]")
+		logrus.Error("Failed to unmarshaling json response from ottoag", err)
 		resOttAG = ottoagmodels.OttoAGInquiryResponse{
 			Rc:  "01",
 			Msg: "Inquiry Failed",
@@ -39,14 +39,14 @@ func InquiryBiller(reqdata interface{}, reqOP interface{}, req models.UseRedeemR
 	}
 
 	if err != nil {
-		logs.Info("[INQUIRY-SERVICES-02]")
-		logs.Error("Failed to connect ottoag host", err)
+		logrus.Info("[INQUIRY-SERVICES-02]")
+		logrus.Error("Failed to connect ottoag host", err)
 		resOttAG = ottoagmodels.OttoAGInquiryResponse{
 			Rc:  "01",
 			Msg: "Inquiry Failed",
 		}
 
-		// logs.Info("[SAVE-DB-INQUIRY-Transaksi_Redeem]")
+		// logrus.Info("[SAVE-DB-INQUIRY-Transaksi_Redeem]")
 
 		// reqOttoag, _ := json.Marshal(&reqdata)
 		// responseOttoag, _ := json.Marshal(&resOttAG)
@@ -77,7 +77,7 @@ func InquiryBiller(reqdata interface{}, reqOP interface{}, req models.UseRedeemR
 		// }
 		// err1 := db.DbCon.Create(&saveInq).Error
 		// if err1 != nil {
-		// 	logs.Info("Failed Save to database", err1)
+		// 	logrus.Info("Failed Save to database", err1)
 		// 	// return err1
 		// }
 

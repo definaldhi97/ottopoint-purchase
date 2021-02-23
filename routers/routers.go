@@ -11,8 +11,10 @@ import (
 	callbacks "ottopoint-purchase/controllers/v2/vouchers/callbacks"
 	use_vouchers "ottopoint-purchase/controllers/v2/vouchers/use_vouchers"
 
+	redeemv2 "ottopoint-purchase/controllers/v2/vouchers/redeemtion"
+
 	callback_v21 "ottopoint-purchase/controllers/v2.1/vouchers/callbacks"
-	redeem "ottopoint-purchase/controllers/v2.1/vouchers/redeemtion"
+	redeemv21 "ottopoint-purchase/controllers/v2.1/vouchers/redeemtion"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -53,15 +55,15 @@ func Server(portStr string) error {
 			v2Root.POST("/check-status-earning", earning.CheckStatusEarningController)
 			v2Root.POST("/check-status-scheduler", checkStatus.SchedulerCheckStatusController)
 			v2Root.GET("/getEarning", earning.GetEarningRuleController)
-			v2Root.POST("/redeempoint", redeem.RedeemtionControllerV21)
+			v2Root.POST("/redeempoint", redeemv21.RedeemtionControllerV21)
 			v2Root.POST("/status/sepulsa", callback_v21.CallBackSepulsa_V21_Controller)
 			v2Root.POST("/redeem/voucherag", callbacks.CallbackVoucherAggController)
 			v2Root.POST("/usevoucher_uv", callbacks.CallBackUVController)
+			v2Root.POST("/payment", redeemv2.PaymentSplitBillController)
 		}
 
 		v21Root := apiRoot.Group("/v2.1")
 		{
-
 			v21Root.GET("/voucher/view", vouchers.ViewVoucherController)
 			v21Root.GET("/usevoucher/vidio", use_vouchers.UseVoucherVidioController)
 		}

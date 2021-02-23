@@ -11,6 +11,7 @@ import (
 	"ottopoint-purchase/utils"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -34,7 +35,7 @@ func CheckToken(headers models.RequestHeader) (redismodels.TokenResp, error) {
 
 	t := strings.ReplaceAll(headers.Authorization, "Bearer ", "")
 	token := headers.InstitutionID + "-" + t
-	logs.Info("Token : ", token)
+	logrus.Info("Token : ", token)
 
 	header := make(http.Header)
 	header.Set("Key", token)

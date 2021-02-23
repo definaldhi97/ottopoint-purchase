@@ -12,7 +12,7 @@ import (
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/utils"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/sirupsen/logrus"
 )
 
 func RedeemComulativeVoucher(req models.VoucherComultaiveReq, param models.Params, getResp chan models.RedeemComuResp, ErrRespRedeem chan error) {
@@ -303,8 +303,8 @@ func SaveTransactionInq(category string, param models.Params, res interface{}, r
 
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
-		logs.Info("[Failed Save to DB ]", err)
-		logs.Info("[Package-Voucher]-[Service-RedeemPulsa]")
+		logrus.Info("[Failed Save to DB ]", err)
+		logrus.Info("[Package-Voucher]-[Service-RedeemPulsa]")
 		// return err
 
 	}

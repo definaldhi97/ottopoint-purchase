@@ -12,13 +12,13 @@ import (
 	biller "ottopoint-purchase/services/ottoag"
 	"ottopoint-purchase/utils"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/sirupsen/logrus"
 )
 
 func RedeemGame(req models.UseRedeemRequest, reqOP interface{}, param models.Params) models.UseRedeemResponse {
 	res := models.UseRedeemResponse{}
 
-	logs.Info("[Start]-[Package-Voucher]-[RedeemGame]")
+	logrus.Info("[Start]-[Package-Voucher]-[RedeemGame]")
 
 	// ===== Inquiry OttoAG =====
 	inqBiller := ottoagmodels.BillerInquiryDataReq{
@@ -76,8 +76,8 @@ func RedeemGame(req models.UseRedeemRequest, reqOP interface{}, param models.Par
 
 	if inqRespOttoag.Rc != "00" {
 
-		logs.Info("[Error-InquiryResponse]-[RedeemGame]")
-		logs.Info("[Error : %v]", errinqRespOttoag)
+		logrus.Info("[Error-InquiryResponse]-[RedeemGame]")
+		logrus.Info("[Error : %v]", errinqRespOttoag)
 
 		go SaveTransactionGame(paramInq, inqRespOttoag, inqBiller, reqOP, "Inquiry", "01", inqRespOttoag.Rc)
 
@@ -89,11 +89,11 @@ func RedeemGame(req models.UseRedeemRequest, reqOP interface{}, param models.Par
 		return res
 	}
 
-	logs.Info("[Response Inquiry %v]", inqRespOttoag.Rc)
+	logrus.Info("[Response Inquiry %v]", inqRespOttoag.Rc)
 	go SaveTransactionGame(paramInq, inqRespOttoag, inqBiller, reqOP, "Inquiry", "00", inqRespOttoag.Rc)
 
 	// ===== Payment OttoAG =====
-	logs.Info("[PAYMENT-BILLER][START]")
+	logrus.Info("[PAYMENT-BILLER][START]")
 	// refnum := utils.GetRrn()
 
 	// payment to ottoag
@@ -126,7 +126,7 @@ func RedeemGame(req models.UseRedeemRequest, reqOP interface{}, param models.Par
 	}
 
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
-		logs.Info("[Response Payment %v]", billerRes.Rc)
+		logrus.Info("[Response Payment %v]", billerRes.Rc)
 
 		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "09", billerRes.Rc)
 
@@ -138,7 +138,7 @@ func RedeemGame(req models.UseRedeemRequest, reqOP interface{}, param models.Par
 	}
 
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
-		logs.Info("[Response Payment %v]", billerRes.Rc)
+		logrus.Info("[Response Payment %v]", billerRes.Rc)
 
 		go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "01", billerRes.Rc)
 
@@ -150,7 +150,7 @@ func RedeemGame(req models.UseRedeemRequest, reqOP interface{}, param models.Par
 		return res
 	}
 
-	logs.Info("[Response Payment %v]", billerRes.Rc)
+	logrus.Info("[Response Payment %v]", billerRes.Rc)
 	go SaveTransactionGame(paramPay, billerRes, billerReq, reqOP, "Payment", "00", billerRes.Rc)
 
 	res = models.UseRedeemResponse{
@@ -172,7 +172,7 @@ func RedeemGame(req models.UseRedeemRequest, reqOP interface{}, param models.Par
 
 func SaveTransactionGame(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, trasnType, status, rc string) string {
 
-	logs.Info("[Start-SaveDB]-[Game]")
+	logrus.Info("[Start-SaveDB]-[Game]")
 
 	var saveStatus string
 	switch status {

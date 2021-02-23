@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"ottopoint-purchase/hosts/opl/host"
 	opl "ottopoint-purchase/hosts/opl/host"
 	kafka "ottopoint-purchase/hosts/publisher/host"
@@ -21,7 +23,6 @@ import (
 
 	ODU "ottodigital.id/library/utils"
 
-	"github.com/astaxie/beego/logs"
 	"github.com/opentracing/opentracing-go"
 	"github.com/vjeantet/jodaTime"
 	"go.uber.org/zap"
@@ -808,8 +809,8 @@ func (t VoucherAgServices) HandleCallback(req models.CallbackRequestVoucherAg) m
 		sugarLogger.Info("[HandleCallback]-[VoucherDetail]")
 		sugarLogger.Info(fmt.Sprintf("Error : ", errVoucher))
 
-		logs.Info("[HandleCallback]-[VoucherDetail]")
-		logs.Info(fmt.Sprintf("Error : ", errVoucher))
+		logrus.Info("[HandleCallback]-[VoucherDetail]")
+		logrus.Info(fmt.Sprintf("Error : ", errVoucher))
 	}
 
 	couponCode := cekVoucher.Coupons[0]
@@ -928,8 +929,8 @@ func SaveTransactionVoucherAg(param models.Params, res interface{}, reqdata inte
 
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
-		logs.Info(fmt.Sprintf("[Error : %v]", err))
-		logs.Info("[Failed Save to DB]")
+		logrus.Info(fmt.Sprintf("[Error : %v]", err))
+		logrus.Info("[Failed Save to DB]")
 
 		name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
 		go utils.CreateCSVFile(save, name)

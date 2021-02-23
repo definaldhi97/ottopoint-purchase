@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/sirupsen/logrus"
 	hcmodels "ottodigital.id/library/healthcheck/models"
 	ODU "ottodigital.id/library/utils"
 )
@@ -64,7 +65,7 @@ func init() {
 func RedeemVoucher(campaignID, phone string) (*models.BuyVocuherResp, error) {
 	var resp models.BuyVocuherResp
 
-	logs.Info("[Package Host OPL]-[RedeemVoucher]")
+	logrus.Info("[Package Host OPL]-[RedeemVoucher]")
 
 	api := campaignID + "/buy"
 	urlSvr := host + endpointRedeemVoucher + api
@@ -90,7 +91,7 @@ func RedeemVoucher(campaignID, phone string) (*models.BuyVocuherResp, error) {
 func RedeemVoucherCumulative(campaignID, custId, total, status string) (*models.BuyVocuherResp, error) {
 	var resp models.BuyVocuherResp
 
-	logs.Info("[Package Host OPL]-[RedeemVoucherCumulative]")
+	logrus.Info("[Package Host OPL]-[RedeemVoucherCumulative]")
 
 	jsonData := map[string]interface{}{
 		"quantity":      total,
@@ -122,10 +123,10 @@ func RedeemVoucherCumulative(campaignID, custId, total, status string) (*models.
 func RulePoint(eventName, phone string) (models.RulePointResponse, error) {
 	var resp models.RulePointResponse
 
-	logs.Info("[Package Host OPL]-[RulePoint]")
+	logrus.Info("[Package Host OPL]-[RulePoint]")
 
 	todo := endpointRulePoint + eventName
-	logs.Info("Request EranRule :", todo)
+	logrus.Info("Request EranRule :", todo)
 
 	urlSvr := host + todo
 
@@ -151,7 +152,7 @@ func RulePoint(eventName, phone string) (models.RulePointResponse, error) {
 func ListRulePoint(phone string) (models.LisrRulePointResponse, error) {
 	var resp models.LisrRulePointResponse
 
-	logs.Info("[Package Host OPL]-[ListRulePoint]")
+	logrus.Info("[Package Host OPL]-[ListRulePoint]")
 
 	todo := endpointListRulePoint
 
@@ -179,7 +180,7 @@ func ListRulePoint(phone string) (models.LisrRulePointResponse, error) {
 func VoucherDetail(campaign string) (models.VoucherDetailResp, error) {
 	var resp models.VoucherDetailResp
 
-	logs.Info("[Package Host OPL]-[VoucherDetail]")
+	logrus.Info("[Package Host OPL]-[VoucherDetail]")
 
 	urlSvr := host + endpointVoucherDetail + campaign
 
@@ -205,7 +206,7 @@ func VoucherDetail(campaign string) (models.VoucherDetailResp, error) {
 func HistoryVoucherCustomer(phone, page string) (*models.HistoryVoucherCustomerResponse, error) {
 	var resp models.HistoryVoucherCustomerResponse
 
-	logs.Info("[Package Host OPL]-[HistoryVoucherCustomer]")
+	logrus.Info("[Package Host OPL]-[HistoryVoucherCustomer]")
 
 	param := fmt.Sprintf("?includeDetails=1&page=%s&perPage=1000&sort&direction", page)
 	urlSvr := host + endpointHistoryVoucherCustomer + param
@@ -215,7 +216,7 @@ func HistoryVoucherCustomer(phone, page string) (*models.HistoryVoucherCustomerR
 		return &resp, err
 	}
 
-	logs.Info("Response OPL")
+	logrus.Info("Response OPL")
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
@@ -229,7 +230,7 @@ func HistoryVoucherCustomer(phone, page string) (*models.HistoryVoucherCustomerR
 func CouponVoucherCustomer(campaign, couponId, couponCode, custID string, useVoucher int) (*models.CouponVoucherCustomerResp, error) {
 	var resp models.CouponVoucherCustomerResp
 
-	logs.Info("[Package Host OPL]-[CouponVoucherCustomer]")
+	logrus.Info("[Package Host OPL]-[CouponVoucherCustomer]")
 
 	urlSvr := host + endpointCouponVoucherCustomer
 
@@ -240,7 +241,7 @@ func CouponVoucherCustomer(campaign, couponId, couponCode, custID string, useVou
 		"coupons[0][used]":       useVoucher, //"coupons[0][used]":       "true"}
 		"coupons[0][customerId]": custID}
 
-	logs.Info("===== Use Voucher True / False =====")
+	logrus.Info("===== Use Voucher True / False =====")
 	data, err := HTTPxFormPostAdminWithRequest(urlSvr, jsonData)
 	if err != nil {
 		logs.Error("Check error ", err.Error())
@@ -259,7 +260,7 @@ func CouponVoucherCustomer(campaign, couponId, couponCode, custID string, useVou
 func TransferPoint(customer string, point string, text string) (*models.PointResponse, error) {
 	var resp models.PointResponse
 
-	logs.Info("[Package Host OPL]-[TransferPoint]")
+	logrus.Info("[Package Host OPL]-[TransferPoint]")
 	urlSvr := host + endpointAddedPoint
 
 	jsonData := map[string]interface{}{
@@ -268,7 +269,7 @@ func TransferPoint(customer string, point string, text string) (*models.PointRes
 		"transfer[comment]":  text,
 	}
 
-	logs.Info("Request to OPL : ", jsonData)
+	logrus.Info("Request to OPL : ", jsonData)
 	data, err := HTTPxFormPostAdminWithRequest(urlSvr, jsonData)
 	if err != nil {
 		logs.Error("Check error ", err.Error())
@@ -287,7 +288,7 @@ func TransferPoint(customer string, point string, text string) (*models.PointRes
 func SpendPoint(customer, point, text string) (*models.PointResponse, error) {
 	var resp models.PointResponse
 
-	logs.Info("[Package Host OPL]-[SpendPoint]")
+	logrus.Info("[Package Host OPL]-[SpendPoint]")
 
 	urlSvr := host + endpointSpendPoint
 
@@ -297,7 +298,7 @@ func SpendPoint(customer, point, text string) (*models.PointResponse, error) {
 		"transfer[comment]":  text,
 	}
 
-	logs.Info("Request to OPL : ", jsonData)
+	logrus.Info("Request to OPL : ", jsonData)
 	data, err := HTTPxFormPostAdminWithRequest(urlSvr, jsonData)
 	if err != nil {
 		logs.Error("Check error ", err.Error())
@@ -316,7 +317,7 @@ func SpendPoint(customer, point, text string) (*models.PointResponse, error) {
 func GetBalance(customer string) (*models.BalanceResponse, error) {
 	var result models.BalanceResponse
 
-	logs.Info("[Package Host OPL]-[GetBalance]")
+	logrus.Info("[Package Host OPL]-[GetBalance]")
 
 	cust := "/" + customer + "/status"
 	urlSvr := host + endpointGetBalance

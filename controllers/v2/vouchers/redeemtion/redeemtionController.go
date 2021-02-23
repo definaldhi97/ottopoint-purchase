@@ -10,7 +10,7 @@ import (
 	"ottopoint-purchase/db"
 	redishost "ottopoint-purchase/hosts/redis_token/host"
 	"ottopoint-purchase/models"
-	redeemtion "ottopoint-purchase/services/v2/redeemtion"
+	redeemtion "ottopoint-purchase/services/v2/vouchers/redeemtion"
 	"ottopoint-purchase/utils"
 
 	"github.com/gin-gonic/gin"

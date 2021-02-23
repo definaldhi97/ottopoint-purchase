@@ -9,7 +9,8 @@ import (
 	"ottopoint-purchase/utils"
 	"time"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/sirupsen/logrus"
+
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
@@ -21,7 +22,7 @@ type UseVoucherUVServices struct {
 func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param models.Params, campaignID string) models.Response {
 	var res models.Response
 
-	logs.Info("=== UseVoucherUV ===")
+	logrus.Info("=== UseVoucherUV ===")
 	fmt.Println("=== UseVoucherUV ===")
 
 	sugarLogger := t.General.OttoZaplog
@@ -34,10 +35,10 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 	span, _ := opentracing.StartSpanFromContext(t.General.Context, "[UseVoucherUV]")
 	defer span.Finish()
 
-	logs.Info("Campaign : ", campaignID)
-	logs.Info("CouponID : ", param.CouponID)
-	logs.Info("ProductCode : ", param.CouponCode)
-	logs.Info("AccountID : ", param.AccountId)
+	logrus.Info("Campaign : ", campaignID)
+	logrus.Info("CouponID : ", param.CouponID)
+	logrus.Info("ProductCode : ", param.CouponCode)
+	logrus.Info("AccountID : ", param.AccountId)
 
 	// Use Voucher to Openloyalty
 	use, err2 := opl.CouponVoucherCustomer(campaignID, param.CouponID, param.CouponCode, param.AccountId, 1)
@@ -49,9 +50,9 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 
 	if err2 != nil || useErr == "" {
 
-		logs.Info(fmt.Sprintf("[Error : %v]", err2))
-		logs.Info(fmt.Sprintf("[Response : %v]", use))
-		logs.Info("[Error from OPL]-[CouponVoucherCustomer]")
+		logrus.Info(fmt.Sprintf("[Error : %v]", err2))
+		logrus.Info(fmt.Sprintf("[Response : %v]", use))
+		logrus.Info("[Error from OPL]-[CouponVoucherCustomer]")
 
 		// go SaveTransactionUV(param, useUV, reqUV, req, "Used", "01", "")
 
@@ -64,9 +65,9 @@ func (t UseVoucherUVServices) UseVoucherUV(req models.UseVoucherUVReq, param mod
 	_, errUpdate := db.UpdateVoucher(timeUse, param.CouponID)
 	if errUpdate != nil {
 
-		logs.Info(fmt.Sprintf("[Error : %v]", errUpdate))
-		logs.Info("[Gagal Update Voucher]")
-		logs.Info("[UseVoucherUV]-[Package-Services]")
+		logrus.Info(fmt.Sprintf("[Error : %v]", errUpdate))
+		logrus.Info("[Gagal Update Voucher]")
+		logrus.Info("[UseVoucherUV]-[Package-Services]")
 
 	}
 

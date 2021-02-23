@@ -31,3 +31,9 @@ type SpendingPointReq struct {
 type DataSpendingPoint struct {
 	PointsTransferID string `json:"pointsTransferId"`
 }
+
+type GetBalanceResponse struct {
+	ResponseCode string `json:"responseCode"`
+	ResponseDesc string `json:"responseDesc"`
+	Balance      int    `json:"balance"`
+}

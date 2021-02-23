@@ -9,6 +9,7 @@ import (
 	"ottopoint-purchase/utils"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -33,7 +34,7 @@ func init() {
 func NotifAndInbox(req models.NotifRequest) (*models.NotifResp, error) {
 	var resp models.NotifResp
 
-	logs.Info("[Package Host OTTOMART]-[NotifAndInbox]")
+	logrus.Info("[Package Host OTTOMART]-[NotifAndInbox]")
 
 	header := make(http.Header)
 	header.Set("Content-Type", "application/json")

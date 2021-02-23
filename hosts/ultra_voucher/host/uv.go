@@ -9,6 +9,7 @@ import (
 	"ottopoint-purchase/utils"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -38,7 +39,7 @@ func init() {
 func OrderVoucher(req models.OrderVoucherReq, institutionID string) (*models.OrderVoucherResp, error) {
 	var resp models.OrderVoucherResp
 
-	logs.Info("[PackageHostUV]-[OrderVoucher]")
+	logrus.Info("[PackageHostUV]-[OrderVoucher]")
 
 	urlSvr := host + endpointOrderVoucher
 
@@ -73,7 +74,7 @@ func OrderVoucher(req models.OrderVoucherReq, institutionID string) (*models.Ord
 func UseVoucherUV(req models.UseVoucherUVReq) (*models.UseVoucherUVResp, error) {
 	var resp models.UseVoucherUVResp
 
-	logs.Info("[Package Host UV]-[UseVoucher]")
+	logrus.Info("[Package Host UV]-[UseVoucher]")
 
 	urlSvr := host + endpointUseVoucher
 
@@ -102,7 +103,7 @@ func UseVoucherUV(req models.UseVoucherUVReq) (*models.UseVoucherUVResp, error) 
 func CheckStatusOrder(InstitutionReff, InstitutionId string) (models.OrderVoucherResp, error) {
 	var resp models.OrderVoucherResp
 
-	logs.Info("[Package Host UV]-[CheckStatusOrder]")
+	logrus.Info("[Package Host UV]-[CheckStatusOrder]")
 
 	urlSvr := host + endpointCheckStatusOrder
 

@@ -5,6 +5,7 @@ import (
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/models"
+	"ottopoint-purchase/utils"
 
 	"github.com/sirupsen/logrus"
 )
@@ -31,12 +32,12 @@ func SchedulerCheckStatusService() interface{} {
 	csd := []models.SchedulerCheckStatusData{}
 
 	var sp, fp, tp int
-	var supplierName string
+	var supplierSepulsa, supplierVoucherAG, supplierSP string
 
 	for i := 0; i < count; i++ {
 
 		if getData[i].Code == constants.CodeSchedulerSepulsa {
-			supplierName = constants.Sepulsa
+			supplierSepulsa = constants.Sepulsa
 			total := getData[i].Count
 
 			// errSepulsa := t.CheckStatusSepulsaServices(utils.Before(getData[i].TransactionID, "PSM"))
@@ -63,7 +64,7 @@ func SchedulerCheckStatusService() interface{} {
 		}
 
 		if getData[i].Code == constants.CodeSchedulerVoucherAG {
-			supplierName = constants.VoucherAg
+			supplierVoucherAG = constants.VoucherAg
 			total := getData[i].Count
 
 			// errVaG := t.CheckStatusVoucherAgService(utils.Before(getData[i].TransactionID, "PSM"))
@@ -73,7 +74,7 @@ func SchedulerCheckStatusService() interface{} {
 				total = total + 1
 
 				logrus.Error(savericename)
-				logrus.Error(fmt.Sprintf("[GetDataScheduler]-[Error : %v]", errVaG))
+				logrus.Error(fmt.Sprintf("[CheckStatusVoucherAgService]-[Error : %v]", errVaG))
 
 				go db.UpdateSchedulerStatus(false, total, getData[i].TransactionID)
 
@@ -89,11 +90,46 @@ func SchedulerCheckStatusService() interface{} {
 			continue
 		}
 
+		if getData[i].Code == constants.CodeSchedulerSecurePage {
+			supplierSP = constants.SecurePage
+			total := getData[i].Count
+
+			errSP := CheckStatusSecurePageServices(utils.Before(getData[i].TransactionID, "PSM"))
+
+			if total == 10 || getData[i].IsDone == true {
+
+				// go db.UpdateSchedulerStatus(true, total, getData[i].TransactionID)
+
+				continue
+			}
+
+			if errSP != nil {
+
+				total = total + 1
+
+				logrus.Error(savericename)
+				logrus.Error(fmt.Sprintf("[CheckStatusVoucherAgService]-[Error : %v]", errSP))
+
+				// go db.UpdateSchedulerStatus(false, total, getData[i].TransactionID)
+
+				fp++
+				tp++
+				continue
+			}
+
+			go db.UpdateSchedulerStatus(true, total, getData[i].TransactionID)
+
+			sp++
+			tp++
+			continue
+
+		}
+
 	}
 
-	if supplierName != "" {
+	if supplierSepulsa != "" {
 		dataSepulsa := models.SchedulerCheckStatusData{
-			Supplier: supplierName,
+			Supplier: supplierSepulsa,
 			Success:  sp,
 			Failed:   fp,
 			Total:    tp,
@@ -102,9 +138,9 @@ func SchedulerCheckStatusService() interface{} {
 		csd = append(csd, dataSepulsa)
 	}
 
-	if supplierName != "" {
+	if supplierVoucherAG != "" {
 		dataVoucherAG := models.SchedulerCheckStatusData{
-			Supplier: supplierName,
+			Supplier: supplierVoucherAG,
 			Success:  sp,
 			Failed:   fp,
 			Total:    tp,
@@ -113,27 +149,16 @@ func SchedulerCheckStatusService() interface{} {
 		csd = append(csd, dataVoucherAG)
 	}
 
-	// if supplierUV != "" {
-	// 	dataSepulsa := models.SchedulerCheckStatusData{
-	// 		Supplier : supplierSepulsa,
-	// 		Success  : sp,
-	// 		Failed   : fp,
-	// 		Total    : tp,
-	// 	}
+	if supplierSP != "" {
+		dataVoucherAG := models.SchedulerCheckStatusData{
+			Supplier: supplierSP,
+			Success:  sp,
+			Failed:   fp,
+			Total:    tp,
+		}
 
-	// 	csd = append(csd, dataSepulsa)
-	// }
-
-	// if supplierOttoAG != "" {
-	// 	dataSepulsa := models.SchedulerCheckStatusData{
-	// 		Supplier : supplierSepulsa,
-	// 		Success  : sp,
-	// 		Failed   : fp,
-	// 		Total    : tp,
-	// 	}
-
-	// 	csd = append(csd, dataSepulsa)
-	// }
+		csd = append(csd, dataVoucherAG)
+	}
 
 	resData := models.SchedulerCheckStatusResp{
 		Data:  csd,

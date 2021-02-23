@@ -10,8 +10,8 @@ import (
 	https "ottopoint-purchase/hosts"
 	"ottopoint-purchase/utils"
 
-	"github.com/astaxie/beego/logs"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -85,9 +85,9 @@ func Send(msgreq interface{}, head HeaderHTTP, typetrans string) ([]byte, error)
 	}
 
 	datareq, _ := json.Marshal(msgreq)
-	logs.Info(fmt.Sprintf("[Request %s]", typetrans), fmt.Sprintf("[%s]", string(datareq)))
+	logrus.Info(fmt.Sprintf("[Request %s]", typetrans), fmt.Sprintf("[%s]", string(datareq)))
 	data, err := https.HTTPxPOSTwithRequest(urlSvr, msgreq, header)
 
-	logs.Info(fmt.Sprintf("[Response %s]", typetrans), fmt.Sprintf("[%s]", string(data)))
+	logrus.Info(fmt.Sprintf("[Response %s]", typetrans), fmt.Sprintf("[%s]", string(data)))
 	return data, err
 }
