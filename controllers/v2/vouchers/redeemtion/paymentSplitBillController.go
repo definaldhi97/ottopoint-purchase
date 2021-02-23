@@ -106,38 +106,29 @@ func PaymentSplitBillController(ctx *gin.Context) {
 		return
 	}
 
-	param := v.ParamRedeemtion(dataUser.CustID, cekVoucher)
-
-	param.InstitutionID = header.InstitutionID
-	param.CampaignID = req.CampaignId
-	param.Email = dataUser.Email
-	param.FirstName = dataUser.Nama
-	param.LastName = dataUser.LastName
-	param.AccountNumber = dataToken.Data
-	param.MerchantID = dataUser.MerchantID
-
-	balanceAmount := int64(cekVoucher.CostPoints) - int64(balance.Balance)
-	balancePoint := balance.Balance
-
 	var fields []Fields
-	var custId, custId2 string
+	var custId, custId2, c string
 
 	f, _ := json.Marshal(req.FieldValue)
 	errFields := json.Unmarshal(f, &fields)
 	logrus.Error("Error Unmarshal errFields : ", errFields)
 
 	for i := 0; i < len(fields); i++ {
-		param.CustID = fields[i].Value
 		custId = fields[i].Value
 
+		c = fields[i].Value
+
 		if len(fields) > 1 {
-			param.CustID = fields[0].Value + " || " + fields[1].Value
 
 			custId = fields[0].Value
 			custId2 = fields[1].Value
+
+			c = custId + " || " + custId2
 		}
 
 	}
+
+	param := v.ParamRedeemtion(custId, cekVoucher)
 
 	reqOP := models.VoucherComultaiveReq{
 		Jumlah:     1,
@@ -145,6 +136,19 @@ func PaymentSplitBillController(ctx *gin.Context) {
 		CustID:     custId,
 		CustID2:    custId2,
 	}
+
+	param.InstitutionID = header.InstitutionID
+	param.AccountId = dataUser.CustID
+	param.CampaignID = req.CampaignId
+	param.Email = dataUser.Email
+	param.FirstName = dataUser.Nama
+	param.LastName = dataUser.LastName
+	param.AccountNumber = dataToken.Data
+	param.MerchantID = dataUser.MerchantID
+	param.CustID = c
+
+	balanceAmount := int64(cekVoucher.CostPoints) - int64(balance.Data.Balance)
+	balancePoint := balance.Data.Balance
 
 	logrus.Println("[Request]")
 	logrus.Info("CampaignId : ", req.CampaignId, "FieldValue : ", req.FieldValue, "PaymentMethod : ", req.PaymentMethod)

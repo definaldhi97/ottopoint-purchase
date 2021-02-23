@@ -22,7 +22,7 @@ var (
 func init() {
 	host = utils.GetEnv("HOST_SECUREPAGE", "http://18.136.193.154:8956")
 	endpointPayment = utils.GetEnv("ENDPOINT_PAYMENT_SECUREPAGE", "/payment-services/v2.0.0/api/token")
-	auth = utils.GetEnv("AUTH_SECUREPAGE", "Basic T1RUT1BBWQ==")
+	auth = utils.GetEnv("AUTH_SECUREPAGE", "Basic T1AxRTAwMDAwMDYz")
 	timestamp = utils.GetEnv("TIMESTAMP_SECUREPAGE", "1613338906")
 	apikey = utils.GetEnv("APIKEY_SECUREPAGE", "E60E0K0PAP00Y001PPK00A1IK0EA3P00")
 }

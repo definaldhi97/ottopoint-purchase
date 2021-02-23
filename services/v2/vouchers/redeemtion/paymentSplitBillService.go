@@ -35,10 +35,10 @@ func PaymentSplitBillServices(req models.PaymentSplitBillReq, param models.Param
 			Phone:     param.AccountNumber,
 		},
 		Transactiondetails: lpmodels.DataTransactiondetails{
-			Amount:       int(balanceAmount),
-			Currency:     "idr",
-			Merchantname: "merchantname",
-			Orderid:      param.TrxID,
+			Amount:   int(balanceAmount),
+			Currency: "idr",
+			// Merchantname: ,
+			Orderid: param.TrxID,
 			// PaymentMethod :
 			// Promocode   :
 			// Vabca       :
@@ -71,6 +71,8 @@ func PaymentSplitBillServices(req models.PaymentSplitBillReq, param models.Param
 
 		return res
 	}
+
+	param.RRN = landingPage.ResponseData.OrderID
 
 	save := savePaymentSplitBill(landingPage, reqLG, req, param, balancePoint, balanceAmount, constants.Success)
 	if save != constants.KeyResponseSucceed {
@@ -130,8 +132,8 @@ func savePaymentSplitBill(resVendor lpmodels.LGResponsePay, reqVendor lpmodels.L
 		Value:          balanceAmount,
 		ValueType:      "cash",
 		Status:         saveStatus,
-		ResponseRc:     resVendor.ResponseCode,
-		ResponseRd:     resVendor.ResponseDesc,
+		ResponderRc:    resVendor.ResponseCode,
+		ResponderRd:    resVendor.ResponseDesc,
 		CreatedBy:      "System",
 		// UpdatedBy        : ,
 		CreatedAt: time.Now(),
@@ -150,16 +152,16 @@ func savePaymentSplitBill(resVendor lpmodels.LGResponsePay, reqVendor lpmodels.L
 	}
 
 	paymentPoint := dbmodels.TPayment{
-		ID:             utils.GenerateTokenUUID(),
-		TSpendingID:    tspendingID,
-		ExternalReffId: resVendor.ResponseData.OrderID,
-		TransType:      constants.SpendingSplitBill,
-		Value:          balancePoint,
-		ValueType:      "point",
-		Status:         saveStatus,
-		ResponseRc:     resVendor.ResponseCode,
-		ResponseRd:     resVendor.ResponseDesc,
-		CreatedBy:      "System",
+		ID:          utils.GenerateTokenUUID(),
+		TSpendingID: tspendingID,
+		// ExternalReffId: param.TrxID,
+		TransType: constants.SpendingSplitBill,
+		Value:     balancePoint,
+		ValueType: "point",
+		Status:    saveStatus,
+		// ResponderRc:    resVendor.ResponseCode,
+		// ResponderRd:    resVendor.ResponseDesc,
+		CreatedBy: "System",
 		// UpdatedBy        : ,
 		CreatedAt: time.Now(),
 		// UpdatedAt        : ,

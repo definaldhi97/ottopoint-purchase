@@ -15,15 +15,15 @@ type DataCustomerdetails struct {
 }
 
 type DataTransactiondetails struct {
-	Amount        int    `json:"amount"`
-	Currency      string `json:"currency"`
-	Merchantname  string `json:"merchantname"`
-	Orderid       string `json:"orderid"`
-	PaymentMethod int    `json:"paymentMethod"`
-	Promocode     string `json:"promocode"`
-	Vabca         string `json:"vabca"`
-	Valain        string `json:"valain"`
-	Vamandiri     string `json:"vamandiri"`
+	Amount       int    `json:"amount"`
+	Currency     string `json:"currency"`
+	Merchantname string `json:"merchantname"`
+	Orderid      string `json:"orderid"`
+	// PaymentMethod int    `json:"paymentMethod"`
+	Promocode string `json:"promocode"`
+	Vabca     string `json:"vabca"`
+	Valain    string `json:"valain"`
+	Vamandiri string `json:"vamandiri"`
 }
 
 type LGResponsePay struct {
