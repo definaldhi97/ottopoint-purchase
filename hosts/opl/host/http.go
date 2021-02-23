@@ -14,6 +14,7 @@ import (
 
 	"github.com/astaxie/beego/logs"
 	"github.com/parnurzeal/gorequest"
+	"github.com/sirupsen/logrus"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -40,11 +41,11 @@ func init() {
 
 // Post (Tanpa Request), Token Customer
 func HTTPxFormPostCustomerWithoutRequest(url, phone string) ([]byte, error) {
-	logs.Info("PhoneNumber :", phone)
+	logrus.Info("PhoneNumber :", phone)
 	token, _ := redishost.GetToken(fmt.Sprintf("Ottopoint-Token-Customer-%s :", phone))
 	data := strings.Replace(token.Data, `"`, "", 2)
 	dataToken := "Bearer" + " " + data
-	logs.Info("Token :", dataToken)
+	logrus.Info("Token :", dataToken)
 	request := gorequest.New()
 	request.SetDebug(debugClientHTTP)
 	timeout, _ := time.ParseDuration(timeout)
@@ -76,11 +77,11 @@ func HTTPxFormPostCustomerWithoutRequest(url, phone string) ([]byte, error) {
 
 // Post (Request), Token Customer
 func HTTPxFormPostCustomerWithRequest(url, phone string, jsondata interface{}) ([]byte, error) {
-	logs.Info("PhoneNumber :", phone)
+	logrus.Info("PhoneNumber :", phone)
 	token, _ := redishost.GetToken(fmt.Sprintf("Ottopoint-Token-Customer-%s :", phone))
 	data := strings.Replace(token.Data, `"`, "", 2)
 	dataToken := "Bearer" + " " + data
-	logs.Info("Token :", dataToken)
+	logrus.Info("Token :", dataToken)
 	request := gorequest.New()
 	request.SetDebug(debugClientHTTP)
 	timeout, _ := time.ParseDuration(timeout)
@@ -172,7 +173,7 @@ func HTTPxFormPostAdminWithRequest(url string, jsondata interface{}) ([]byte, er
 	token, _ := redishost.GetToken(utils.RedisKeyAuth)
 	data := strings.Replace(token.Data, `"`, "", 2)
 	dataToken := "Bearer" + " " + data
-	// logs.Info("Token :", dataToken)
+	// logrus.Info("Token :", dataToken)
 	request := gorequest.New()
 	request.SetDebug(debugClientHTTP)
 	timeout, _ := time.ParseDuration(timeout)
@@ -201,7 +202,7 @@ func HTTPxFormPostAdminWithoutRequest(url string, jsondata interface{}) ([]byte,
 	token, _ := redishost.GetToken(utils.RedisKeyAuth)
 	data := strings.Replace(token.Data, `"`, "", 2)
 	dataToken := "Bearer" + " " + data
-	// logs.Info("Token :", dataToken)
+	// logrus.Info("Token :", dataToken)
 	request := gorequest.New()
 	request.SetDebug(debugClientHTTP)
 	timeout, _ := time.ParseDuration(timeout)

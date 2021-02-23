@@ -5,7 +5,7 @@ import (
 	"ottopoint-purchase/models/dbmodels"
 	"time"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/sirupsen/logrus"
 )
 
 func UpdateVoucher(use time.Time, couponId string) (dbmodels.TSpending, error) {
@@ -13,10 +13,10 @@ func UpdateVoucher(use time.Time, couponId string) (dbmodels.TSpending, error) {
 
 	err := DbCon.Raw(`update t_spending set is_used = true, used_at = ? where coupon_id = ?`, use, couponId).Scan(&res).Error
 	if err != nil {
-		logs.Info("Failed to UpdateVoucher from database", err)
+		logrus.Info("Failed to UpdateVoucher from database", err)
 		return res, err
 	}
-	logs.Info("Update Voucher :", res)
+	logrus.Info("Update Voucher :", res)
 
 	return res, nil
 }
@@ -35,10 +35,10 @@ func UpdateVoucherSepulsa(status, respDesc, reqData, transactionID, orderID stri
 
 	err := DbCon.Raw(`update t_spending set responder_rd = ?, responder_rc = ?, responder_data = ?, status = ? where rrn = ? and transaction_id = ?`, status, respDesc, reqData, internalCode, transactionID, orderID).Scan(&res).Error
 	if err != nil {
-		logs.Info("Failed to UpdateVoucherSepulsa from database", err)
+		logrus.Info("Failed to UpdateVoucherSepulsa from database", err)
 		return res, err
 	}
-	logs.Info("Update Voucher :", res)
+	logrus.Info("Update Voucher :", res)
 
 	return res, nil
 }
@@ -48,10 +48,10 @@ func UpdateTSchedulerRetry(transactionID string) (dbmodels.TSchedulerRetry, erro
 
 	err := DbCon.Raw(`update t_scheduler_retry set is_done = true where transaction_id = ?`, transactionID).Scan(&res).Error
 	if err != nil {
-		logs.Info("Failed to UpdateTSchedulerRetry from database", err)
+		logrus.Info("Failed to UpdateTSchedulerRetry from database", err)
 		return res, err
 	}
-	logs.Info("Update Scheduler Retry :", res)
+	logrus.Info("Update Scheduler Retry :", res)
 	return res, nil
 }
 
@@ -60,7 +60,7 @@ func UpdateTEarning(pointId, id string) (dbmodels.TEarning, error) {
 
 	err := DbCon.Exec(`update t_earning set points_transfer_id = ? where id = ?`, pointId, id).Scan(&res).Error
 	if err != nil {
-		logs.Info("Failed to UpdateVoucher from database", err)
+		logrus.Info("Failed to UpdateVoucher from database", err)
 
 		return res, err
 	}
@@ -77,7 +77,7 @@ func UpdateVoucherAg(redeemDate, usedDate, spendingID string) (dbmodels.TSpendin
 	).Scan(&res).Error
 
 	if err != nil {
-		logs.Info("Failed to UpdateVoucher from database", err)
+		logrus.Info("Failed to UpdateVoucher from database", err)
 		return res, err
 	}
 
@@ -93,7 +93,7 @@ func UpdateTSchedulerVoucherAG(transactionID string) error {
 	).Error
 
 	if err != nil {
-		logs.Info("Failed to UpdateVoucher from database", err)
+		logrus.Info("Failed to UpdateVoucher from database", err)
 		return err
 	}
 
@@ -114,10 +114,10 @@ func UpdateVoucherAgSecond(status, respDesc, tspendingID string) (dbmodels.TSpen
 
 	err := DbCon.Raw(`update t_spending set responder_rd = ?, responder_rc = ?, status = ? where id = ?`, status, respDesc, internalCode, tspendingID).Scan(&res).Error
 	if err != nil {
-		logs.Info("Failed to UpdateVoucherSepulsa from database", err)
+		logrus.Info("Failed to UpdateVoucherSepulsa from database", err)
 		return res, err
 	}
-	logs.Info("Update Voucher :", res)
+	logrus.Info("Update Voucher :", res)
 
 	return res, nil
 }

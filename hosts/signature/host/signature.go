@@ -9,6 +9,7 @@ import (
 	"ottopoint-purchase/utils"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -32,7 +33,7 @@ func init() {
 func Signature(signature interface{}, headers headermodels.RequestHeader) (*models.SignatureResp, error) {
 	var resp models.SignatureResp
 
-	logs.Info("[Hit to API Signature]")
+	logrus.Info("[Hit to API Signature]")
 
 	urlSvr := host + endpointSignature
 

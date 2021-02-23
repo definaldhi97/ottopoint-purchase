@@ -1,6 +1,11 @@
 package constants
 
 const (
+	FullPointMethod = 0
+	SplitBillMethod = 1
+)
+
+const (
 	NotifTypeCashPayment = "0"
 	NotifTypeQRPayment   = "1"
 )
@@ -33,7 +38,9 @@ const (
 )
 
 const (
-	CodeReversal = "TAD04"
+	CodeReversal      = "TAD04"
+	PaymentSplitBill  = "PCS01"
+	SpendingSplitBill = "TSP05"
 )
 
 const (
@@ -61,10 +68,11 @@ const (
 )
 
 const (
-	UV        = "Ultra Voucher"
-	OttoAG    = "OttoAG"
-	Sepulsa   = "Sepulsa"
-	VoucherAg = "Voucher Aggregator"
+	UV         = "Ultra Voucher"
+	OttoAG     = "OttoAG"
+	Sepulsa    = "Sepulsa"
+	VoucherAg  = "Voucher Aggregator"
+	SecurePage = "SecurePage"
 )
 
 const (
@@ -198,12 +206,13 @@ const (
 )
 
 const (
-	CodeScheduler          = "SC001"
-	CodeSchedulerSepulsa   = "SC003"
-	CodeSchedulerSpending  = "SC006"
-	CodeSchedulerUV        = "SC007"
-	CodeSchedulerOttoAG    = "SC008"
-	CodeSchedulerVoucherAG = "SC009"
+	CodeScheduler           = "SC001"
+	CodeSchedulerSepulsa    = "SC003"
+	CodeSchedulerSpending   = "SC006"
+	CodeSchedulerUV         = "SC007"
+	CodeSchedulerOttoAG     = "SC008"
+	CodeSchedulerVoucherAG  = "SC009"
+	CodeSchedulerSecurePage = "SC010"
 )
 
 const (

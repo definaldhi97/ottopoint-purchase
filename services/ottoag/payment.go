@@ -7,6 +7,7 @@ import (
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/sirupsen/logrus"
 )
 
 // type PaymentBillerServices struct {
@@ -17,10 +18,10 @@ func PaymentBiller(reqdata interface{}, reqOP interface{}, req models.UseRedeemR
 
 	res := ottoagmodels.OttoAGPaymentRes{}
 
-	logs.Info("[PaymentBiller-SERVICES][START]")
+	logrus.Info("[PaymentBiller-SERVICES][START]")
 
 	billerHead := ottoag.PackMessageHeader(reqdata)
-	logs.Info("Nama Voucher : ", param.NamaVoucher)
+	logrus.Info("Nama Voucher : ", param.NamaVoucher)
 	billerDataHost, err := ottoag.Send(reqdata, billerHead, "PAYMENT")
 
 	if err = json.Unmarshal(billerDataHost, &res); err != nil {
@@ -39,7 +40,7 @@ func PaymentBiller(reqdata interface{}, reqOP interface{}, req models.UseRedeemR
 			Rc:  "01",
 			Msg: "Payment Failed",
 		}
-		// logs.Info("[SAVE-DB-PAYMENT-Transaksi_Redeem]")
+		// logrus.Info("[SAVE-DB-PAYMENT-Transaksi_Redeem]")
 
 		// reqOttoag, _ := json.Marshal(&reqdata)
 		// responseOttoag, _ := json.Marshal(&res)
@@ -70,7 +71,7 @@ func PaymentBiller(reqdata interface{}, reqOP interface{}, req models.UseRedeemR
 		// }
 		// err1 := db.DbCon.Create(&savePay).Error
 		// if err1 != nil {
-		// 	logs.Info("Failed Save to database", err1)
+		// 	logrus.Info("Failed Save to database", err1)
 		// 	// return err1
 		// }
 

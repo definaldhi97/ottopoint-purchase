@@ -13,7 +13,8 @@ import (
 	"ottopoint-purchase/utils"
 	"time"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/sirupsen/logrus"
+
 	"github.com/opentracing/opentracing-go"
 	"github.com/vjeantet/jodaTime"
 	"go.uber.org/zap"
@@ -22,7 +23,7 @@ import (
 func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.Params) models.Response {
 	var res models.Response
 
-	logs.Info("=== GetVoucherUV ===")
+	logrus.Info("=== GetVoucherUV ===")
 	fmt.Println("=== GetVoucherUV ===")
 
 	sugarLogger := t.General.OttoZaplog
@@ -44,9 +45,9 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 
 	get, errGet := db.GetVoucherUV(param.AccountNumber, param.CouponID)
 	if errGet != nil || get.AccountId == "" {
-		logs.Info("Internal Server Error : ", errGet)
-		logs.Info("[GetVoucherUV-Servcies]-[GetVoucherUV]")
-		logs.Info("[Failed get data from DB]")
+		logrus.Info("Internal Server Error : ", errGet)
+		logrus.Info("[GetVoucherUV-Servcies]-[GetVoucherUV]")
+		logrus.Info("[Failed get data from DB]")
 
 		// sugarLogger.Info("Internal Server Error : ", errGet)
 		sugarLogger.Info("[GetVoucherUV-Servcies]-[GetVoucherUV]")
@@ -101,9 +102,9 @@ func (t UseVoucherServices) GetVoucherUV(req models.UseVoucherReq, param models.
 
 		fmt.Println(">>> Time Out / Gagal <<<")
 		fmt.Println(fmt.Sprintf("[Response UV : %v]", useUV.ResponseCode))
-		logs.Info("Internal Server Error : ", errUV)
-		logs.Info("[GetVoucherUV-Servcies]-[UseVoucherUV]")
-		logs.Info("[Failed Use Voucher UV]-[Gagal Use Voucher UV]")
+		logrus.Info("Internal Server Error : ", errUV)
+		logrus.Info("[GetVoucherUV-Servcies]-[UseVoucherUV]")
+		logrus.Info("[Failed Use Voucher UV]-[Gagal Use Voucher UV]")
 
 		// sugarLogger.Info("Internal Server Error : ", errUV)
 		sugarLogger.Info("[GetVoucherUV-Servcies]-[UseVoucherUV]")
@@ -150,7 +151,20 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 	responseUV, _ := json.Marshal(&res)  // Response UV
 	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
 
-	// timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
+	// if param.PaymentMethod == constants.SplitBillMethod {
+
+	// 	_, errUpdate := db.UpdateTransactionSplitBill(isUsed, param.TrxID, saveStatus, param.DataSupplier.Rc, param.DataSupplier.Rd, responseOttoag, reqOttoag, reqdataOP)
+	// 	if errUpdate != nil {
+
+	// 		logrus.Error(fmt.Sprintf("[UpdateTransactionSplitBill]-[SaveTransactionOttoAg]"))
+	// 		logrus.Error(fmt.Sprintf("[TrxID : %v]-[Error : %v]", trxID, errUpdate))
+
+	// 		return
+	// 	}
+
+	// 	return
+
+	// }
 
 	save := dbmodels.TSpending{
 		ID:            utils.GenerateTokenUUID(),
@@ -191,8 +205,8 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
-		logs.Info(fmt.Sprintf("[Error : %v]", err))
-		logs.Info("[Failed Save to DB]")
+		logrus.Info(fmt.Sprintf("[Error : %v]", err))
+		logrus.Info("[Failed Save to DB]")
 
 		name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
 		go utils.CreateCSVFile(save, name)

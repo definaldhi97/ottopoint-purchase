@@ -19,7 +19,6 @@ import (
 
 	"ottopoint-purchase/services/v2.1/Trx"
 
-	"github.com/astaxie/beego/logs"
 	"github.com/sirupsen/logrus"
 	"github.com/vjeantet/jodaTime"
 )
@@ -380,7 +379,7 @@ func inquiryOttoAG(req models.VoucherComultaiveReq, param models.Params, header 
 	errInquiry = json.Unmarshal(billerDataHost, &resOttAG)
 
 	// if errInquiry = json.Unmarshal(billerDataHost, &resOttAG); errInquiry != nil {
-	// 	logs.Info("[INQUIRY-SERVICES-01]")
+	// 	logrus.Info("[INQUIRY-SERVICES-01]")
 	// 	logs.Error("Failed to unmarshaling json response from ottoag", errInquiry)
 	// 	resOttAG = ottoagmodels.OttoAGInquiryResponse{
 	// 		Rc:  "01",
@@ -395,6 +394,7 @@ func inquiryOttoAG(req models.VoucherComultaiveReq, param models.Params, header 
 	textCommentSpending := param.TrxID + "#" + param.NamaVoucher
 	param.Comment = textCommentSpending
 	paramInq := models.Params{
+		PaymentMethod: param.PaymentMethod,
 		AccountNumber: param.AccountNumber,
 		MerchantID:    param.MerchantID,
 		InstitutionID: param.InstitutionID,
@@ -590,12 +590,13 @@ func useVoucherOttoAG(req models.VoucherComultaiveReq, redeemComu models.RedeemC
 	billerRes := ottoagmodels.OttoAGPaymentRes{}
 
 	billerHead := ottoag.PackMessageHeader(billerReq)
-	logs.Info("Nama Voucher : ", param.NamaVoucher)
+	logrus.Info("Nama Voucher : ", param.NamaVoucher)
 	billerDataHost, errPayment := ottoag.Send(billerReq, billerHead, "PAYMENT")
 	errPayment = json.Unmarshal(billerDataHost, &billerRes)
 
 	fmt.Println(fmt.Sprintf("Response OttoAG %v Payment : %v", param.ProductType, billerRes))
 	paramPay := models.Params{
+		PaymentMethod:   param.PaymentMethod,
 		AccountNumber:   param.AccountNumber,
 		MerchantID:      param.MerchantID,
 		InstitutionID:   param.InstitutionID,
@@ -635,6 +636,7 @@ func useVoucherOttoAG(req models.VoucherComultaiveReq, redeemComu models.RedeemC
 		fmt.Println(fmt.Sprintf("[Payment %v Time Out]", param.ProductType))
 
 		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, req, "09")
+
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.RedeemResponse{
@@ -851,6 +853,21 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	reqOttoag, _ := json.Marshal(&reqdata)  // Req Ottoag
 	responseOttoag, _ := json.Marshal(&res) // Response Ottoag
 	reqdataOP, _ := json.Marshal(&req)      // Req Service
+
+	if param.PaymentMethod == constants.SplitBillMethod {
+
+		_, errUpdate := db.UpdateTransactionSplitBill(isUsed, param.TrxID, saveStatus, param.DataSupplier.Rc, param.DataSupplier.Rd, responseOttoag, reqOttoag, reqdataOP)
+		if errUpdate != nil {
+
+			logrus.Error(fmt.Sprintf("[UpdateTransactionSplitBill]-[SaveTransactionOttoAg]"))
+			logrus.Error(fmt.Sprintf("[TrxID : %v]-[Error : %v]", trxID, errUpdate))
+
+			return fmt.Sprintf("Gagal Updated " + trxID)
+		}
+
+		return fmt.Sprintf("Berhasil Updated " + trxID)
+
+	}
 
 	save := dbmodels.TSpending{
 		ID:            utils.GenerateTokenUUID(),

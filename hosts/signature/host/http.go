@@ -37,7 +37,7 @@ func init() {
 }
 
 func HTTPxFormPostWithHeader(url, key string, data interface{}, header headermodels.RequestHeader) ([]byte, error) {
-	// logs.Info("Token :", dataToken)
+	// logrus.Info("Token :", dataToken)
 	request := gorequest.New()
 	request.SetDebug(debugClientHTTP)
 	timeout, _ := time.ParseDuration(timeout)

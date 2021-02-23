@@ -13,15 +13,17 @@ import (
 )
 
 var (
-	host             string
-	endpointAdding   string
-	endpointSpending string
+	host               string
+	endpointAdding     string
+	endpointSpending   string
+	endpointGetBalance string
 )
 
 func init() {
 	host = utils.GetEnv("HOST_OTTOPOINT_COREPOINT", "http://13.228.25.85:8402")
 	endpointAdding = utils.GetEnv("ENDPOINT_ADDING_OTTOPOINT_COREPOINT", "/v1/points/transfer/add")
 	endpointSpending = utils.GetEnv("ENDPOINT_SEPENDING_OTTOPOINT_COREPOINT", "/v1/points/transfer/spend")
+	endpointGetBalance = utils.GetEnv("ENDPOINT_SEPENDING_OTTOPOINT_COREPOINT", "/v1/account/wallet/balance?")
 }
 
 func AddingPoint(req AddingPointReq, headerReq models.RequestHeader) (*TrxPointRes, error) {
@@ -84,6 +86,32 @@ func SependingPoint(req SpendingPointReq, headerReq models.RequestHeader) (*TrxP
 	if err != nil {
 
 		logrus.Error("Failed to unmarshaling response Spending pointt : ", err.Error())
+		return &result, err
+	}
+
+	return &result, err
+}
+
+func GetBalancePoint(accountID string) (*GetBalanceResponse, error) {
+
+	var result GetBalanceResponse
+
+	urlSvr := host + endpointGetBalance + accountID
+
+	header := make(http.Header)
+
+	data, err := https.HTTPxGET(urlSvr, header)
+	logrus.Error("Response GetBalancePoint : ", data)
+
+	if err != nil {
+		logrus.Error("Failed GetBalancePoint : ", err.Error())
+		return &result, err
+	}
+
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+
+		logrus.Error("Failed to unmarshaling response GetBalancePoint : ", err.Error())
 		return &result, err
 	}
 

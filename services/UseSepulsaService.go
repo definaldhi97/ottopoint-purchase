@@ -18,7 +18,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/sirupsen/logrus"
+
 	"github.com/opentracing/opentracing-go"
 	"github.com/vjeantet/jodaTime"
 	"go.uber.org/zap"
@@ -310,9 +311,9 @@ func (t UseSepulsaService) SepulsaServices(req models.VoucherComultaiveReq, para
 		use, err2 := opl.CouponVoucherCustomer(req.CampaignID, couponID, couponCode, param.AccountId, 1)
 		if err2 != nil {
 
-			logs.Info(fmt.Sprintf("[Error : %v]", err2))
-			logs.Info(fmt.Sprintf("[Response : %v]", use))
-			logs.Info("[Error from OPL]-[CouponVoucherCustomer]")
+			logrus.Info(fmt.Sprintf("[Error : %v]", err2))
+			logrus.Info(fmt.Sprintf("[Response : %v]", use))
+			logrus.Info("[Error from OPL]-[CouponVoucherCustomer]")
 
 			sugarLogger.Info("[SepulsaService]-[CouponVoucherCustomer]")
 			sugarLogger.Info(fmt.Sprintf("[SepulsaService]-[FailedCouponVoucherCustomer]-[%v", err2.Error()))
@@ -692,8 +693,8 @@ func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interf
 
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
-		logs.Info(fmt.Sprintf("[Error : %v]", err))
-		logs.Info("[Failed Save to DB]")
+		logrus.Info(fmt.Sprintf("[Error : %v]", err))
+		logrus.Info("[Failed Save to DB]")
 
 		name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
 		go utils.CreateCSVFile(save, name)
@@ -708,9 +709,9 @@ func CouponVoucherCustomer(campaignID, couponID, couponCode, accountID string, u
 	use, err2 := opl.CouponVoucherCustomer(campaignID, couponID, couponCode, accountID, 1)
 	if err2 != nil {
 
-		logs.Info(fmt.Sprintf("[Error : %v]", err2))
-		logs.Info(fmt.Sprintf("[Response : %v]", use))
-		logs.Info("[Error from OPL]-[CouponVoucherCustomer]")
+		logrus.Info(fmt.Sprintf("[Error : %v]", err2))
+		logrus.Info(fmt.Sprintf("[Response : %v]", use))
+		logrus.Info("[Error from OPL]-[CouponVoucherCustomer]")
 
 	}
 }

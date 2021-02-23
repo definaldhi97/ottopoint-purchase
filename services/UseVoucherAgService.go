@@ -7,8 +7,8 @@ import (
 	"ottopoint-purchase/utils"
 	"time"
 
-	"github.com/astaxie/beego/logs"
 	"github.com/opentracing/opentracing-go"
+	"github.com/sirupsen/logrus"
 	"go.uber.org/zap"
 )
 
@@ -27,9 +27,9 @@ func (t UseVoucherServices) UseVoucherAggregator(req models.UseVoucherReq, param
 
 	get, err := db.GetVoucherAg(param.AccountId, param.CouponID)
 	if err != nil {
-		logs.Info("Internal Server Error : ", err)
-		logs.Info("[UseVoucherAggregator]-[GetVoucherUV]")
-		logs.Info("[Failed get data from DB]")
+		logrus.Info("Internal Server Error : ", err)
+		logrus.Info("[UseVoucherAggregator]-[GetVoucherUV]")
+		logrus.Info("[Failed get data from DB]")
 
 		sugarLogger.Info("[UseVoucherAggregator]-[GetVoucherUV]")
 		sugarLogger.Info("[Failed get data from DB]")
@@ -40,9 +40,9 @@ func (t UseVoucherServices) UseVoucherAggregator(req models.UseVoucherReq, param
 
 	spend, err := db.GetVoucherSpending(get.AccountId, get.CouponID)
 	if err != nil {
-		logs.Info("Internal Server Error : ", err)
-		logs.Info("[UseVoucherAggregator]-[GetVoucherUV]")
-		logs.Info("[Failed get data from DB]")
+		logrus.Info("Internal Server Error : ", err)
+		logrus.Info("[UseVoucherAggregator]-[GetVoucherUV]")
+		logrus.Info("[Failed get data from DB]")
 
 		sugarLogger.Info("[UseVoucherAggregator]-[GetVoucherUV]")
 		sugarLogger.Info("[Failed get data from DB]")

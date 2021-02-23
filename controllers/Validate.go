@@ -11,8 +11,8 @@ import (
 	"ottopoint-purchase/utils"
 	"strings"
 
-	"github.com/astaxie/beego/logs"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func ValidateRequest(ctx *gin.Context, isCheckAuth bool, reqBody interface{}, isCacheBalance bool) (models.RequestHeader, models.Response) {
@@ -65,8 +65,8 @@ func ValidateRequest(ctx *gin.Context, isCheckAuth bool, reqBody interface{}, is
 
 	println("ValidateSignature === ", ValidateSignature.ResponseCode)
 	if errSignature != nil || ValidateSignature.ResponseCode != "00" {
-		logs.Info("[ValidateSignature]-[VoucherRedeemController]")
-		logs.Info(fmt.Sprintf("Error when validation request header"))
+		logrus.Info("[ValidateSignature]-[VoucherRedeemController]")
+		logrus.Info(fmt.Sprintf("Error when validation request header"))
 		result = utils.GetMessageFailedErrorNew(result, constants.RC_ERROR_INVALID_SIGNATURE, constants.RD_ERROR_INVALID_SIGNATURE)
 		return header, result
 	}
@@ -104,8 +104,8 @@ func ValidateRequestWithoutAuth(ctx *gin.Context, reqBody interface{}) (models.R
 
 	println("ValidateSignature === ", ValidateSignature.ResponseCode)
 	if errSignature != nil || ValidateSignature.ResponseCode != "00" {
-		logs.Info("[ValidateSignature]-[VoucherRedeemController]")
-		logs.Info(fmt.Sprintf("Error when validation request header"))
+		logrus.Info("[ValidateSignature]-[VoucherRedeemController]")
+		logrus.Info(fmt.Sprintf("Error when validation request header"))
 		result = utils.GetMessageFailedErrorNew(result, constants.RC_ERROR_INVALID_SIGNATURE, constants.RD_ERROR_INVALID_SIGNATURE)
 		return header, result
 	}

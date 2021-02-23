@@ -55,3 +55,14 @@ func HashSha512(secret, data string) string {
 	hash.Write([]byte(data))
 	return fmt.Sprintf("%x", hash.Sum(nil))
 }
+
+type SignatureResp struct {
+	Signature string `json:"signature"`
+}
+
+func SignReplaceAll(str string) string {
+	regx := regexp.MustCompile("[^a-zA-Z0-9{}:.,]")
+	output := regx.ReplaceAllLiteralString(str, "")
+	output = strings.ToLower(output)
+	return output
+}

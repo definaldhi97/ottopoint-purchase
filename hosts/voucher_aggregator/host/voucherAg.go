@@ -10,8 +10,8 @@ import (
 
 	"ottopoint-purchase/utils"
 
-	"github.com/astaxie/beego/logs"
 	"github.com/google/go-querystring/query"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -34,7 +34,7 @@ func init() {
 func OrderVoucher(req vgmodel.RequestOrderVoucherAg, head models.RequestHeader) (*vgmodel.ResponseOrderVoucherAg, error) {
 	var resp vgmodel.ResponseOrderVoucherAg
 
-	logs.Info("[PackageHostUV]-[OrderVoucher]")
+	logrus.Info("[PackageHostUV]-[OrderVoucher]")
 
 	urlSvr := host + endpointOrderVoucher
 
@@ -51,14 +51,14 @@ func OrderVoucher(req vgmodel.RequestOrderVoucherAg, head models.RequestHeader) 
 	data, err := https.HTTPxPOSTwithRequest(urlSvr, req, header)
 	// data, err := HTTPxFormPostVoucherAg(urlSvr, head, req)
 	if err != nil {
-		logs.Error("Check error : ", err.Error())
+		logrus.Error("Check error : ", err.Error())
 
 		return &resp, err
 	}
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		logs.Error("Failed to unmarshaling response OrderVoucher from Ultra Voucher ", err.Error())
+		logrus.Error("Failed to unmarshaling response OrderVoucher from Ultra Voucher ", err.Error())
 
 		return &resp, err
 	}
@@ -69,7 +69,7 @@ func OrderVoucher(req vgmodel.RequestOrderVoucherAg, head models.RequestHeader) 
 func CheckStatusOrder(req vgmodel.RequestCheckOrderStatus, head models.RequestHeader) (*vgmodel.ResponseCheckOrderStatus, error) {
 	var resp vgmodel.ResponseCheckOrderStatus
 
-	logs.Info("[PackageHostVoucherAg]-[CheckStatusOrder]")
+	logrus.Info("[PackageHostVoucherAg]-[CheckStatusOrder]")
 
 	v, _ := query.Values(req)
 
@@ -88,14 +88,14 @@ func CheckStatusOrder(req vgmodel.RequestCheckOrderStatus, head models.RequestHe
 	data, err := https.HTTPxGET(urlSvr, header)
 	// data, err := HTTPxFormGetVoucherAg(urlSvr, head)
 	if err != nil {
-		logs.Error("Check error : ", err.Error())
+		logrus.Error("Check error : ", err.Error())
 
 		return &resp, err
 	}
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		logs.Error("Failed to unmarshaling response OrderVoucher from Ultra Voucher ", err.Error())
+		logrus.Error("Failed to unmarshaling response OrderVoucher from Ultra Voucher ", err.Error())
 
 		return &resp, err
 	}

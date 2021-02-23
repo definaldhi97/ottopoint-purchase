@@ -100,8 +100,8 @@ func VoucherComulativeController(ctx *gin.Context) {
 		sugarLogger.Info("[VoucherComulativeController]-[VoucherDetail]")
 		sugarLogger.Info(fmt.Sprintf("Error : ", errVoucher))
 
-		logs.Info("[VoucherComulativeController]-[VoucherDetail]")
-		logs.Info(fmt.Sprintf("Error : ", errVoucher))
+		logrus.Info("[VoucherComulativeController]-[VoucherDetail]")
+		logrus.Info(fmt.Sprintf("Error : ", errVoucher))
 
 		res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
 		ctx.JSON(http.StatusOK, res)
@@ -110,9 +110,9 @@ func VoucherComulativeController(ctx *gin.Context) {
 
 	dataUser, errUser := db.UserWithInstitution(dataToken.Data, header.InstitutionID)
 	if errUser != nil || dataUser.CustID == "" {
-		logs.Info("Internal Server Error : ", errUser)
-		logs.Info("[VoucherComulativeController]-[CheckUser]")
-		logs.Info("[Failed from DB]-[Get Data User]")
+		logrus.Info("Internal Server Error : ", errUser)
+		logrus.Info("[VoucherComulativeController]-[CheckUser]")
+		logrus.Info("[Failed from DB]-[Get Data User]")
 
 		// sugarLogger.Info("Internal Server Error : ", errredeem)
 		sugarLogger.Info("[VoucherComulativeController]-[CheckUser]")
@@ -125,8 +125,8 @@ func VoucherComulativeController(ctx *gin.Context) {
 
 	data := SwitchCheckData(cekVoucher)
 
-	logs.Info("SupplierID : ", data.SupplierID)
-	logs.Info("producrType : ", data.ProductType)
+	logrus.Info("SupplierID : ", data.SupplierID)
+	logrus.Info("producrType : ", data.ProductType)
 	// sepecial vidio
 	if data.Category == constants.CategoryVidio {
 		req.CustID = "0"

@@ -7,6 +7,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	logging "github.com/hhkbp2/go-logging"
+	"github.com/sirupsen/logrus"
 	ODU "ottodigital.id/library/utils"
 )
 
@@ -16,7 +17,7 @@ var (
 
 func init() {
 
-	logs.Info("log_file.go")
+	logrus.Info("log_file.go")
 
 	config_file := ODU.GetEnv("log.path.cofig", "./log/config_log.yml")
 
