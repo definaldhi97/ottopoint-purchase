@@ -106,8 +106,28 @@ func PaymentSplitBillController(ctx *gin.Context) {
 		return
 	}
 
-	param := v.ParamRedeemtion(dataUser.CustID, cekVoucher)
+	var fields []Fields
+	var custId, custId2 string
 
+	f, _ := json.Marshal(req.FieldValue)
+	errFields := json.Unmarshal(f, &fields)
+	logrus.Error("Error Unmarshal errFields : ", errFields)
+
+	for i := 0; i < len(fields); i++ {
+
+		custId = fields[i].Value
+
+		if len(fields) > 1 {
+
+			custId = fields[0].Value
+			custId2 = fields[1].Value
+		}
+
+	}
+
+	param := v.ParamRedeemtion(custId, cekVoucher)
+
+	// param.CustID = custId + " || " + custId2
 	param.InstitutionID = header.InstitutionID
 	param.CampaignID = req.CampaignId
 	param.Email = dataUser.Email
@@ -118,26 +138,6 @@ func PaymentSplitBillController(ctx *gin.Context) {
 
 	balanceAmount := int64(cekVoucher.CostPoints) - int64(balance.Balance)
 	balancePoint := balance.Balance
-
-	var fields []Fields
-	var custId, custId2 string
-
-	f, _ := json.Marshal(req.FieldValue)
-	errFields := json.Unmarshal(f, &fields)
-	logrus.Error("Error Unmarshal errFields : ", errFields)
-
-	for i := 0; i < len(fields); i++ {
-		param.CustID = fields[i].Value
-		custId = fields[i].Value
-
-		if len(fields) > 1 {
-			param.CustID = fields[0].Value + " || " + fields[1].Value
-
-			custId = fields[0].Value
-			custId2 = fields[1].Value
-		}
-
-	}
 
 	reqOP := models.VoucherComultaiveReq{
 		Jumlah:     1,
