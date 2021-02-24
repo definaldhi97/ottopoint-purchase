@@ -226,6 +226,7 @@ func SwitchDataVoucher(data models.VoucherDetailsManagement) models.Params {
 		ProductCodeInternal: data.InternalProductCode,
 		RewardID:            data.RewardID,
 		ProductID:           data.ProductID,
+		Fields:              data.Fields,
 	}
 
 	return result

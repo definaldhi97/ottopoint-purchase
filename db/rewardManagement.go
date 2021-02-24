@@ -27,7 +27,14 @@ func GetVoucherDetails(rewardID string) (models.VoucherDetailsManagement, error)
 	a.reward_codes, 
 	b.external_code, 
 	b.code as internal_code,
-	b.id as m_product_id
+	b.id as m_product_id,
+	array(
+		select array_to_string(array_agg(mf.code), ',') from product.m_field_brand mfb
+		left join product.m_field mf on mf.id = mfb.m_field_id
+		where mfb.m_product_brand_id = b.m_product_brand_id
+		group by mfb.sort_order
+		order by mfb.sort_order asc
+	) fields
 	from product.m_reward a join product.m_product b on (a.m_product_id = b.id)
 	join vendor.m_vendor c on (b.m_vendor_id = c.id)
 	join product.m_product_brand d on (d.id = b.m_product_brand_id)  where a.id = ?`, rewardID).Scan(&dtaVoucher).Error
@@ -55,6 +62,7 @@ func GetVoucherDetails(rewardID string) (models.VoucherDetailsManagement, error)
 	result.ExternalProductCode = dtaVoucher.ExternalProductCode
 	result.InternalProductCode = dtaVoucher.InternalProductCode
 	result.ProductID = dtaVoucher.ProductID
+	result.Fields = dtaVoucher.Fields
 
 	fmt.Println(result)
 

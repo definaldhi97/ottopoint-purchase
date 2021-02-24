@@ -162,6 +162,7 @@ func (controller *V21_RedeemtionVoucherController) V21_RedeemtionVoucherControll
 		CategoryID:          dataVouch.CategoryID,
 		RewardID:            dataVouch.RewardID,
 		ExpDate:             dataVouch.ExpDate,
+		Fields:              dataVouch.Fields,
 	}
 
 	switch dataVouch.SupplierID {

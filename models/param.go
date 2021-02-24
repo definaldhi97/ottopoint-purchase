@@ -39,6 +39,7 @@ type Params struct {
 	Comment             string
 	RewardID            string
 	PointTransferID     string
+	Fields              []string
 }
 
 type Supplier struct {
