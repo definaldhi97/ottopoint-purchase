@@ -14,6 +14,7 @@ import (
 
 	redeemtion "ottopoint-purchase/services/v2.1/vouchers/redeemtion"
 
+	"github.com/astaxie/beego/logs"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -79,7 +80,7 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 	// check user
 	dataUser, errUser := db.UserWithInstitution(dataToken.Data, header.InstitutionID)
 	if errUser != nil || dataUser.CustID == "" {
-		logrus.Info("Internal Server Error : ", errUser)
+		logs.Info("Internal Server Error : ", errUser)
 
 		logrus.Error(namectrl)
 		logrus.Error(fmt.Sprintf("[CheckToken]-[Error : %v]", errUser))
@@ -89,7 +90,7 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 		return
 	}
 
-	param := c.ParamRedeemtion(req.CustID, cekVoucher)
+	param := c.ParamRedeemtion(dataUser.CustID, cekVoucher)
 	if param.ResponseCode != 200 {
 
 		logrus.Error(namectrl)
@@ -106,7 +107,6 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 		req.CustID = "0"
 	}
 
-	param.AccountId = dataUser.CustID
 	param.InstitutionID = header.InstitutionID
 	param.CampaignID = req.CampaignID
 	param.AccountNumber = dataToken.Data
