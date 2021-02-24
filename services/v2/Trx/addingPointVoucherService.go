@@ -8,7 +8,7 @@ import (
 	"ottopoint-purchase/hosts/opl/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
-	"ottopoint-purchase/services"
+	services "ottopoint-purchase/services/v2"
 	"ottopoint-purchase/utils"
 	"strconv"
 	"time"

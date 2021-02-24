@@ -159,7 +159,7 @@ func ValidatePrefixComulative(custID, productCode, category string) (bool, error
 	// validate panjang nomor, Jika nomor kurang dari 4
 	if len(custID) < 4 {
 
-		fmt.Println("[Kurang dari 4]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
+		fmt.Println("[Kurang dari 4]-[Prefix-ottopoint]-[ValidatePrefixComulative]")
 		fmt.Println(fmt.Sprintf("invalid Prefix %v", custID))
 
 		return false, err
@@ -168,7 +168,7 @@ func ValidatePrefixComulative(custID, productCode, category string) (bool, error
 	// validate panjang nomor, Jika nomor kurang dari 11 & lebih dari 15
 	if len(custID) <= 10 || len(custID) > 15 {
 
-		fmt.Println("[Kurang dari 10 atau lebih dari 15]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
+		fmt.Println("[Kurang dari 10 atau lebih dari 15]-[Prefix-ottopoint]-[ValidatePrefixComulative]")
 		fmt.Println(fmt.Sprintf("invalid Prefix %v", custID))
 
 		return false, err
@@ -179,7 +179,7 @@ func ValidatePrefixComulative(custID, productCode, category string) (bool, error
 	dataPrefix, errPrefix := db.GetOperatorCodebyPrefix(custID)
 	if errPrefix != nil {
 
-		fmt.Println("[ErrorPrefix]-[RedeemComulativeVoucher]")
+		fmt.Println("[ValidatePrefixComulative]-[GetOperatorCodebyPrefix]")
 		fmt.Println(fmt.Sprintf("dataPrefix = %v", dataPrefix))
 		fmt.Println(fmt.Sprintf("Prefix tidak ditemukan %v", errPrefix))
 
@@ -201,7 +201,7 @@ func ValidatePrefixComulative(custID, productCode, category string) (bool, error
 	// Jika Nomor tidak sesuai dengan operator
 	if prefix != product {
 
-		fmt.Println("[Operator]-[Prefix-ottopoint]-[RedeemComulativeVoucher]")
+		fmt.Println("[Operator]-[Prefix-ottopoint]-[ValidatePrefixComulative]")
 		fmt.Println(fmt.Sprintf("invalid Prefix %v", prefix))
 
 		return false, err

@@ -13,16 +13,13 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
-	"ottopoint-purchase/models/dbmodels"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 
 	ottoag "ottopoint-purchase/hosts/ottoag/host"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/sirupsen/logrus"
-	"github.com/vjeantet/jodaTime"
 )
 
 // func (t V2_VoucherOttoAgMigrateService) VoucherOttoAg(req models.VoucherComultaiveReq, param models.Params) models.Response {
@@ -63,7 +60,7 @@ func RedeemtionOttoAGServices(req models.VoucherComultaiveReq, param models.Para
 		getRespUseVouChan := make(chan models.RedeemResponse)
 		getRespUseVoucErr := make(chan error)
 
-		go RedeemVoucherOttoAg(req, param, getRespChan, getErrChan)
+		go inquiryVoucherOttoAG(req, param, getRespChan, getErrChan)
 		if getErr := <-getErrChan; getErr != nil {
 			getResp = <-getRespChan
 			fmt.Println("[ Failed Deduct point, Deduct voucher or Inquiry Voucher ]")
@@ -78,7 +75,7 @@ func RedeemtionOttoAGServices(req models.VoucherComultaiveReq, param models.Para
 		fmt.Println("[ Response Code RedeemVoucherOttoAg : ", getResp.Code)
 		if getResp.Code == "00" {
 			wg.Add(1)
-			go UseVoucherOttoAg(req, getResp, param, getRespUseVouChan, getRespUseVoucErr, &wg)
+			go useVoucherOttoAG(req, getResp, param, getRespUseVouChan, getRespUseVoucErr, &wg)
 			getResRedeem = <-getRespUseVouChan
 		}
 
@@ -334,7 +331,7 @@ func RedeemtionOttoAGServices(req models.VoucherComultaiveReq, param models.Para
 
 }
 
-func InquiryVoucherOttoAG(req models.VoucherComultaiveReq, param models.Params, getResp chan models.RedeemComuResp, ErrRespRedeem chan error) {
+func inquiryVoucherOttoAG(req models.VoucherComultaiveReq, param models.Params, getResp chan models.RedeemComuResp, ErrRespRedeem chan error) {
 	fmt.Println("[ >>>>>>>>>>>>>>>>>> Redeemtion Comulative Voucher Otto AG <<<<<<<<<<<<<<<< ]")
 	logrus.Info("[ Inquery OttoAG ] - [ Deduct point OPL & Deduct Voucher ]")
 
@@ -370,7 +367,7 @@ func InquiryVoucherOttoAG(req models.VoucherComultaiveReq, param models.Params, 
 	}
 
 	fmt.Println("[INQUIRY-BILLER][START]")
-	dataInquery, errInquiry := InquiryBiller(inqReq.Data, req, reqInq, param)
+	dataInquery, errInquiry := inquiryBiller(inqReq.Data, req, reqInq, param)
 
 	textCommentSpending := param.TrxID + "#" + param.NamaVoucher
 	param.Comment = textCommentSpending
@@ -412,7 +409,7 @@ func InquiryVoucherOttoAG(req models.VoucherComultaiveReq, param models.Params, 
 			Message: "Inquiry Failed",
 		}
 
-		go SaveTransactionOttoAg(paramInq, dataInquery, reqInq, req, constants.CODE_FAILED)
+		go services.SaveTransactionOttoAg(paramInq, dataInquery, reqInq, req, constants.CODE_FAILED)
 
 		ErrRespRedeem <- errInquiry
 
@@ -447,7 +444,7 @@ func InquiryVoucherOttoAG(req models.VoucherComultaiveReq, param models.Params, 
 			Message: "Inquiry Failed",
 		}
 
-		go SaveTransactionOttoAg(paramInq, dataInquery, reqInq, req, constants.CODE_FAILED)
+		go services.SaveTransactionOttoAg(paramInq, dataInquery, reqInq, req, constants.CODE_FAILED)
 
 		ErrRespRedeem <- errInquiry
 
@@ -474,7 +471,7 @@ func InquiryVoucherOttoAG(req models.VoucherComultaiveReq, param models.Params, 
 		paramInq.PointTransferID = resultRedeemVouch.PointTransferID
 	}
 
-	go SaveTransactionOttoAg(paramInq, dataInquery, reqInq, req, constants.CODE_SUCCESS)
+	go services.SaveTransactionOttoAg(paramInq, dataInquery, reqInq, req, constants.CODE_SUCCESS)
 
 	if resultRedeemVouch.Rc != "00" {
 		logrus.Error("[ Error Redeem_PointandVoucher] : ", resultRedeemVouch.Rc)
@@ -523,7 +520,7 @@ func InquiryVoucherOttoAG(req models.VoucherComultaiveReq, param models.Params, 
 
 }
 
-func InquiryBiller(reqdata interface{}, reqOP interface{}, req models.UseRedeemRequest, param models.Params) (ottoagmodels.OttoAGInquiryResponse, error) {
+func inquiryBiller(reqdata interface{}, reqOP interface{}, req models.UseRedeemRequest, param models.Params) (ottoagmodels.OttoAGInquiryResponse, error) {
 	resOttAG := ottoagmodels.OttoAGInquiryResponse{}
 
 	logrus.Info("[InquiryBiller-SERVICES][START]")
@@ -562,8 +559,23 @@ func InquiryBiller(reqdata interface{}, reqOP interface{}, req models.UseRedeemR
 	return resOttAG, nil
 }
 
-func PaymentVoucherOttoAG(req models.UseRedeemRequest, reqOP interface{}, param models.Params) models.UseRedeemResponse {
-	res := models.UseRedeemResponse{}
+func useVoucherOttoAG(req models.VoucherComultaiveReq, redeemComu models.RedeemComuResp, param models.Params, getRespChan chan models.RedeemResponse, ErrRespUseVouc chan error, wg *sync.WaitGroup) {
+	// fmt.Println("[ >>>>>>>>>>>>>>>>>> Use Voucher Comulative Voucher Otto AG <<<<<<<<<<<<<<<< ]")
+
+	defer wg.Done()
+	defer close(getRespChan)
+	defer close(ErrRespUseVouc)
+
+	// Reedem Use Voucher
+	param.Amount = redeemComu.Redeem.Amount
+	param.RRN = redeemComu.Redeem.Rrn
+	param.CouponID = redeemComu.CouponID
+	param.PointTransferID = redeemComu.PointTransferID
+	param.Comment = redeemComu.Comment
+	// resRedeem := services.RedeemUseVoucherComulative(req, param)
+
+	res := models.RedeemResponse{}
+
 	// ===== Payment OttoAG =====
 	fmt.Println(fmt.Sprintf("[PAYMENT-%v][START]", param.ProductType))
 	// fmt.Println("Param : ", param)
@@ -575,7 +587,7 @@ func PaymentVoucherOttoAG(req models.UseRedeemRequest, reqOP interface{}, param 
 		CustID:      req.CustID,
 		MemberID:    utils.MemberID,
 		Period:      req.CustID2,
-		Productcode: req.ProductCode,
+		Productcode: param.ProductCode,
 		Rrn:         param.RRN,
 	}
 
@@ -591,7 +603,12 @@ func PaymentVoucherOttoAG(req models.UseRedeemRequest, reqOP interface{}, param 
 		custId = req.CustID
 	}
 
-	billerRes := PaymentBiller(billerReq, reqOP, req, param)
+	billerRes := ottoagmodels.OttoAGPaymentRes{}
+
+	billerHead := ottoag.PackMessageHeader(billerReq)
+	logrus.Info("Nama Voucher : ", param.NamaVoucher)
+	billerDataHost, errPayment := ottoag.Send(billerReq, billerHead, "PAYMENT")
+	errPayment = json.Unmarshal(billerDataHost, &billerRes)
 
 	fmt.Println(fmt.Sprintf("Response OttoAG %v Payment : %v", param.ProductType, billerRes))
 	paramPay := models.Params{
@@ -606,7 +623,7 @@ func PaymentVoucherOttoAG(req models.UseRedeemRequest, reqOP interface{}, param 
 		Amount:          int64(billerRes.Amount),
 		NamaVoucher:     param.NamaVoucher,
 		ProductType:     param.ProductType,
-		ProductCode:     req.ProductCode,
+		ProductCode:     param.ProductCode,
 		Category:        param.Category,
 		Point:           param.Point,
 		ExpDate:         param.ExpDate,
@@ -630,47 +647,53 @@ func PaymentVoucherOttoAG(req models.UseRedeemRequest, reqOP interface{}, param 
 	fmt.Println(fmt.Sprintf("[Payment Response : %v]", billerRes))
 
 	// Time Out
-	if billerRes.Rc == "" {
+	if billerRes.Rc == "" || errPayment != nil {
 		fmt.Println(fmt.Sprintf("[Payment %v Time Out]", param.ProductType))
 
-		save := SaveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09")
+		save := services.SaveTransactionOttoAg(paramPay, billerRes, billerReq, req, "09")
+
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
-		res = models.UseRedeemResponse{
+		res = models.RedeemResponse{
 			// Rc:  "09",
 			// Msg: "Request in progress",
 			Rc:    "68",
 			Msg:   "Timeout",
 			Uimsg: "Timeout",
 		}
-		return res
+
+		getRespChan <- res
+
+		return
 	}
 
 	// Pending
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
 		fmt.Println(fmt.Sprintf("[Payment %v Pending]", param.ProductType))
 
-		save := SaveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "09")
+		save := services.SaveTransactionOttoAg(paramPay, billerRes, billerReq, req, "09")
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
-		res = models.UseRedeemResponse{
+		res = models.RedeemResponse{
 			// Rc:  "09",
 			// Msg: "Request in progress",
 			Rc:    billerRes.Rc,
 			Msg:   billerRes.Msg,
 			Uimsg: "Request in progress",
 		}
-		return res
+		getRespChan <- res
+
+		return
 	}
 
 	// Gagal
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
 		fmt.Println(fmt.Sprintf("[Payment %v Failed]", param.ProductType))
 
-		save := SaveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "01")
+		save := services.SaveTransactionOttoAg(paramPay, billerRes, billerReq, req, "01")
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
-		res = models.UseRedeemResponse{
+		res = models.RedeemResponse{
 			// Rc:  "01",
 			// Msg: "Payment Failed",
 			Rc:    billerRes.Rc,
@@ -678,7 +701,9 @@ func PaymentVoucherOttoAG(req models.UseRedeemRequest, reqOP interface{}, param 
 			Uimsg: "Payment Failed",
 		}
 
-		return res
+		getRespChan <- res
+
+		return
 	}
 
 	// Notif PLN
@@ -712,7 +737,7 @@ func PaymentVoucherOttoAG(req models.UseRedeemRequest, reqOP interface{}, param 
 			}
 			pubreqSMSNotif = append(pubreqSMSNotif, a)
 
-			go SendToPublisher(pubreqSMSNotif, utils.TopicNotifSMS)
+			go sendToPublisher(pubreqSMSNotif, utils.TopicNotifSMS)
 		}
 		if dtaIssuer.NOtificationID == constants.CODE_APPS_NOTIF || dtaIssuer.NOtificationID == constants.CODE_SMS_APPS_NOTIF {
 			fmt.Println("APP Notif : ", param.Category)
@@ -731,37 +756,8 @@ func PaymentVoucherOttoAG(req models.UseRedeemRequest, reqOP interface{}, param 
 					Value:       stroomToken,
 				},
 			}
-			go SendToPublisher(pubreq, utils.TopicsNotif)
+			go sendToPublisher(pubreq, utils.TopicsNotif)
 		}
-
-		// fmt.Println("========== Send Publisher =========")
-
-		// pubreq := models.NotifPubreq{
-		// 	Type:           constants.CODE_REDEEM_PLN,
-		// 	NotificationTo: param.AccountNumber,
-		// 	Institution:    param.InstitutionID,
-		// 	ReferenceId:    param.RRN,
-		// 	TransactionId:  param.Reffnum,
-		// 	Data: models.DataValue{
-		// 		RewardValue: denom,
-		// 		Value:       stroomToken,
-		// 	},
-		// }
-
-		// bytePub, _ := json.Marshal(pubreq)
-
-		// kafkaReq := kafka.PublishReq{
-		// 	Topic: utils.TopicsNotif,
-		// 	Value: bytePub,
-		// }
-
-		// kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
-		// if err != nil {
-		// 	fmt.Println("Gagal Send Publisher")
-		// 	fmt.Println("Error : ", err)
-		// }
-
-		// fmt.Println("Response Publisher : ", kafkaRes)
 
 	}
 
@@ -785,17 +781,17 @@ func PaymentVoucherOttoAG(req models.UseRedeemRequest, reqOP interface{}, param 
 				Value:       billerRes.Data.Code,
 			},
 		}
-		go SendToPublisher(pubreq, utils.TopicsNotif)
+		go sendToPublisher(pubreq, utils.TopicsNotif)
 	}
 
 	fmt.Println(fmt.Sprintf("[Payment %v Success]", param.ProductType))
-	save := SaveTransactionOttoAg(paramPay, billerRes, billerReq, reqOP, "00")
+	save := services.SaveTransactionOttoAg(paramPay, billerRes, billerReq, req, "00")
 	fmt.Println(fmt.Sprintf("[Response Save Payment %v : %v]", param.ProductType, save))
 
-	res = models.UseRedeemResponse{
-		Rc:          billerRes.Rc,
-		Rrn:         billerRes.Rrn,
-		Category:    param.Category,
+	res = models.RedeemResponse{
+		Rc:  billerRes.Rc,
+		Rrn: billerRes.Rrn,
+		// Category:    param.Category,
 		CustID:      billerReq.CustID,
 		ProductCode: billerReq.Productcode,
 		Amount:      int64(billerRes.Amount),
@@ -805,162 +801,12 @@ func PaymentVoucherOttoAG(req models.UseRedeemRequest, reqOP interface{}, param 
 		Datetime:    utils.GetTimeFormatYYMMDDHHMMSS(),
 	}
 
-	return res
+	getRespChan <- res
+
+	return
 }
 
-func PaymentBiller(reqdata interface{}, reqOP interface{}, req models.UseRedeemRequest, param models.Params) ottoagmodels.OttoAGPaymentRes {
-
-	res := ottoagmodels.OttoAGPaymentRes{}
-
-	logrus.Info("[PaymentBiller-SERVICES][START]")
-
-	billerHead := ottoag.PackMessageHeader(reqdata)
-	logrus.Info("Nama Voucher : ", param.NamaVoucher)
-	billerDataHost, err := ottoag.Send(reqdata, billerHead, "PAYMENT")
-
-	if err = json.Unmarshal(billerDataHost, &res); err != nil {
-		logs.Error("Failed to unmarshaling json response from ottoag", err)
-		res = ottoagmodels.OttoAGPaymentRes{
-			Rc:  "01",
-			Msg: "Payment Failed",
-		}
-
-		return res
-	}
-
-	if err != nil {
-		logs.Error("Failed to connect ottoag host", err)
-		res = ottoagmodels.OttoAGPaymentRes{
-			Rc:  "01",
-			Msg: "Payment Failed",
-		}
-
-		return res
-	}
-
-	return res
-}
-
-func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, status string) string {
-
-	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[%v]", param.ProductType))
-
-	// validasi vidio is_used -> false
-	isUsed := true
-	// codeVoucher := param.VoucherCode
-	var codeVoucher string
-	var ExpireDate time.Time
-	var redeemDate time.Time
-	var usedAt time.Time
-	trxID := utils.GenTransactionId()
-
-	if param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
-		// timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
-		// redeemDate = timeRedeem
-		codeVoucher = EncryptVoucherCode(param.VoucherCode, param.CouponID)
-		isUsed = true
-		ExpireDate = utils.ExpireDateVoucherAGt(constants.EXPDATE_VOUCHER)
-		redeemDate = time.Now()
-		trxID = param.TrxID
-		usedAt = time.Now()
-
-		if param.Category == constants.CategoryVidio {
-			isUsed = false // isUsed status untuk used
-			usedAt = time.Time{}
-		}
-
-	}
-
-	var saveStatus string
-	switch status {
-	case "00":
-		saveStatus = constants.Success
-	case "09":
-		saveStatus = constants.Pending
-	case "01":
-		saveStatus = constants.Failed
-		isUsed = true
-	}
-
-	reqOttoag, _ := json.Marshal(&reqdata)  // Req Ottoag
-	responseOttoag, _ := json.Marshal(&res) // Response Ottoag
-	reqdataOP, _ := json.Marshal(&reqOP)    // Req Service
-
-	save := dbmodels.TSpending{
-		ID:            utils.GenerateTokenUUID(),
-		AccountNumber: param.AccountNumber,
-		Voucher:       param.NamaVoucher,
-		MerchantID:    param.MerchantID,
-		CustID:        param.CustID,
-		RRN:           param.RRN,
-		// TransactionId: param.TrxID,
-		TransactionId: trxID,
-		ProductCode:   param.ProductCode,
-		Amount:        int64(param.Amount),
-		TransType:     param.TransType,
-		// IsUsed:          true,
-		IsUsed:      isUsed,
-		ProductType: param.ProductType,
-		Status:      saveStatus,
-		// ExpDate:         param.ExpDate,
-		ExpDate:           utils.DefaultNulTime(ExpireDate),
-		Institution:       param.InstitutionID,
-		CummulativeRef:    param.Reffnum,
-		DateTime:          utils.GetTimeFormatYYMMDDHHMMSS(),
-		Point:             param.Point,
-		ResponderRc:       param.DataSupplier.Rc,
-		ResponderRd:       param.DataSupplier.Rd,
-		RequestorData:     string(reqOttoag),
-		ResponderData:     string(responseOttoag),
-		RequestorOPData:   string(reqdataOP),
-		SupplierID:        param.SupplierID,
-		RedeemAt:          utils.DefaultNulTime(redeemDate),
-		CampaignId:        param.CampaignID,
-		VoucherCode:       codeVoucher,
-		CouponId:          param.CouponID,
-		AccountId:         param.AccountId,
-		ProductCategoryID: param.CategoryID,
-		Comment:           param.Comment,
-		MRewardID:         param.RewardID,
-		MProductID:        param.ProductID,
-		PointsTransferID:  param.PointTransferID,
-		UsedAt:            utils.DefaultNulTime(usedAt),
-	}
-
-	err := db.DbCon.Create(&save).Error
-	if err != nil {
-
-		fmt.Println(fmt.Sprintf("[Error : %v]", err))
-		fmt.Println("[Failed saveTransactionOttoAg to DB]")
-		fmt.Println(fmt.Sprintf("[TransType : %v || RRN : %v]", param.TransType, param.RRN))
-
-		name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
-		go utils.CreateCSVFile(save, name)
-
-		return "Gagal Save"
-
-	}
-
-	return "Berhasil Save"
-}
-
-func EncryptVoucherCode(data, key string) string {
-
-	var codeVoucher string
-	if data == "" {
-		return codeVoucher
-	}
-
-	a := []rune(key)
-	key32 := string(a[0:32])
-	screetKey := []byte(key32)
-	codeByte := []byte(data)
-	chiperText, _ := utils.EncryptAES(codeByte, screetKey)
-	codeVoucher = string(chiperText)
-	return codeVoucher
-}
-
-func SendToPublisher(pubreq interface{}, topic string) {
+func sendToPublisher(pubreq interface{}, topic string) {
 
 	bytePub, _ := json.Marshal(pubreq)
 
