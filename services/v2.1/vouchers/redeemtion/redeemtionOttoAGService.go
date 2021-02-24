@@ -394,7 +394,6 @@ func inquiryOttoAG(req models.VoucherComultaiveReq, param models.Params, header 
 	textCommentSpending := param.TrxID + "#" + param.NamaVoucher
 	param.Comment = textCommentSpending
 	paramInq := models.Params{
-		PaymentMethod: param.PaymentMethod,
 		AccountNumber: param.AccountNumber,
 		MerchantID:    param.MerchantID,
 		InstitutionID: param.InstitutionID,
@@ -596,7 +595,6 @@ func useVoucherOttoAG(req models.VoucherComultaiveReq, redeemComu models.RedeemC
 
 	fmt.Println(fmt.Sprintf("Response OttoAG %v Payment : %v", param.ProductType, billerRes))
 	paramPay := models.Params{
-		PaymentMethod:   param.PaymentMethod,
 		AccountNumber:   param.AccountNumber,
 		MerchantID:      param.MerchantID,
 		InstitutionID:   param.InstitutionID,
@@ -853,21 +851,6 @@ func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	reqOttoag, _ := json.Marshal(&reqdata)  // Req Ottoag
 	responseOttoag, _ := json.Marshal(&res) // Response Ottoag
 	reqdataOP, _ := json.Marshal(&req)      // Req Service
-
-	if param.PaymentMethod == constants.SplitBillMethod {
-
-		_, errUpdate := db.UpdateTransactionSplitBill(isUsed, param.TrxID, saveStatus, param.DataSupplier.Rc, param.DataSupplier.Rd, responseOttoag, reqOttoag, reqdataOP)
-		if errUpdate != nil {
-
-			logrus.Error(fmt.Sprintf("[UpdateTransactionSplitBill]-[SaveTransactionOttoAg]"))
-			logrus.Error(fmt.Sprintf("[TrxID : %v]-[Error : %v]", trxID, errUpdate))
-
-			return fmt.Sprintf("Gagal Updated " + trxID)
-		}
-
-		return fmt.Sprintf("Berhasil Updated " + trxID)
-
-	}
 
 	save := dbmodels.TSpending{
 		ID:            utils.GenerateTokenUUID(),

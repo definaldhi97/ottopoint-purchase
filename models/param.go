@@ -4,7 +4,6 @@ import "time"
 
 type Params struct {
 	ResponseCode  int
-	PaymentMethod int
 	AccountNumber string
 	Email         string
 	FirstName     string
