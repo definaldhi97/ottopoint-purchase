@@ -35,5 +35,7 @@ type DataSpendingPoint struct {
 type GetBalanceResponse struct {
 	ResponseCode string `json:"responseCode"`
 	ResponseDesc string `json:"responseDesc"`
-	Balance      int    `json:"balance"`
+	Data         struct {
+		Balance int `json:"balance"`
+	} `json:"data"`
 }

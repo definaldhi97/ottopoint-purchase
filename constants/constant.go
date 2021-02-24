@@ -6,6 +6,13 @@ const (
 )
 
 const (
+	FieldNoHP        = "001"
+	FieldIDPelanggan = "002"
+	FieldIDServer    = "003"
+	FieldNoKartu     = "004"
+)
+
+const (
 	NotifTypeCashPayment = "0"
 	NotifTypeQRPayment   = "1"
 )
