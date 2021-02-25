@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"ottopoint-images/db"
 	"ottopoint-purchase/models/dbmodels"
 	"time"
 
@@ -75,7 +74,7 @@ func GetDataSplitBillbyTrxID(trxId string) ([]GroupSPlitBill, error) {
 func UpdateTransactionSplitBill(used bool, trxID, status, rc, rd string, respVendor, reqVendor, reqOP interface{}) (dbmodels.TSpending, error) {
 
 	res := dbmodels.TSpending{}
-	tx := db.DbCon.Begin()
+	tx := DbCon.Begin()
 
 	queryString := fmt.Sprintf(`update t_spending set is_used = %v , status = %v, responder_data = %v, requestor_data = %v, responder_rc = %v, responder_rd = %v, requestor_op_data = %v where transaction_id = %v`, used, status, respVendor, reqVendor, rc, rd, reqOP)
 	if err := tx.Exec(queryString).Error; err != nil {

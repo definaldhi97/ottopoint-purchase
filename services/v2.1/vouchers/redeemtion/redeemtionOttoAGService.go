@@ -8,19 +8,16 @@ import (
 	ottoag "ottopoint-purchase/hosts/ottoag/host"
 	kafka "ottopoint-purchase/hosts/publisher/host"
 	"ottopoint-purchase/models"
-	"ottopoint-purchase/models/dbmodels"
 	ottoagmodels "ottopoint-purchase/models/ottoag"
 	"ottopoint-purchase/services"
 	"ottopoint-purchase/utils"
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"ottopoint-purchase/services/v2.1/Trx"
 
 	"github.com/sirupsen/logrus"
-	"github.com/vjeantet/jodaTime"
 )
 
 // func (t V21_VoucherOttoAgService) V21_VoucherOttoAg(req models.VoucherComultaiveReq, param models.Params, header models.RequestHeader) models.Response {
@@ -394,7 +391,6 @@ func inquiryOttoAG(req models.VoucherComultaiveReq, param models.Params, header 
 	textCommentSpending := param.TrxID + "#" + param.NamaVoucher
 	param.Comment = textCommentSpending
 	paramInq := models.Params{
-		PaymentMethod: param.PaymentMethod,
 		AccountNumber: param.AccountNumber,
 		MerchantID:    param.MerchantID,
 		InstitutionID: param.InstitutionID,
@@ -432,7 +428,7 @@ func inquiryOttoAG(req models.VoucherComultaiveReq, param models.Params, header 
 			Message: "Inquiry Failed",
 		}
 
-		go saveTransactionOttoAg(paramInq, resOttAG, reqInq, req, constants.CODE_FAILED)
+		go services.SaveTransactionOttoAg(paramInq, resOttAG, reqInq, req, constants.CODE_FAILED)
 
 		ErrRespRedeem <- errInquiry
 
@@ -467,7 +463,7 @@ func inquiryOttoAG(req models.VoucherComultaiveReq, param models.Params, header 
 			Message: "Inquiry Failed",
 		}
 
-		go saveTransactionOttoAg(paramInq, resOttAG, reqInq, req, constants.CODE_FAILED)
+		go services.SaveTransactionOttoAg(paramInq, resOttAG, reqInq, req, constants.CODE_FAILED)
 
 		ErrRespRedeem <- errInquiry
 
@@ -494,7 +490,7 @@ func inquiryOttoAG(req models.VoucherComultaiveReq, param models.Params, header 
 		paramInq.PointTransferID = resultRedeemVouch.PointTransferID
 	}
 
-	go saveTransactionOttoAg(paramInq, resOttAG, reqInq, req, constants.CODE_SUCCESS)
+	go services.SaveTransactionOttoAg(paramInq, resOttAG, reqInq, req, constants.CODE_SUCCESS)
 
 	if resultRedeemVouch.Rc != "00" {
 		logrus.Error("[ Error Redeem_PointandVoucher] : ", resultRedeemVouch.Rc)
@@ -596,7 +592,6 @@ func useVoucherOttoAG(req models.VoucherComultaiveReq, redeemComu models.RedeemC
 
 	fmt.Println(fmt.Sprintf("Response OttoAG %v Payment : %v", param.ProductType, billerRes))
 	paramPay := models.Params{
-		PaymentMethod:   param.PaymentMethod,
 		AccountNumber:   param.AccountNumber,
 		MerchantID:      param.MerchantID,
 		InstitutionID:   param.InstitutionID,
@@ -635,7 +630,7 @@ func useVoucherOttoAG(req models.VoucherComultaiveReq, redeemComu models.RedeemC
 	if billerRes.Rc == "" || errPayment != nil {
 		fmt.Println(fmt.Sprintf("[Payment %v Time Out]", param.ProductType))
 
-		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, req, "09")
+		save := services.SaveTransactionOttoAg(paramPay, billerRes, billerReq, req, "09")
 
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
@@ -656,7 +651,7 @@ func useVoucherOttoAG(req models.VoucherComultaiveReq, redeemComu models.RedeemC
 	if billerRes.Rc == "09" || billerRes.Rc == "68" {
 		fmt.Println(fmt.Sprintf("[Payment %v Pending]", param.ProductType))
 
-		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, req, "09")
+		save := services.SaveTransactionOttoAg(paramPay, billerRes, billerReq, req, "09")
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.RedeemResponse{
@@ -675,7 +670,7 @@ func useVoucherOttoAG(req models.VoucherComultaiveReq, redeemComu models.RedeemC
 	if billerRes.Rc != "00" && billerRes.Rc != "09" && billerRes.Rc != "68" {
 		fmt.Println(fmt.Sprintf("[Payment %v Failed]", param.ProductType))
 
-		save := saveTransactionOttoAg(paramPay, billerRes, billerReq, req, "01")
+		save := services.SaveTransactionOttoAg(paramPay, billerRes, billerReq, req, "01")
 		fmt.Println(fmt.Sprintf("[Response Save Payment Pulsa : %v]", save))
 
 		res = models.RedeemResponse{
@@ -770,7 +765,7 @@ func useVoucherOttoAG(req models.VoucherComultaiveReq, redeemComu models.RedeemC
 	}
 
 	fmt.Println(fmt.Sprintf("[Payment %v Success]", param.ProductType))
-	save := saveTransactionOttoAg(paramPay, billerRes, billerReq, req, "00")
+	save := services.SaveTransactionOttoAg(paramPay, billerRes, billerReq, req, "00")
 	fmt.Println(fmt.Sprintf("[Response Save Payment %v : %v]", param.ProductType, save))
 
 	res = models.RedeemResponse{
@@ -807,122 +802,4 @@ func sendToPublisher(pubreq interface{}, topic string) {
 	}
 
 	fmt.Println("Response Publisher : ", kafkaRes)
-}
-
-func saveTransactionOttoAg(param models.Params, res interface{}, reqdata interface{}, req interface{}, status string) string {
-
-	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[%v]", param.ProductType))
-
-	// validasi vidio is_used -> false
-	isUsed := true
-	// codeVoucher := param.VoucherCode
-	var codeVoucher string
-	var ExpireDate time.Time
-	var redeemDate time.Time
-	var usedAt time.Time
-	trxID := utils.GenTransactionId()
-
-	if param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
-		// timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
-		// redeemDate = timeRedeem
-		codeVoucher = utils.EncryptVoucherCode(param.VoucherCode, param.CouponID)
-		isUsed = true
-		ExpireDate = utils.ExpireDateVoucherAGt(constants.EXPDATE_VOUCHER)
-		redeemDate = time.Now()
-		trxID = param.TrxID
-		usedAt = time.Now()
-
-		if param.Category == constants.CategoryVidio {
-			isUsed = false // isUsed status untuk used
-			usedAt = time.Time{}
-		}
-
-	}
-
-	var saveStatus string
-	switch status {
-	case "00":
-		saveStatus = constants.Success
-	case "09":
-		saveStatus = constants.Pending
-	case "01":
-		saveStatus = constants.Failed
-		isUsed = true
-	}
-
-	reqOttoag, _ := json.Marshal(&reqdata)  // Req Ottoag
-	responseOttoag, _ := json.Marshal(&res) // Response Ottoag
-	reqdataOP, _ := json.Marshal(&req)      // Req Service
-
-	if param.PaymentMethod == constants.SplitBillMethod {
-
-		_, errUpdate := db.UpdateTransactionSplitBill(isUsed, param.TrxID, saveStatus, param.DataSupplier.Rc, param.DataSupplier.Rd, responseOttoag, reqOttoag, reqdataOP)
-		if errUpdate != nil {
-
-			logrus.Error(fmt.Sprintf("[UpdateTransactionSplitBill]-[SaveTransactionOttoAg]"))
-			logrus.Error(fmt.Sprintf("[TrxID : %v]-[Error : %v]", trxID, errUpdate))
-
-			return fmt.Sprintf("Gagal Updated " + trxID)
-		}
-
-		return fmt.Sprintf("Berhasil Updated " + trxID)
-
-	}
-
-	save := dbmodels.TSpending{
-		ID:            utils.GenerateTokenUUID(),
-		AccountNumber: param.AccountNumber,
-		Voucher:       param.NamaVoucher,
-		MerchantID:    param.MerchantID,
-		CustID:        param.CustID,
-		RRN:           param.RRN,
-		// TransactionId: param.TrxID,
-		TransactionId: trxID,
-		ProductCode:   param.ProductCode,
-		Amount:        int64(param.Amount),
-		TransType:     param.TransType,
-		// IsUsed:          true,
-		IsUsed:      isUsed,
-		ProductType: param.ProductType,
-		Status:      saveStatus,
-		// ExpDate:         param.ExpDate,
-		ExpDate:           utils.DefaultNulTime(ExpireDate),
-		Institution:       param.InstitutionID,
-		CummulativeRef:    param.Reffnum,
-		DateTime:          utils.GetTimeFormatYYMMDDHHMMSS(),
-		Point:             param.Point,
-		ResponderRc:       param.DataSupplier.Rc,
-		ResponderRd:       param.DataSupplier.Rd,
-		RequestorData:     string(reqOttoag),
-		ResponderData:     string(responseOttoag),
-		RequestorOPData:   string(reqdataOP),
-		SupplierID:        param.SupplierID,
-		RedeemAt:          utils.DefaultNulTime(redeemDate),
-		CampaignId:        param.CampaignID,
-		VoucherCode:       codeVoucher,
-		CouponId:          param.CouponID,
-		AccountId:         param.AccountId,
-		ProductCategoryID: param.CategoryID,
-		Comment:           param.Comment,
-		MRewardID:         param.RewardID,
-		MProductID:        param.ProductID,
-		PointsTransferID:  param.PointTransferID,
-		UsedAt:            utils.DefaultNulTime(usedAt),
-	}
-
-	err := db.DbCon.Create(&save).Error
-	if err != nil {
-
-		fmt.Println(fmt.Sprintf("[Error : %v]", err))
-		fmt.Println("[Failed saveTransactionOttoAg to DB]")
-		fmt.Println(fmt.Sprintf("[TransType : %v || RRN : %v]", param.TransType, param.RRN))
-
-		name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
-		go utils.CreateCSVFile(save, name)
-
-		return "Gagal Save"
-
-	}
-
-	return "Berhasil Save"
 }

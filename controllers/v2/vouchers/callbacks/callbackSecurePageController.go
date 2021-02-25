@@ -109,7 +109,7 @@ func CallBackSecurePageController(ctx *gin.Context) {
 		return
 	}
 
-	param := c.ParamRedeemtion(accountID, cekVoucher)
+	param := c.ParamRedeemtion(custID, cekVoucher)
 
 	if param.ResponseCode != 200 {
 
@@ -135,6 +135,7 @@ func CallBackSecurePageController(ctx *gin.Context) {
 	}
 
 	param.CampaignID = campaignID
+	param.AccountId = accountID
 	param.AccountNumber = accountNumber
 
 	logrus.Println("[Request]")

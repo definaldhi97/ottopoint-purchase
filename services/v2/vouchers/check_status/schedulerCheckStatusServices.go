@@ -5,7 +5,6 @@ import (
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/models"
-	"ottopoint-purchase/utils"
 
 	"github.com/sirupsen/logrus"
 )
@@ -32,7 +31,7 @@ func SchedulerCheckStatusService() interface{} {
 	csd := []models.SchedulerCheckStatusData{}
 
 	var sp, fp, tp int
-	var supplierSepulsa, supplierVoucherAG, supplierSP string
+	var supplierSepulsa, supplierVoucherAG string
 
 	for i := 0; i < count; i++ {
 
@@ -90,41 +89,6 @@ func SchedulerCheckStatusService() interface{} {
 			continue
 		}
 
-		if getData[i].Code == constants.CodeSchedulerSecurePage {
-			supplierSP = constants.SecurePage
-			total := getData[i].Count
-
-			errSP := CheckStatusSecurePageServices(utils.Before(getData[i].TransactionID, "PSM"))
-
-			if total == 10 || getData[i].IsDone == true {
-
-				// go db.UpdateSchedulerStatus(true, total, getData[i].TransactionID)
-
-				continue
-			}
-
-			if errSP != nil {
-
-				total = total + 1
-
-				logrus.Error(savericename)
-				logrus.Error(fmt.Sprintf("[CheckStatusVoucherAgService]-[Error : %v]", errSP))
-
-				// go db.UpdateSchedulerStatus(false, total, getData[i].TransactionID)
-
-				fp++
-				tp++
-				continue
-			}
-
-			go db.UpdateSchedulerStatus(true, total, getData[i].TransactionID)
-
-			sp++
-			tp++
-			continue
-
-		}
-
 	}
 
 	if supplierSepulsa != "" {
@@ -141,17 +105,6 @@ func SchedulerCheckStatusService() interface{} {
 	if supplierVoucherAG != "" {
 		dataVoucherAG := models.SchedulerCheckStatusData{
 			Supplier: supplierVoucherAG,
-			Success:  sp,
-			Failed:   fp,
-			Total:    tp,
-		}
-
-		csd = append(csd, dataVoucherAG)
-	}
-
-	if supplierSP != "" {
-		dataVoucherAG := models.SchedulerCheckStatusData{
-			Supplier: supplierSP,
 			Success:  sp,
 			Failed:   fp,
 			Total:    tp,

@@ -12,10 +12,3 @@ type UltraVoucherResp struct {
 	Failed  int    `json:"failed"`
 	Pending int    `json:"pending"`
 }
-
-type ParamUV struct {
-	Nama    string
-	Email   string
-	Phone   string
-	Expired string
-}
