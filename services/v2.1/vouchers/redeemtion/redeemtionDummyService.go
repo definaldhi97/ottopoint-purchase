@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
+	vgmodels "ottopoint-purchase/hosts/voucher_aggregator/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	"ottopoint-purchase/utils"
@@ -23,11 +24,23 @@ func RedeemtionDummyService(req models.VoucherComultaiveReq, param models.Params
 	}
 
 	param.TrxID = utils.GenTransactionId()
+	param.CumReffnum = utils.GenTransactionId()
+	textCommentSpending := param.TrxID + "#" + param.NamaVoucher
+	param.Comment = textCommentSpending
 
 	nameservice := "[PackageRedeemtion_V21_Services]-[RedeemtionDummyService]"
 	logReq := fmt.Sprintf("[CampaignID : %v, AccountNumber : %v]", req.CampaignID, param.AccountNumber)
 
 	redeem, errRedeem := Trx.V21_Redeem_PointandVoucher(1, param, header)
+	param.PointTransferID = redeem.PointTransferID
+
+	var coupon string
+	for _, val := range redeem.CouponseVouch {
+		coupon = val.CouponsID
+	}
+
+	param.CouponID = coupon
+
 	if errRedeem != nil || redeem.Rc != "00" {
 		logrus.Error(nameservice)
 		logrus.Error(fmt.Sprintf("[V21_Redeem_PointandVoucher]-[Error : %v]", errRedeem))
@@ -43,6 +56,17 @@ func RedeemtionDummyService(req models.VoucherComultaiveReq, param models.Params
 
 	save := saveTrxRedeemtionDUmmy(param, req, constants.Success)
 	logrus.Info("[Response Save : %v]", save)
+
+	res = models.Response{
+		Meta: utils.ResponseMetaOK(),
+		Data: vgmodels.ResponseVoucherAg{
+			Code:    "00",
+			Msg:     "Success",
+			Success: req.Jumlah,
+			Failed:  0,
+			Pending: 0,
+		},
+	}
 
 	return res
 }
@@ -76,7 +100,7 @@ func saveTrxRedeemtionDUmmy(param models.Params, req interface{}, status string)
 		TransactionId:  param.TrxID,
 		ProductCode:    param.ProductCode,
 		Amount:         int64(param.Amount),
-		TransType:      param.TransType,
+		TransType:      constants.CODE_TRANSTYPE_REDEMPTION,
 		IsUsed:         true,
 		ProductType:    param.ProductType,
 		Status:         saveStatus,
