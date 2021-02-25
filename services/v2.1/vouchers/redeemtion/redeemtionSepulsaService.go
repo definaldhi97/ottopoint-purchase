@@ -9,7 +9,7 @@ import (
 	sepulsa "ottopoint-purchase/hosts/sepulsa/host"
 	sepulsaModels "ottopoint-purchase/hosts/sepulsa/models"
 	"ottopoint-purchase/models"
-	v2_redeemtion "ottopoint-purchase/services/v2/vouchers/redeemtion"
+	"ottopoint-purchase/services"
 
 	V21_trx "ottopoint-purchase/services/v2.1/Trx"
 
@@ -160,7 +160,7 @@ func RedeemtionSepulsa_V21_Service(req models.VoucherComultaiveReq, param models
 			logrus.Println(logReq)
 
 			// Save Error Transaction
-			go v2_redeemtion.SaveTransactionSepulsa(param, errTransaction.Error(), reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
+			go services.SaveTransactionSepulsa(param, errTransaction.Error(), reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
 
 			trxIDReversal := utils.GenTransactionId()
 			param.TrxID = trxIDReversal
@@ -200,7 +200,7 @@ func RedeemtionSepulsa_V21_Service(req models.VoucherComultaiveReq, param models
 			logrus.Info("[ Response Publisher ] : ", kafkaRes)
 
 			// // Save Error Transaction
-			// go v2_redeemtion.SaveTransactionSepulsa(param, errTransaction.Error(), reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
+			// go services.SaveTransactionSepulsa(param, errTransaction.Error(), reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
 
 			res = models.Response{
 				Meta: utils.ResponseMetaOK(),
@@ -220,9 +220,9 @@ func RedeemtionSepulsa_V21_Service(req models.VoucherComultaiveReq, param models
 		param.RRN = sepulsaRes.TransactionID
 
 		id := utils.GenerateTokenUUID()
-		go v2_redeemtion.SaveTSchedulerRetry(param.RRN, constants.CodeSchedulerSepulsa)
-		go v2_redeemtion.SaveDBSepulsa(id, param.InstitutionID, couponID, couponCode, param.AccountNumber, param.AccountId, req.CampaignID)
-		go v2_redeemtion.SaveTransactionSepulsa(param, sepulsaRes, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09")
+		go services.SaveTSchedulerRetry(param.RRN, constants.CodeSchedulerSepulsa)
+		go services.SaveDBSepulsa(id, param.InstitutionID, couponID, couponCode, param.AccountNumber, param.AccountId, req.CampaignID)
+		go services.SaveTransactionSepulsa(param, sepulsaRes, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09")
 
 	}
 

@@ -4,28 +4,24 @@ import (
 	"encoding/json"
 	"fmt"
 	"ottopoint-purchase/constants"
-	"ottopoint-purchase/db"
 	kafka "ottopoint-purchase/hosts/publisher/host"
 	signature "ottopoint-purchase/hosts/signature/host"
 	vgmodels "ottopoint-purchase/hosts/voucher_aggregator/models"
 	"ottopoint-purchase/models"
-	"ottopoint-purchase/models/dbmodels"
+	"ottopoint-purchase/services"
 	"ottopoint-purchase/services/v2/Trx"
 	"ottopoint-purchase/utils"
 	"reflect"
 	"strconv"
-	"time"
 
 	vg "ottopoint-purchase/hosts/voucher_aggregator/host"
 
 	"github.com/sirupsen/logrus"
-	"github.com/vjeantet/jodaTime"
-	ODU "ottodigital.id/library/utils"
 )
 
 var (
-	HostPurcahse              = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_CALLBACK_VOUCHERAG", "http://13.228.25.85:8006")
-	CallbackOttoPointPurchase = ODU.GetEnv("OTTOPOINT_PURCHASE_CALLBACK_VOUCHERAG", "/transaction/v2/redeem/voucherag")
+	HostPurcahse              = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_CALLBACK_VOUCHERAG", "http://13.228.25.85:8006")
+	CallbackOttoPointPurchase = utils.GetEnv("OTTOPOINT_PURCHASE_CALLBACK_VOUCHERAG", "/transaction/v2/redeem/voucherag")
 )
 
 // func (t V2_VoucherAgServices) VoucherAg(req models.VoucherComultaiveReq, param models.Params, head models.RequestHeader) models.Response {
@@ -39,7 +35,7 @@ func RedeemtionAggServices(req models.VoucherComultaiveReq, param models.Params,
 
 	var res models.Response
 
-	dataOrder := DataParameterOrderVoucherAg()
+	dataOrder := services.DataParameterOrder(constants.CODE_CONFIG_AGG_GROUP, constants.CODE_CONFIG_AGG_NAME, constants.CODE_CONFIG_AGG_EMAIL, constants.CODE_CONFIG_AGG_PHONE, constants.CODE_CONFIG_AGG_EXPD)
 
 	timeExp, _ := strconv.Atoi(dataOrder.Expired)
 
@@ -225,8 +221,8 @@ func RedeemtionAggServices(req models.VoucherComultaiveReq, param models.Params,
 			t := i - 1
 			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
 			param.CouponID = coupon
-			go SaveTSchedulerRetry(param.TrxID, constants.CodeSchedulerVoucherAG)
-			go SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09", timeExp)
+			go services.SaveTSchedulerRetry(param.TrxID, constants.CodeSchedulerVoucherAG)
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09", timeExp)
 		}
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -295,7 +291,7 @@ func RedeemtionAggServices(req models.VoucherComultaiveReq, param models.Params,
 			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
 			param.CouponID = coupon
 
-			go SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01", timeExp)
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01", timeExp)
 		}
 
 		res = models.Response{
@@ -333,8 +329,8 @@ func RedeemtionAggServices(req models.VoucherComultaiveReq, param models.Params,
 			t := i - 1
 			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
 			param.CouponID = coupon
-			go SaveTSchedulerRetry(param.TrxID, constants.CodeSchedulerVoucherAG)
-			go SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09", timeExp)
+			go services.SaveTSchedulerRetry(param.TrxID, constants.CodeSchedulerVoucherAG)
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09", timeExp)
 
 		}
 
@@ -409,7 +405,7 @@ func RedeemtionAggServices(req models.VoucherComultaiveReq, param models.Params,
 			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
 			param.CouponID = coupon
 
-			go SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01", timeExp)
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01", timeExp)
 
 		}
 
@@ -477,8 +473,8 @@ func RedeemtionAggServices(req models.VoucherComultaiveReq, param models.Params,
 		param.VoucherLink = voucherLink
 
 		id := utils.GenerateTokenUUID()
-		go SaveDBVoucherAgMigrate(id, param.InstitutionID, param.CouponID, voucherCode, param.AccountNumber, param.AccountId, req.CampaignID)
-		go SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00", timeExp)
+		go services.SaveDBVoucherAgMigrate(id, param.InstitutionID, param.CouponID, voucherCode, param.AccountNumber, param.AccountId, req.CampaignID)
+		go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00", timeExp)
 
 	}
 
@@ -495,156 +491,4 @@ func RedeemtionAggServices(req models.VoucherComultaiveReq, param models.Params,
 
 	return res
 
-}
-
-func DataParameterOrderVoucherAg() models.ParamUV {
-
-	res := models.ParamUV{}
-
-	datanama, errnama := db.ParamData(constants.CODE_CONFIG_AGG_GROUP, constants.CODE_CONFIG_AGG_NAME)
-	if errnama != nil {
-		fmt.Println("[Error get data from Db m_paramaters]")
-		fmt.Println("Error : ", errnama)
-		fmt.Println("Code :", constants.CODE_CONFIG_AGG_NAME)
-	}
-
-	dataemail, erremail := db.ParamData(constants.CODE_CONFIG_AGG_GROUP, constants.CODE_CONFIG_AGG_EMAIL)
-	if erremail != nil {
-		fmt.Println("[Error get data from Db m_paramaters]")
-		fmt.Println("Error : ", erremail)
-		fmt.Println("Code :", constants.CODE_CONFIG_AGG_EMAIL)
-	}
-
-	dataphone, errphone := db.ParamData(constants.CODE_CONFIG_AGG_GROUP, constants.CODE_CONFIG_AGG_PHONE)
-	if errphone != nil {
-		fmt.Println("[Error get data from Db m_paramaters]")
-		fmt.Println("Error : ", errphone)
-		fmt.Println("Code :", constants.CODE_CONFIG_AGG_PHONE)
-	}
-
-	dataexpired, errexpired := db.ParamData(constants.CODE_CONFIG_AGG_GROUP, constants.CODE_CONFIG_AGG_EXPD)
-	if errexpired != nil {
-		fmt.Println("[Error get data from Db m_paramaters]")
-		fmt.Println("Error : ", errexpired)
-		fmt.Println("Code :", constants.CODE_CONFIG_AGG_EXPD)
-	}
-
-	res = models.ParamUV{
-		Nama:    datanama.Value,
-		Email:   dataemail.Value,
-		Phone:   dataphone.Value,
-		Expired: dataexpired.Value,
-	}
-
-	return res
-
-}
-
-func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, transType, status string, timeExpVouc int) {
-
-	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[VoucherAggregator]-[%v]", transType))
-
-	var ExpireDate time.Time
-	var redeemDate time.Time
-
-	var saveStatus string
-	isUsed := false
-	switch status {
-	case "00":
-		saveStatus = constants.Success
-	case "09":
-		saveStatus = constants.Pending
-	case "01":
-		saveStatus = constants.Failed
-		isUsed = true
-	}
-
-	reqUV, _ := json.Marshal(&reqdata)   // Req UV
-	responseUV, _ := json.Marshal(&res)  // Response UV
-	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
-
-	// expDate := ""
-	// if param.ExpDate != "" {
-	// 	layout := "2006-01-02 15:04:05"
-	// 	parse, _ := time.Parse(layout, param.ExpDate)
-
-	// 	expDate = jodaTime.Format("YYYY-MM-dd", parse)
-	// }
-
-	if transType == constants.CODE_TRANSTYPE_REDEMPTION {
-		ExpireDate = utils.ExpireDateVoucherAGt(timeExpVouc)
-		redeemDate = time.Now()
-	}
-
-	save := dbmodels.TSpending{
-		ID:              utils.GenerateTokenUUID(),
-		AccountNumber:   param.AccountNumber,
-		RRN:             param.RRN,
-		Voucher:         param.NamaVoucher,
-		MerchantID:      param.MerchantID,
-		TransactionId:   param.TrxID,
-		ProductCode:     param.ProductCodeInternal,
-		Amount:          int64(param.Amount),
-		TransType:       transType,
-		IsUsed:          isUsed,
-		ProductType:     param.ProductType,
-		Status:          saveStatus,
-		Institution:     param.InstitutionID,
-		CummulativeRef:  param.CumReffnum,
-		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
-		Point:           param.Point,
-		ResponderRc:     param.DataSupplier.Rc,
-		ResponderRd:     param.DataSupplier.Rd,
-		RequestorData:   string(reqUV),
-		ResponderData:   string(responseUV),
-		RequestorOPData: string(reqdataOP),
-		SupplierID:      param.SupplierID,
-		CouponId:        param.CouponID,
-		CampaignId:      param.CampaignID,
-		AccountId:       param.AccountId,
-		VoucherCode:     param.CouponCode,
-		VoucherLink:     param.VoucherLink,
-		ExpDate:         utils.DefaultNulTime(ExpireDate),
-		RedeemAt:        utils.DefaultNulTime(redeemDate),
-
-		Comment:           param.Comment,
-		MRewardID:         param.RewardID,
-		ProductCategoryID: param.CategoryID,
-		MProductID:        param.ProductID,
-		PointsTransferID:  param.PointTransferID,
-	}
-
-	err := db.DbCon.Create(&save).Error
-	if err != nil {
-		logrus.Info(fmt.Sprintf("[Error : %v]", err))
-		logrus.Info("[Failed Save to DB]")
-
-		name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
-		go utils.CreateCSVFile(save, name)
-
-		// return err
-
-	}
-
-}
-
-func SaveDBVoucherAgMigrate(id, institution, coupon, vouchercode, phone, custIdOPL, campaignID string) {
-
-	fmt.Println("[SaveDB]-[UltraVoucherServices]")
-
-	save := dbmodels.UserMyVocuher{
-		ID:            id,
-		InstitutionID: institution,
-		CouponID:      coupon,
-		VoucherCode:   vouchercode,
-		Phone:         phone,
-		AccountId:     custIdOPL,
-		CampaignID:    campaignID,
-	}
-
-	err := db.DbCon.Create(&save).Error
-	if err != nil {
-		fmt.Println("[Failed Save to DB ]", err)
-		fmt.Println("[Package-Services]-[UltraVoucherServices]")
-	}
 }

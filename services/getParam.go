@@ -2,49 +2,42 @@ package services
 
 import (
 	"fmt"
-	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/models"
 )
- 
-func DataParameterOrder() models.ParamUV {
-	res := models.ParamUV{}
 
-	// nama := "" // nama
-	// email := "UV_EMAIL_ORDER"
-	// phone := "UV_PHONE_ORDER"
-	// expired := "UV_EXPIRED_VOUCHER"
-	// group := "UVCONFIG"
+func DataParameterOrder(codeGroup, codeSupplier, codeEmail, codePhone, codeExpired string) models.ParamOrder {
+	res := models.ParamOrder{}
 
-	datanama, errnama := db.ParamData(constants.CODE_CONFIG_UV_GROUP, constants.CODE_CONFIG_UV_NAME)
+	datanama, errnama := db.ParamData(codeGroup, codeSupplier)
 	if errnama != nil {
 		fmt.Println("[Error get data from Db m_paramaters]")
 		fmt.Println("Error : ", errnama)
-		fmt.Println("Code :", constants.CODE_CONFIG_UV_NAME)
+		fmt.Println("Code :", codeSupplier)
 	}
 
-	dataemail, erremail := db.ParamData(constants.CODE_CONFIG_UV_GROUP, constants.CODE_CONFIG_UV_EMAIL)
+	dataemail, erremail := db.ParamData(codeGroup, codeEmail)
 	if erremail != nil {
 		fmt.Println("[Error get data from Db m_paramaters]")
 		fmt.Println("Error : ", erremail)
-		fmt.Println("Code :", constants.CODE_CONFIG_UV_EMAIL)
+		fmt.Println("Code :", codeEmail)
 	}
 
-	dataphone, errphone := db.ParamData(constants.CODE_CONFIG_UV_GROUP, constants.CODE_CONFIG_UV_PHONE)
+	dataphone, errphone := db.ParamData(codeGroup, codePhone)
 	if errphone != nil {
 		fmt.Println("[Error get data from Db m_paramaters]")
 		fmt.Println("Error : ", errphone)
-		fmt.Println("Code :", constants.CODE_CONFIG_UV_PHONE)
+		fmt.Println("Code :", codePhone)
 	}
 
-	dataexpired, errexpired := db.ParamData(constants.CODE_CONFIG_UV_GROUP, constants.CODE_CONFIG_UV_EXPIRED)
+	dataexpired, errexpired := db.ParamData(codeGroup, codeExpired)
 	if errexpired != nil {
 		fmt.Println("[Error get data from Db m_paramaters]")
 		fmt.Println("Error : ", errexpired)
-		fmt.Println("Code :", constants.CODE_CONFIG_UV_EXPIRED)
+		fmt.Println("Code :", codeExpired)
 	}
 
-	res = models.ParamUV{
+	res = models.ParamOrder{
 		Nama:    datanama.Value,
 		Email:   dataemail.Value,
 		Phone:   dataphone.Value,
