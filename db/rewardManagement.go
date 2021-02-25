@@ -62,6 +62,7 @@ func GetVoucherDetails(rewardID string) (models.VoucherDetailsManagement, error)
 	result.ExternalProductCode = dtaVoucher.ExternalProductCode
 	result.InternalProductCode = dtaVoucher.InternalProductCode
 	result.ProductID = dtaVoucher.ProductID
+	result.Fields = dtaVoucher.Fields
 
 	fmt.Println(result)
 
