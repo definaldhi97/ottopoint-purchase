@@ -23,6 +23,9 @@ func RedeemtionDummyService(req models.VoucherComultaiveReq, param models.Params
 	}
 
 	param.TrxID = utils.GenTransactionId()
+	param.CumReffnum = utils.GenTransactionId()
+	textCommentSpending := param.TrxID + "#" + param.NamaVoucher
+	param.Comment = textCommentSpending
 
 	nameservice := "[PackageRedeemtion_V21_Services]-[RedeemtionDummyService]"
 	logReq := fmt.Sprintf("[CampaignID : %v, AccountNumber : %v]", req.CampaignID, param.AccountNumber)
