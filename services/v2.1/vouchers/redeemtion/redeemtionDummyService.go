@@ -31,6 +31,15 @@ func RedeemtionDummyService(req models.VoucherComultaiveReq, param models.Params
 	logReq := fmt.Sprintf("[CampaignID : %v, AccountNumber : %v]", req.CampaignID, param.AccountNumber)
 
 	redeem, errRedeem := Trx.V21_Redeem_PointandVoucher(1, param, header)
+	param.PointTransferID = redeem.PointTransferID
+
+	var coupon string
+	for _, val := range redeem.CouponseVouch {
+		coupon = val.CouponsID
+	}
+
+	param.CouponID = coupon
+
 	if errRedeem != nil || redeem.Rc != "00" {
 		logrus.Error(nameservice)
 		logrus.Error(fmt.Sprintf("[V21_Redeem_PointandVoucher]-[Error : %v]", errRedeem))
@@ -79,7 +88,7 @@ func saveTrxRedeemtionDUmmy(param models.Params, req interface{}, status string)
 		TransactionId:  param.TrxID,
 		ProductCode:    param.ProductCode,
 		Amount:         int64(param.Amount),
-		TransType:      param.TransType,
+		TransType:      constants.CODE_TRANSTYPE_REDEMPTION,
 		IsUsed:         true,
 		ProductType:    param.ProductType,
 		Status:         saveStatus,
