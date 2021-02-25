@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
+	vgmodels "ottopoint-purchase/hosts/voucher_aggregator/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	"ottopoint-purchase/utils"
@@ -55,6 +56,17 @@ func RedeemtionDummyService(req models.VoucherComultaiveReq, param models.Params
 
 	save := saveTrxRedeemtionDUmmy(param, req, constants.Success)
 	logrus.Info("[Response Save : %v]", save)
+
+	res = models.Response{
+		Meta: utils.ResponseMetaOK(),
+		Data: vgmodels.ResponseVoucherAg{
+			Code:    "00",
+			Msg:     "Success",
+			Success: req.Jumlah,
+			Failed:  0,
+			Pending: 0,
+		},
+	}
 
 	return res
 }
