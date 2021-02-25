@@ -110,6 +110,7 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 	param.InstitutionID = header.InstitutionID
 	param.CampaignID = req.CampaignID
 	param.AccountNumber = dataToken.Data
+	param.AccountId = dataUser.CustID
 	param.MerchantID = dataUser.MerchantID
 	param.Fields = cekVoucher.Fields
 
