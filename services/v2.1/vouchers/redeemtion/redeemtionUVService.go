@@ -28,7 +28,7 @@ func RedeemtionUV_V21_Service(req models.VoucherComultaiveReq, param models.Para
 	nameservice := "[PackageRedeemtion]-[RedeemtionUV_V21_Service]"
 	logReq := fmt.Sprintf("[AccountNumber : %v, RewardID : %v]", param.AccountNumber, param.RewardID)
 
-	dataorder := services.DataParameterOrder()
+	dataorder := services.DataParameterOrder(constants.CODE_CONFIG_UV_GROUP, constants.CODE_CONFIG_UV_NAME, constants.CODE_CONFIG_UV_EMAIL, constants.CODE_CONFIG_UV_PHONE, constants.CODE_CONFIG_UV_EXPIRED)
 	param.CumReffnum = utils.GenTransactionId()
 
 	timeExp, _ := strconv.Atoi(dataorder.Expired)

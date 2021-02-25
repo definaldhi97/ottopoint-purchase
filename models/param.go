@@ -55,3 +55,10 @@ type Supplier struct {
 type DataErrorOPL struct {
 	Error string `json:"error"`
 }
+
+type ParamOrder struct {
+	Nama    string
+	Email   string
+	Phone   string
+	Expired string
+}

@@ -13,6 +13,7 @@ import (
 	"ottopoint-purchase/services/v2.1/Trx"
 
 	// "ottopoint-purchase/services/v2_migrate"
+	"ottopoint-purchase/services"
 	"ottopoint-purchase/utils"
 	"reflect"
 	"strconv"
@@ -34,7 +35,7 @@ func RedeemtionAG_V21_Services(req models.VoucherComultaiveReq, param models.Par
 
 	var res models.Response
 
-	dataOrder := v2_redeemtion.DataParameterOrderVoucherAg()
+	dataOrder := services.DataParameterOrder(constants.CODE_CONFIG_AGG_GROUP, constants.CODE_CONFIG_AGG_NAME, constants.CODE_CONFIG_AGG_EMAIL, constants.CODE_CONFIG_AGG_PHONE, constants.CODE_CONFIG_AGG_EXPD)
 
 	timeExp, _ := strconv.Atoi(dataOrder.Expired)
 
@@ -189,8 +190,8 @@ func RedeemtionAG_V21_Services(req models.VoucherComultaiveReq, param models.Par
 			t := i - 1
 			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
 			param.CouponID = coupon
-			go v2_redeemtion.SaveTSchedulerRetry(param.TrxID, constants.CodeSchedulerVoucherAG)
-			go v2_redeemtion.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09", timeExp)
+			go services.SaveTSchedulerRetry(param.TrxID, constants.CodeSchedulerVoucherAG)
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09", timeExp)
 		}
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -258,7 +259,7 @@ func RedeemtionAG_V21_Services(req models.VoucherComultaiveReq, param models.Par
 			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
 			param.CouponID = coupon
 
-			go v2_redeemtion.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01", timeExp)
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01", timeExp)
 		}
 
 		res = models.Response{
@@ -295,8 +296,8 @@ func RedeemtionAG_V21_Services(req models.VoucherComultaiveReq, param models.Par
 			t := i - 1
 			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
 			param.CouponID = coupon
-			go v2_redeemtion.SaveTSchedulerRetry(param.TrxID, constants.CodeSchedulerVoucherAG)
-			go v2_redeemtion.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09", timeExp)
+			go services.SaveTSchedulerRetry(param.TrxID, constants.CodeSchedulerVoucherAG)
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09", timeExp)
 
 		}
 
@@ -368,7 +369,7 @@ func RedeemtionAG_V21_Services(req models.VoucherComultaiveReq, param models.Par
 			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
 			param.CouponID = coupon
 
-			go v2_redeemtion.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01", timeExp)
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01", timeExp)
 
 		}
 
@@ -436,8 +437,8 @@ func RedeemtionAG_V21_Services(req models.VoucherComultaiveReq, param models.Par
 		param.VoucherLink = voucherLink
 
 		id := utils.GenerateTokenUUID()
-		go v2_redeemtion.SaveDBVoucherAgMigrate(id, param.InstitutionID, param.CouponID, voucherCode, param.AccountNumber, param.AccountId, req.CampaignID)
-		go v2_redeemtion.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00", timeExp)
+		go services.SaveDBVoucherAgMigrate(id, param.InstitutionID, param.CouponID, voucherCode, param.AccountNumber, param.AccountId, req.CampaignID)
+		go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00", timeExp)
 
 	}
 
