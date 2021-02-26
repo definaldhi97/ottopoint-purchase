@@ -6,7 +6,7 @@ import (
 	"ottopoint-purchase/models"
 
 	sepulsaModels "ottopoint-purchase/hosts/sepulsa/models"
-	services "ottopoint-purchase/services/v2/vouchers/callbacks"
+	services "ottopoint-purchase/services/v2.1/vouchers/callbacks"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -40,7 +40,7 @@ func CallbackSepulsaController(ctx *gin.Context) {
 		"OrderID : ", req.OrderID, "Price : ", req.Price, "Status : ", req.Status, "ResponseCode : ", req.ResponseCode, "SerialNumber : ", req.SerialNumber,
 		"Amount : ", req.Amount, "ProductID : ", req.ProductID, "Token : ", req.Token, "Data : ", req.Data)
 
-	res = services.CallbackVoucherSepulsaService(req)
+	res = services.CallbackVoucherSepulsa_V21_Service(req)
 
 	ctx.JSON(http.StatusOK, res)
 
