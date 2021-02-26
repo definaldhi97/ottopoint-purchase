@@ -69,6 +69,7 @@ func CallbackVoucherSepulsa_V21_Service(req sepulsaModels.CallbackTrxReq) models
 				Signature:     "-",
 			}
 
+			param.TrxID = utils.GenTransactionId()
 			resultReversal := Trx.V21_Adding_PointVoucher(param, spending.Point, 1, header)
 			logrus.Println(resultReversal)
 
