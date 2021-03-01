@@ -163,6 +163,19 @@ func RedeemtionSepulsaServices(req models.VoucherComultaiveReq, param models.Par
 		couponCode := RedeemVouchSP.CouponseVouch[t].CouponsCode
 		param.CouponID = couponID
 
+		for _, v := range param.Fields {
+			if v == constants.CODE_NOMOR_TELP {
+				switch string(req.CustID[0:2]) {
+				case "08":
+					req.CustID = fmt.Sprintf("0%s", req.CustID[1:])
+				case "62":
+					req.CustID = fmt.Sprintf("0%s", req.CustID[2:])
+				default:
+					req.CustID = fmt.Sprintf("0%s", req.CustID)
+				}
+			}
+		}
+
 		productID, _ := strconv.Atoi(param.ProductCode)
 		reqOrder := sepulsaModels.EwalletInsertTrxReq{
 			CustomerNumber: req.CustID,

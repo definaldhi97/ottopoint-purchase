@@ -8,7 +8,7 @@ import (
 	kafka "ottopoint-purchase/hosts/publisher/host"
 	sepulsaModels "ottopoint-purchase/hosts/sepulsa/models"
 	"ottopoint-purchase/models"
-	"ottopoint-purchase/services/v2/Trx"
+	"ottopoint-purchase/services/v2.1/Trx"
 	"ottopoint-purchase/utils"
 	"time"
 
@@ -58,7 +58,19 @@ func CallbackVoucherSepulsa_V21_Service(req sepulsaModels.CallbackTrxReq) models
 
 		if (responseCode != "Success") && (responseCode != "Pending") {
 
-			resultReversal := Trx.V2_Adding_PointVoucher(param, spending.Point, 1)
+			header := models.RequestHeader{
+				DeviceID:      "ottopoint-purchase",
+				InstitutionID: spending.Institution,
+				Geolocation:   "-",
+				ChannelID:     "H2H",
+				AppsID:        "-",
+				Timestamp:     utils.GetTimeFormatYYMMDDHHMMSS(),
+				Authorization: "-",
+				Signature:     "-",
+			}
+
+			param.TrxID = utils.GenTransactionId()
+			resultReversal := Trx.V21_Adding_PointVoucher(param, spending.Point, 1, header)
 			logrus.Println(resultReversal)
 
 			pubreq := models.NotifPubreq{
