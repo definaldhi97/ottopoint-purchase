@@ -77,6 +77,11 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 		return
 	}
 
+	// logrus.Info("BrandName : ", cekVoucher.BrandName)
+	// logrus.Info("Field : ", cekVoucher.Fields)
+
+	// return
+
 	// check user
 	dataUser, errUser := db.UserWithInstitution(dataToken.Data, header.InstitutionID)
 	if errUser != nil || dataUser.CustID == "" {
@@ -133,6 +138,10 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 		logrus.Println(" [ Product Agregator ]")
 		header.DeviceID = "H2H"
 		res = redeemtion.RedeemtionAG_V21_Services(req, param, header)
+	case constants.CODE_VENDOR_JempolKios:
+		logrus.Println(" [ Jempol Kios ]")
+		// header.DeviceID = "H2H"
+		res = redeemtion.RedeemtionJempolKios_V21_Services(req, param, header)
 	}
 
 	ctx.JSON(http.StatusOK, res)

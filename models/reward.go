@@ -21,6 +21,7 @@ type VoucherDetailsManagement1 struct {
 	InternalProductCode string         `gorm:"column:internal_code" json:"productCodeInternal"`
 	ProductID           string         `gorm:"column:m_product_id" json:"productID"`
 	Fields              pq.StringArray `gorm:"m_product_brand_id"`
+	// Fields string `gorm:"m_product_brand_id"`
 }
 
 type VoucherDetailsManagement struct {

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/models/dbmodels"
 	"time"
@@ -120,4 +121,74 @@ func UpdateVoucherAgSecond(status, respDesc, tspendingID string) (dbmodels.TSpen
 	logrus.Info("Update Voucher :", res)
 
 	return res, nil
+}
+
+type VoucherTypeDB struct {
+	VoucherType int
+
+	OrderId      string
+	ResponseCode string
+	ResponseDesc string
+
+	VoucherId    string
+	VoucherCode  string
+	VoucherName  string
+	IsRedeemed   bool
+	RedeemedDate string
+}
+
+func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string) error {
+	var status string
+	var err error
+
+	switch req.ResponseCode {
+	case "00":
+		status = "00"
+	case "09", "68":
+		status = "09"
+	default:
+		status = "01"
+	}
+
+	if trxId == "" {
+
+		logrus.Error("[PackageDB]-[UpdateVoucherbyVoucherType]")
+		logrus.Error(fmt.Sprintf("[TrxID Kosong]", trxId))
+
+		return err
+	}
+
+	// PPOB
+	if req.VoucherType == 1 {
+
+		if req.OrderId != "" {
+
+			err = DbCon.Raw(
+				"update t_spending set is_used = true, responder_rc = ?, responder_rd = ?, status = ?, rrn = ?, updated_at = ? where transaction_id = ?",
+				req.ResponseCode, req.ResponseDesc, status, req.OrderId, time.Now(), trxId).Error
+
+		} else {
+			err = DbCon.Raw(
+				"update t_spending set is_used = true, responder_rc = ?, responder_rd = ?, status = ?, updated_at = ? where transaction_id = ?",
+				req.ResponseCode, req.ResponseDesc, status, time.Now(), trxId).Error
+		}
+
+	}
+
+	// Voucher Code
+	if req.VoucherType == 2 {
+		err = DbCon.Raw(
+			"update t_spending set is_used = ?, rrn = ?, voucher_code = ?, used_at = ?, updated_at = ? where transaction_id = ?",
+			req.IsRedeemed, req.OrderId, req.VoucherCode, req.RedeemedDate, time.Now(), trxId).Error
+	}
+
+	if err != nil {
+
+		logrus.Error("[PackageDB]-[UpdateVoucherbyVoucherType]")
+		logrus.Error(fmt.Sprintf("[Failed get Data by TrxID : %v from TSpending]-[Error : %v]", trxId, err))
+
+		return err
+	}
+
+	return nil
 }

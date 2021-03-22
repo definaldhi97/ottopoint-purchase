@@ -20,8 +20,6 @@ import (
 	zaplog "github.com/opentracing-contrib/go-zap/log"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
-	ottologer "ottodigital.id/library/logger"
-	utilsgo "ottodigital.id/library/utils"
 
 	"net/http"
 )

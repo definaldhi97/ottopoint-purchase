@@ -1,17 +1,17 @@
 package models
 
 import (
+	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
 	"strconv"
 	"time"
-
-	ODU "ottodigital.id/library/utils"
 )
 
 var (
-	serverkey = ODU.GetEnv("OTTOPOINT_PURCHASE_VOUCHERAG_SESSIONKEY", "")
+	serverkey = utils.GetEnv("OTTOPOINT_PURCHASE_VOUCHERAG_SESSIONKEY", "")
 )
 
+// Order V1
 type RequestOrderVoucherAg struct {
 	ProductCode    string `json:"productCode"`
 	Qty            int    `json:"qty"`
@@ -26,6 +26,20 @@ type RequestOrderVoucherAg struct {
 type ResponseOrderVoucherAg struct {
 	ResponseCode string `json:"responseCode"`
 	ResponseDesc string `json:"responseDesc"`
+}
+
+// Order V1.1
+type RequestOrderVoucherAgV11 struct {
+	ProductCode string `json:"productCode"`
+	Qty         int    `json:"qty"`
+	// FieldValue  string `json:"fieldValue"`
+	FieldValue     []models.FieldsKey `json:"fieldValue"`
+	OrderID        string             `json:"orderId"`
+	CustomerName   string             `json:"customerName"`
+	CustomerEmail  string             `json:"customerEmail"`
+	CustomerPhone  string             `json:"customerPhone"`
+	DeliveryMethod int                `json:"deliveryMethod"`
+	RedeemCallback string             `json:"redeemCallback"`
 }
 
 type ResponseVoucherAg struct {
