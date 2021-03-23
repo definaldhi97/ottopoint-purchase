@@ -66,6 +66,11 @@ func Server(portStr string) error {
 		{
 			v21Root.GET("/voucher/view", vouchers.ViewVoucherController)
 			v21Root.GET("/usevoucher/vidio", use_vouchers.UseVoucherVidioController)
+
+			callbackv21 := apiRoot.Group("/callback")
+			{
+				callbackv21.POST("/partner", callback_v21.CallBackVoucherAG_V21_Controller)
+			}
 		}
 
 	}
