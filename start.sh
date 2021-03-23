@@ -79,7 +79,7 @@ export OTTOPOINT_PURCHASE_CALLBACK_VOUCHERAG="/transaction/v2/redeem/voucherag"
 export HOST_COREPOINT="http://34.101.175.164:8481"
 export HOST_OTTOPOINT_COREPOINT="http://34.101.175.164:8402"
 
-go run main.go
+# go run main.go
 
 # Build
 
