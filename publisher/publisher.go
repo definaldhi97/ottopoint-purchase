@@ -3,7 +3,6 @@ package publisher
 import (
 	"errors"
 	"fmt"
-	"ottopoint-purchase/redis"
 
 	"github.com/benmanns/goworker"
 	jsoniter "github.com/json-iterator/go"

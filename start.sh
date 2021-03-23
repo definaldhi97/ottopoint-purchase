@@ -87,10 +87,10 @@ git pull origin dev
 
 ./kill.sh
 
-export GO111MODULE="on"
+# export GO111MODULE="on"
 
 go build -o ottopoint-purchase
 
-export GO111MODULE="off"
+# export GO111MODULE="off"
 
 nohup ./ottopoint-purchase > nohup.out 2>&1 &
