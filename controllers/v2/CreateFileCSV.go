@@ -1,15 +1,13 @@
 package controllers
 
 import (
+	"fmt"
 	"ottopoint-purchase/utils"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	zaplog "github.com/opentracing-contrib/go-zap/log"
+	"github.com/sirupsen/logrus"
 	"github.com/vjeantet/jodaTime"
-	"go.uber.org/zap"
-	ottologer "ottodigital.id/library/logger"
-	utilsgo "ottodigital.id/library/utils"
 
 	"net/http"
 
@@ -20,14 +18,17 @@ func CreateFileCSVController(ctx *gin.Context) {
 	req := models.CreateCSV{}
 	res := models.Response{}
 
-	sugarLogger := ottologer.GetLogger()
-	namectrl := "[CreateFileCSVController]"
+	namectrl := "[PackageControllers]-[CreateFileCSVController]"
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+
+		logrus.Error(namectrl)
+		logrus.Error(fmt.Sprintf("[ShouldBindJSON]-[Error : %v]", err))
+		logrus.Println("Request : ", req)
+
 		res.Meta.Code = 03
 		res.Meta.Message = "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."
 		ctx.JSON(http.StatusOK, res)
-		go sugarLogger.Error("Error, body Request", zap.Error(err))
 		return
 	}
 
@@ -35,21 +36,8 @@ func CreateFileCSVController(ctx *gin.Context) {
 
 	go utils.CreateCSVFile(req, name)
 
-	span := TracingFirstControllerCtx(ctx, req, namectrl)
-
-	spanid := utilsgo.GetSpanId(span)
-	sugarLogger.Info("REQUEST:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
-		zap.Any("BODY", req))
-
-	sugarLogger.Info("RESPONSE:", zap.String("SPANID", spanid), zap.String("CTRL", namectrl),
-		zap.Any("BODY", res))
-
-	datalog := utils.LogSpanMax(res)
-	zaplog.InfoWithSpan(span, namectrl,
-		zap.Any("RESP", datalog),
-		zap.Duration("backoff", time.Second))
-
-	defer span.Finish()
 	ctx.JSON(http.StatusOK, res)
+
+	return
 
 }

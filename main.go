@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	_ "ottopoint-purchase/logging"
 	"ottopoint-purchase/routers"
 	"ottopoint-purchase/utils"
 	"runtime"

@@ -4,14 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"ottopoint-purchase/hosts/opl/models"
-	"time"
+	"ottopoint-purchase/utils"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/sirupsen/logrus"
-	hcmodels "ottodigital.id/library/healthcheck/models"
-	ODU "ottodigital.id/library/utils"
 )
 
 var (
@@ -37,28 +34,28 @@ var (
 )
 
 func init() {
-	host = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_OPL", "https://openloyalty-stg.ottopoint.id")
-	name = ODU.GetEnv("OTTOPOINT_PURCHASE_NAME_OPL", "OPENLOYALTY")
+	host = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_OPL", "https://openloyalty-stg.ottopoint.id")
+	name = utils.GetEnv("OTTOPOINT_PURCHASE_NAME_OPL", "OPENLOYALTY")
 
-	endpointRedeemVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM", "/api/customer/campaign/")
-	endpointRedeemCumulativeVoucher2 = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM_CUMULATIVE", "/api/customer/campaign/")
-	endpointRedeemCumulativeVoucher = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM_CUMULATIVE_v2", "/api/admin/customer/")
+	endpointRedeemVoucher = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM", "/api/customer/campaign/")
+	endpointRedeemCumulativeVoucher2 = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM_CUMULATIVE", "/api/customer/campaign/")
+	endpointRedeemCumulativeVoucher = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_REDEEM_CUMULATIVE_v2", "/api/admin/customer/")
 
-	endpointVoucherDetail = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_DETAIL", "/api/campaign/")
-	endpointHistoryVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_HISTORY_VOUCHER", "/api/customer/campaign/bought")
-	endpointCouponVoucherCustomer = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_COUPONVOUCHER", "/api/admin/campaign/coupons/mark_as_used")
+	endpointVoucherDetail = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHER_DETAIL", "/api/campaign/")
+	endpointHistoryVoucherCustomer = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_HISTORY_VOUCHER", "/api/customer/campaign/bought")
+	endpointCouponVoucherCustomer = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_COUPONVOUCHER", "/api/admin/campaign/coupons/mark_as_used")
 
-	endpointRulePoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_RULEPOINT", "/api/customer/earnRule/")
-	endpointListRulePoint = ODU.GetEnv("OTTOPOINT_PURCHASE_LIST_RULEPOINT", "/api/customer/earningRule")
+	endpointRulePoint = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_RULEPOINT", "/api/customer/earnRule/")
+	endpointListRulePoint = utils.GetEnv("OTTOPOINT_PURCHASE_LIST_RULEPOINT", "/api/customer/earningRule")
 
-	endpointAddedPoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_ADD_POINT", "/api/points/transfer/add")
-	endpointSpendPoint = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_SPEND_POINT", "/api/points/transfer/spend")
+	endpointAddedPoint = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_ADD_POINT", "/api/points/transfer/add")
+	endpointSpendPoint = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_SPEND_POINT", "/api/points/transfer/spend")
 
-	endpointSetting = ODU.GetEnv("OTTOPOINT_PURCHASE_SETTING_OPL", "/api/settings")
+	endpointSetting = utils.GetEnv("OTTOPOINT_PURCHASE_SETTING_OPL", "/api/settings")
 
-	endpointGetBalance = ODU.GetEnv("OTTOPOINT_PURCHASE_HOST_GET_BALANCE", "/api/admin/customer")
+	endpointGetBalance = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_GET_BALANCE", "/api/admin/customer")
 
-	// HealthCheckKey = ODU.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_OPL", "OTTOPOINT-PURCHASE:OTTOPOINT")
+	// HealthCheckKey = utils.GetEnv("OTTOPOINT_PURCHASE_KEY_HEALTHCHECK_OPL", "OTTOPOINT-PURCHASE:OTTOPOINT")
 }
 
 // Redeem Voucher
@@ -356,37 +353,4 @@ func SettingsOPL() (*models.SettingOPL, error) {
 		return &resp, err
 	}
 	return &resp, nil
-}
-
-// GetServiceHealthCheck ..
-func GetServiceHealthCheckOPL() hcmodels.ServiceHealthCheck {
-	res := hcmodels.ServiceHealthCheck{}
-	var erorr interface{}
-	// sugarLogger := service.General.OttoZapLog
-
-	PublicAddress := host + endpointListRulePoint
-	log.Print("url : ", PublicAddress)
-	res.Name = name
-	res.Address = PublicAddress
-	res.UpdatedAt = time.Now().UTC()
-
-	d, err := http.Get(PublicAddress)
-
-	erorr = err
-	if err != nil {
-		log.Print("masuk error")
-		res.Status = "Not OK"
-		res.Description = fmt.Sprintf("%v", erorr)
-		return res
-	}
-	if d.StatusCode != 200 {
-		res.Status = "Not OK"
-		res.Description = d.Status
-		return res
-	}
-
-	res.Status = "OK"
-	res.Description = ""
-
-	return res
 }
