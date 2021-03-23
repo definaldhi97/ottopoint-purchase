@@ -8,7 +8,6 @@ import (
 	signature "ottopoint-purchase/hosts/signature/host"
 	vgmodels "ottopoint-purchase/hosts/voucher_aggregator/models"
 	"ottopoint-purchase/models"
-	v2_redeemtion "ottopoint-purchase/services/v2/vouchers/redeemtion"
 
 	"ottopoint-purchase/services/v2.1/Trx"
 
@@ -21,6 +20,11 @@ import (
 	vg "ottopoint-purchase/hosts/voucher_aggregator/host"
 
 	"github.com/sirupsen/logrus"
+)
+
+var (
+	hostPurcahse    = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_CALLBACK_VOUCHERAG", "http://34.101.175.164:8006")
+	callbackPartner = utils.GetEnv("OTTOPOINT_PURCHASE_CALLBACK_VOUCHERAG", "/transaction/callback/partner")
 )
 
 func RedeemtionJempolKios_V21_Services(req models.VoucherComultaiveReq, param models.Params, head models.RequestHeader) models.Response {
@@ -208,7 +212,7 @@ func RedeemtionJempolKios_V21_Services(req models.VoucherComultaiveReq, param mo
 		CustomerEmail:  dataOrder.Email,
 		CustomerPhone:  dataOrder.Phone,
 		DeliveryMethod: 1,
-		RedeemCallback: v2_redeemtion.HostPurcahse + v2_redeemtion.CallbackOttoPointPurchase,
+		RedeemCallback: hostPurcahse + callbackPartner,
 	}
 
 	fmt.Println("Start - OrderVoucherAggregator")
