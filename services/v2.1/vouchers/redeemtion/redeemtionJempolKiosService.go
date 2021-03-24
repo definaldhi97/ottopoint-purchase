@@ -24,7 +24,7 @@ import (
 
 var (
 	hostPurcahse    = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_CALLBACK_PARTNER", "http://34.101.175.164:8006")
-	callbackPartner = utils.GetEnv("OTTOPOINT_PURCHASE_CALLBACK_PARTNER, "/transaction/callback/partner")
+	callbackPartner = utils.GetEnv("OTTOPOINT_PURCHASE_CALLBACK_PARTNER", "/transaction/callback/partner")
 )
 
 func RedeemtionJempolKios_V21_Services(req models.VoucherComultaiveReq, param models.Params, head models.RequestHeader) models.Response {
