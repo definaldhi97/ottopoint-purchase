@@ -117,6 +117,7 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 	param.AccountNumber = dataToken.Data
 	param.MerchantID = dataUser.MerchantID
 	param.Fields = cekVoucher.Fields
+	param.CustID = req.CustID
 
 	logrus.Println("[Request]")
 	logrus.Info("CampaignId : ", req.CampaignID, "CustID : ", req.CustID, "CustID2 : ", req.CustID2, "Jumlah : ", req.Jumlah)

@@ -22,7 +22,8 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 	logrus.Info(nameservice)
 
 	// validate TrxID
-	_, errTrxId := db.CheckTrxbyTrxID(req.TransactionId)
+	errTrxId := db.CheckTrxbyTrxID(req.OrderId)
+	logrus.Println(">>> CheckTrxbyTrxID <<<")
 	if errTrxId != nil {
 
 		logrus.Error(nameservice)
@@ -35,10 +36,14 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 
 	}
 
+	logrus.Println(">>> Lanjut <<<")
+
 	reUpdate := db.VoucherTypeDB{}
 
 	// PPOB (1)
 	if req.VoucherType == constants.VoucherTypePPOB {
+
+		logrus.Println(">>> PPOB <<<")
 
 		reUpdate = db.VoucherTypeDB{
 			VoucherType:  1,
@@ -47,7 +52,8 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 			ResponseDesc: req.Data.ResponseDesc,
 		}
 
-		go db.UpdateVoucherbyVoucherType(reUpdate, req.OrderId)
+		update := db.UpdateVoucherbyVoucherType(reUpdate, req.OrderId)
+		logrus.Info("Response Update : ", update)
 	} else {
 		res = utils.GetMessageResponse(res, 500, false, errors.New("Internal Server Error"))
 
