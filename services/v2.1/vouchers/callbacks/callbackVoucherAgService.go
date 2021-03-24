@@ -42,12 +42,12 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 
 		reUpdate = db.VoucherTypeDB{
 			VoucherType:  1,
-			OrderId:      req.OrderId,
+			OrderId:      req.TransactionId,
 			ResponseCode: req.Data.ResponseCode,
 			ResponseDesc: req.Data.ResponseDesc,
 		}
 
-		go db.UpdateVoucherbyVoucherType(reUpdate, req.TransactionId)
+		go db.UpdateVoucherbyVoucherType(reUpdate, req.OrderId)
 	} else {
 		res = utils.GetMessageResponse(res, 500, false, errors.New("Internal Server Error"))
 
