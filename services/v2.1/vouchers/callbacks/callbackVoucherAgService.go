@@ -42,7 +42,7 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 
 		reUpdate = db.VoucherTypeDB{
 			VoucherType:  1,
-			OrderId:      req.Data.OrderId,
+			OrderId:      req.OrderId,
 			ResponseCode: req.Data.ResponseCode,
 			ResponseDesc: req.Data.ResponseDesc,
 		}

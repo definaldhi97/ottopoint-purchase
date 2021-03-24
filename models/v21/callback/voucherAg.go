@@ -1,12 +1,13 @@
 package callback
 
 type CallbackVoucherAGReq struct {
-	InstitutionId    string              `json:"institutionId"`
-	NotificationType string              `json:"notificationType"`
-	NotificationTo   string              `json:"notificationTo"`
-	TransactionId    string              `json:"transactionId"`
-	VoucherType      string              `json:"voucherType"`
-	Data             DataVoucherTypePPOB `json:"data"`
+	InstitutionId    string `json:"institutionId"`
+	NotificationType string `json:"notificationType"`
+	// NotificationTo   string              `json:"notificationTo"`
+	TransactionId string              `json:"transactionId"`
+	VoucherType   string              `json:"voucherType"`
+	OrderId       string              `json:"orderId"`
+	Data          DataVoucherTypePPOB `json:"data"`
 }
 
 type CallbackVoucherAGReq1 struct {
@@ -20,7 +21,6 @@ type CallbackVoucherAGReq1 struct {
 
 // Voucher type PPOB
 type DataVoucherTypePPOB struct {
-	OrderId      string `json:"orderId"`
 	ResponseCode string `json:"responseCode"`
 	ResponseDesc string `json:"responseDesc"`
 }
