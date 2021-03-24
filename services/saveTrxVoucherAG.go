@@ -56,6 +56,7 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		RRN:             param.RRN,
 		Voucher:         param.NamaVoucher,
 		MerchantID:      param.MerchantID,
+		CustID:          param.CustID,
 		TransactionId:   param.TrxID,
 		ProductCode:     param.ProductCodeInternal,
 		Amount:          int64(param.Amount),
@@ -119,6 +120,6 @@ func SaveDBVoucherAgMigrate(id, institution, coupon, vouchercode, phone, custIdO
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
 		fmt.Println("[Failed Save to DB ]", err)
-		fmt.Println("[Package-Services]-[UltraVoucherServices]")
+		fmt.Println("[Package-Services]-[SaveDBVoucherAgMigrate]")
 	}
 }
