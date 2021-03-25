@@ -109,7 +109,7 @@ func CallBackSecurePageController(ctx *gin.Context) {
 		return
 	}
 
-	param := c.ParamRedeemtion(custID, cekVoucher)
+	param := c.ParamRedeemtion(accountID, "", cekVoucher)
 
 	if param.ResponseCode != 200 {
 

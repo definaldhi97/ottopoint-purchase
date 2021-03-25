@@ -82,7 +82,7 @@ func RedeemtionController(ctx *gin.Context) {
 		return
 	}
 
-	param := c.ParamRedeemtion(dataUser.CustID, cekVoucher)
+	param := c.ParamRedeemtion(dataUser.CustID, req.CustID, cekVoucher)
 	if param.ResponseCode != 200 {
 
 		logrus.Error(namectrl)
