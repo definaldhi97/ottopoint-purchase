@@ -28,3 +28,11 @@ type RedeemVoucher struct {
 type CountVoucherRedeemed struct {
 	Count int `gorm:"column:count" json:"count"`
 }
+
+type NewResponseRedeemtion struct {
+	Code    string `json:"code"`
+	Msg     string `json:"msg"`
+	Success int    `json:"success"`
+	Failed  int    `json:"failed"`
+	Pending int    `json:"pending"`
+}
