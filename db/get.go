@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
+
+	"github.com/sirupsen/logrus"
 )
 
 func GetConfig() (dbmodels.Configs, error) {
@@ -165,9 +167,8 @@ func ParamData(group, code string) (dbmodels.MParameters, error) {
 	err := DbCon.Raw(`select * from public.m_parameters mp where mp."group" = ? and  mp.code = ?`, group, code).Scan(&res).Error
 	if err != nil {
 
-		fmt.Println("[EEROR-DATABASE]")
-		fmt.Println("[db]-[GetVoucherUV]")
-		fmt.Println(fmt.Sprintf("Failed to connect database Voucher UV %v", err))
+		logrus.Error("[PackageDB]-[ParamData]")
+		logrus.Error(fmt.Sprintf("[Failed get from MParameters]-[Error : %v]", err))
 
 		return res, err
 	}

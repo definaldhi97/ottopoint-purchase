@@ -1,9 +1,10 @@
 package services
 
 import (
-	"fmt"
 	"ottopoint-purchase/db"
 	"ottopoint-purchase/models"
+
+	"github.com/sirupsen/logrus"
 )
 
 func DataParameterOrder(codeGroup, codeSupplier, codeEmail, codePhone, codeExpired string) models.ParamOrder {
@@ -11,30 +12,30 @@ func DataParameterOrder(codeGroup, codeSupplier, codeEmail, codePhone, codeExpir
 
 	datanama, errnama := db.ParamData(codeGroup, codeSupplier)
 	if errnama != nil {
-		fmt.Println("[Error get data from Db m_paramaters]")
-		fmt.Println("Error : ", errnama)
-		fmt.Println("Code :", codeSupplier)
+		logrus.Error("[Error get data from Db m_paramaters]")
+		logrus.Error("Error : ", errnama)
+		logrus.Error("Code :", codeSupplier)
 	}
 
 	dataemail, erremail := db.ParamData(codeGroup, codeEmail)
 	if erremail != nil {
-		fmt.Println("[Error get data from Db m_paramaters]")
-		fmt.Println("Error : ", erremail)
-		fmt.Println("Code :", codeEmail)
+		logrus.Error("[Error get data from Db m_paramaters]")
+		logrus.Error("Error : ", erremail)
+		logrus.Error("Code :", codeEmail)
 	}
 
 	dataphone, errphone := db.ParamData(codeGroup, codePhone)
 	if errphone != nil {
-		fmt.Println("[Error get data from Db m_paramaters]")
-		fmt.Println("Error : ", errphone)
-		fmt.Println("Code :", codePhone)
+		logrus.Error("[Error get data from Db m_paramaters]")
+		logrus.Error("Error : ", errphone)
+		logrus.Error("Code :", codePhone)
 	}
 
 	dataexpired, errexpired := db.ParamData(codeGroup, codeExpired)
 	if errexpired != nil {
-		fmt.Println("[Error get data from Db m_paramaters]")
-		fmt.Println("Error : ", errexpired)
-		fmt.Println("Code :", codeExpired)
+		logrus.Error("[Error get data from Db m_paramaters]")
+		logrus.Error("Error : ", errexpired)
+		logrus.Error("Code :", codeExpired)
 	}
 
 	res = models.ParamOrder{

@@ -7,7 +7,6 @@ import (
 	"ottopoint-purchase/db"
 
 	"ottopoint-purchase/models"
-	"ottopoint-purchase/redis"
 	"ottopoint-purchase/utils"
 
 	"github.com/gin-gonic/gin"
@@ -23,7 +22,7 @@ func HealthCheckService(ctx *gin.Context) {
 	response = models.Response{
 		Meta: utils.GetMetaResponse(constants.KeyResponseSucceed),
 		Data: models.HealthcheckResponse{
-			Redis:    redis.GetRedisClusterHealthCheck(),
+			// Redis:    redis.GetRedisClusterHealthCheck(),
 			Database: db.GetHealthCheck(),
 			// Service:  serviceHc,
 		},

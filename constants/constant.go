@@ -6,6 +6,13 @@ const (
 )
 
 const (
+	FieldNoHP        = "001"
+	FieldIDPelanggan = "002"
+	FieldIDServer    = "003"
+	FieldNoKartu     = "004"
+)
+
+const (
 	NotifTypeCashPayment = "0"
 	NotifTypeQRPayment   = "1"
 )
@@ -222,11 +229,12 @@ const (
 )
 
 const (
-	CODE_VENDOR_OTTOAG    = "A1OAG001"
-	CODE_VENDOR_UV        = "A1UVO002"
-	CODE_VENDOR_SEPULSA   = "A1SPS003"
-	CODE_VENDOR_AGREGATOR = "A1OPG004"
-	CODE_VENDOR_DUMY      = "A1ODM005"
+	CODE_VENDOR_OTTOAG     = "A1OAG001"
+	CODE_VENDOR_UV         = "A1UVO002"
+	CODE_VENDOR_SEPULSA    = "A1SPS003"
+	CODE_VENDOR_AGREGATOR  = "A1OPG004"
+	CODE_VENDOR_DUMY       = "A1ODM005"
+	CODE_VENDOR_JempolKios = "A1OJP004"
 )
 
 const (
@@ -264,6 +272,13 @@ const (
 )
 
 const (
-	CODE_NOMOR_TELP  = "001"
-	CODE_NOMOR_KARTU = "002"
+	CODE_NOMOR_TELP   = "001"
+	CODE_ID_Pelanggan = "002"
+	CODE_ID_Server    = "003"
+	CODE_NOMOR_KARTU  = "004"
+)
+
+const (
+	VoucherTypePPOB        = "ppob"
+	VoucherTypeVoucherCode = "voucher_code"
 )

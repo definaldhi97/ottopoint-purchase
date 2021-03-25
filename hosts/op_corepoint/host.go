@@ -23,7 +23,7 @@ func init() {
 	host = utils.GetEnv("HOST_OTTOPOINT_COREPOINT", "http://13.228.25.85:8402")
 	endpointAdding = utils.GetEnv("ENDPOINT_ADDING_OTTOPOINT_COREPOINT", "/v1/points/transfer/add")
 	endpointSpending = utils.GetEnv("ENDPOINT_SEPENDING_OTTOPOINT_COREPOINT", "/v1/points/transfer/spend")
-	endpointGetBalance = utils.GetEnv("ENDPOINT_SEPENDING_OTTOPOINT_COREPOINT", "/v1/account/wallet/balance?")
+	endpointGetBalance = utils.GetEnv("ENDPOINT_SEPENDING_OTTOPOINT_COREPOINT", "/v1/account/wallet/balance")
 }
 
 func AddingPoint(req AddingPointReq, headerReq models.RequestHeader) (*TrxPointRes, error) {
@@ -96,7 +96,10 @@ func GetBalancePoint(accountID string) (*GetBalanceResponse, error) {
 
 	var result GetBalanceResponse
 
-	urlSvr := host + endpointGetBalance + accountID
+	logrus.Info("CustID : ", accountID)
+
+	accountId := "?accountId=" + accountID
+	urlSvr := host + endpointGetBalance + accountId
 
 	header := make(http.Header)
 

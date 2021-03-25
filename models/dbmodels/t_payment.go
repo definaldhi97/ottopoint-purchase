@@ -10,8 +10,8 @@ type TPayment struct {
 	Value          int64      `grom:"value"`
 	ValueType      string     `gorm:"value_type"`
 	Status         string     `gorm:"status"`
-	ResponseRc     string     `gorm:"response_rc"`
-	ResponseRd     string     `gorm:"response_rd"`
+	ResponderRc    string     `gorm:"responder_rc"`
+	ResponderRd    string     `gorm:"responder_rd"`
 	CreatedBy      string     `gorm:"created_by"`
 	UpdatedBy      string     `gorm:"updated_by"`
 	CreatedAt      time.Time  `gorm:"created_at"`

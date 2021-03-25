@@ -73,7 +73,7 @@ func ParamRedeemtion(custId string, data models.VoucherDetailsManagement) models
 		ProductID:           data.ProductID,
 
 		// InstitutionID:       header.InstitutionID,
-		AccountId: custId,
+		// AccountId: custId,
 		// CampaignID:          campaignId,
 		Fields: data.Fields,
 	}

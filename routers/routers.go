@@ -11,6 +11,8 @@ import (
 	callbacks "ottopoint-purchase/controllers/v2/vouchers/callbacks"
 	use_vouchers "ottopoint-purchase/controllers/v2/vouchers/use_vouchers"
 
+	redeem "ottopoint-purchase/controllers/v2/vouchers/redeemtion"
+
 	callback_v21 "ottopoint-purchase/controllers/v2.1/vouchers/callbacks"
 	redeemv21 "ottopoint-purchase/controllers/v2.1/vouchers/redeemtion"
 
@@ -57,12 +59,18 @@ func Server(portStr string) error {
 			v2Root.POST("/status/sepulsa", callback_v21.CallBackSepulsa_V21_Controller)
 			v2Root.POST("/redeem/voucherag", callbacks.CallbackVoucherAggController)
 			v2Root.POST("/usevoucher_uv", callbacks.CallBackUVController)
+			v2Root.POST("/payment", redeem.PaymentSplitBillController)
 		}
 
 		v21Root := apiRoot.Group("/v2.1")
 		{
 			v21Root.GET("/voucher/view", vouchers.ViewVoucherController)
 			v21Root.GET("/usevoucher/vidio", use_vouchers.UseVoucherVidioController)
+
+			callbackv21 := apiRoot.Group("/callback")
+			{
+				callbackv21.POST("/partner", callback_v21.CallBackVoucherAG_V21_Controller)
+			}
 		}
 
 	}
