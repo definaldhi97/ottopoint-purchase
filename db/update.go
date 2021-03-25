@@ -138,6 +138,9 @@ type VoucherTypeDB struct {
 }
 
 func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string) error {
+	res := dbmodels.TSpending{}
+	logrus.Println(">>> UpdateVoucherbyVoucherType <<<")
+
 	var status string
 	var err error
 
@@ -161,16 +164,18 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string) error {
 	// PPOB
 	if req.VoucherType == 1 {
 
+		logrus.Println(">>> VoucherType PPOB <<<")
+
 		if req.OrderId != "" {
 
 			err = DbCon.Raw(
-				"update t_spending set is_used = true, responder_rc = ?, responder_rd = ?, status = ?, rrn = ?, updated_at = ? where transaction_id = ?",
-				req.ResponseCode, req.ResponseDesc, status, req.OrderId, time.Now(), trxId).Error
+				"update t_spending set responder_rc = ?, responder_rd = ?, status = ?, rrn = ?, updated_at = ? where cummulative_ref = ?",
+				req.ResponseCode, req.ResponseDesc, status, req.OrderId, time.Now(), trxId).Scan(&res).Error
 
 		} else {
 			err = DbCon.Raw(
-				"update t_spending set is_used = true, responder_rc = ?, responder_rd = ?, status = ?, updated_at = ? where transaction_id = ?",
-				req.ResponseCode, req.ResponseDesc, status, time.Now(), trxId).Error
+				"update t_spending set responder_rc = ?, responder_rd = ?, status = ?, updated_at = ? where cummulative_ref = ?",
+				req.ResponseCode, req.ResponseDesc, status, time.Now(), trxId).Scan(&res).Error
 		}
 
 	}
@@ -178,8 +183,8 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string) error {
 	// Voucher Code
 	if req.VoucherType == 2 {
 		err = DbCon.Raw(
-			"update t_spending set is_used = ?, rrn = ?, voucher_code = ?, used_at = ?, updated_at = ? where transaction_id = ?",
-			req.IsRedeemed, req.OrderId, req.VoucherCode, req.RedeemedDate, time.Now(), trxId).Error
+			"update t_spending set is_used = ?, rrn = ?, voucher_code = ?, used_at = ?, updated_at = ? where cummulative_ref = ?",
+			req.IsRedeemed, req.OrderId, req.VoucherCode, req.RedeemedDate, time.Now(), trxId).Scan(&res).Error
 	}
 
 	if err != nil {

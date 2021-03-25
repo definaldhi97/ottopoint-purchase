@@ -41,6 +41,7 @@ func RedeemtionJempolKios_V21_Services(req models.VoucherComultaiveReq, param mo
 	timeExp, _ := strconv.Atoi(dataOrder.Expired)
 
 	param.CumReffnum = utils.GenTransactionId()
+	param.TrxID = utils.GenTransactionId()
 
 	param.Amount = int64(param.Point)
 
@@ -259,8 +260,8 @@ func RedeemtionJempolKios_V21_Services(req models.VoucherComultaiveReq, param mo
 			t := i - 1
 			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
 			param.CouponID = coupon
-			go services.SaveTSchedulerRetry(param.TrxID, constants.CodeSchedulerVoucherAG)
-			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09", timeExp)
+			// go services.SaveTSchedulerRetry(param.TrxID, constants.CodeSchedulerVoucherAG)
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Pending, timeExp)
 		}
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -328,7 +329,7 @@ func RedeemtionJempolKios_V21_Services(req models.VoucherComultaiveReq, param mo
 			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
 			param.CouponID = coupon
 
-			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01", timeExp)
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)
 		}
 
 		res = models.Response{
@@ -365,8 +366,8 @@ func RedeemtionJempolKios_V21_Services(req models.VoucherComultaiveReq, param mo
 			t := i - 1
 			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
 			param.CouponID = coupon
-			go services.SaveTSchedulerRetry(param.TrxID, constants.CodeSchedulerVoucherAG)
-			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09", timeExp)
+			// go services.SaveTSchedulerRetry(param.TrxID, constants.CodeSchedulerVoucherAG)
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Pending, timeExp)
 
 		}
 
@@ -438,7 +439,7 @@ func RedeemtionJempolKios_V21_Services(req models.VoucherComultaiveReq, param mo
 			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
 			param.CouponID = coupon
 
-			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01", timeExp)
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)
 
 		}
 
@@ -457,59 +458,62 @@ func RedeemtionJempolKios_V21_Services(req models.VoucherComultaiveReq, param mo
 
 	}
 
-	// Check Order Status
-	statusOrder, errStatus := vg.CheckStatusOrder(vgmodels.RequestCheckOrderStatus{
-		OrderID:       param.CumReffnum,
-		RecordPerPage: fmt.Sprintf("%d", req.Jumlah),
-		CurrentPage:   "1",
-	}, head)
+	// // Check Order Status
+	// statusOrder, errStatus := vg.CheckStatusOrder(vgmodels.RequestCheckOrderStatus{
+	// 	OrderID:       param.CumReffnum,
+	// 	RecordPerPage: fmt.Sprintf("%d", req.Jumlah),
+	// 	CurrentPage:   "1",
+	// }, head)
 
-	if errStatus != nil {
+	// if errStatus != nil {
 
-		// Handle Error Here
-		fmt.Println("Internal Server Error : ", errorder)
-		fmt.Println("ResponseCode : ", order.ResponseCode)
-		fmt.Println("[VoucherAgServices]-[FailedCheckOrderStatus]")
-		fmt.Println(fmt.Sprintf("[Response %v]", order.ResponseCode))
+	// 	// Handle Error Here
+	// 	fmt.Println("Internal Server Error : ", errorder)
+	// 	fmt.Println("ResponseCode : ", order.ResponseCode)
+	// 	fmt.Println("[VoucherAgServices]-[FailedCheckOrderStatus]")
+	// 	fmt.Println(fmt.Sprintf("[Response %v]", order.ResponseCode))
 
-	}
+	// }
 
-	param.RRN = statusOrder.Data.TransactionID
+	// param.RRN = statusOrder.Data.TransactionID
 
-	for i := req.Jumlah; i > 0; i-- {
-		fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
+	// for i := req.Jumlah; i > 0; i-- {
+	// 	fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
 
-		t := i - 1
-		coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
-		param.CouponID = coupon
-		// code := RedeemVouchAG.CouponseVouch[t].CouponsCode
+	// 	t := i - 1
+	// 	coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
+	// 	param.CouponID = coupon
+	// 	// code := RedeemVouchAG.CouponseVouch[t].CouponsCode
 
-		// voucherID := statusOrder.Data.Vouchers[t].VoucherID
-		voucherCode := statusOrder.Data.Vouchers[t].VoucherCode
-		expDate := statusOrder.Data.Vouchers[t].ExpiredDate
-		voucherLink := statusOrder.Data.Vouchers[t].Link
+	// 	// voucherID := statusOrder.Data.Vouchers[t].VoucherID
+	// 	voucherCode := statusOrder.Data.Vouchers[t].VoucherCode
+	// 	expDate := statusOrder.Data.Vouchers[t].ExpiredDate
+	// 	voucherLink := statusOrder.Data.Vouchers[t].Link
 
-		a := []rune(param.CouponID)
-		key32 := string(a[0:32])
-		key := []byte(key32)
-		chiperText := []byte(voucherCode)
-		plaintText, err := utils.EncryptAES(chiperText, key)
-		if err != nil {
-			res = utils.GetMessageFailedErrorNew(res, constants.RC_FAILED_DECRYPT_VOUCHER, constants.RD_FAILED_DECRYPT_VOUCHER)
-			return res
-		}
+	// 	a := []rune(param.CouponID)
+	// 	key32 := string(a[0:32])
+	// 	key := []byte(key32)
+	// 	chiperText := []byte(voucherCode)
+	// 	plaintText, err := utils.EncryptAES(chiperText, key)
+	// 	if err != nil {
+	// 		res = utils.GetMessageFailedErrorNew(res, constants.RC_FAILED_DECRYPT_VOUCHER, constants.RD_FAILED_DECRYPT_VOUCHER)
+	// 		return res
+	// 	}
 
-		// Use Voucher ID as a Transaction ID
-		param.TrxID = utils.GenTransactionId()
-		param.ExpDate = expDate
-		param.CouponCode = fmt.Sprintf("%s", plaintText)
-		param.VoucherLink = voucherLink
+	// 	// Use Voucher ID as a Transaction ID
+	// 	param.TrxID = utils.GenTransactionId()
+	// 	param.ExpDate = expDate
+	// 	param.CouponCode = fmt.Sprintf("%s", plaintText)
+	// 	param.VoucherLink = voucherLink
 
-		id := utils.GenerateTokenUUID()
-		go services.SaveDBVoucherAgMigrate(id, param.InstitutionID, param.CouponID, voucherCode, param.AccountNumber, param.AccountId, req.CampaignID)
-		go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00", timeExp)
+	// id := utils.GenerateTokenUUID()
+	// go services.SaveDBVoucherAgMigrate(id, param.InstitutionID, param.CouponID, voucherCode, param.AccountNumber, param.AccountId, req.CampaignID)
+	// go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00", timeExp)
 
-	}
+	// }
+
+	// go services.SaveDBVoucherAgMigrate(id, param.InstitutionID, param.CouponID, voucherCode, param.AccountNumber, param.AccountId, req.CampaignID)
+	go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Pending, timeExp)
 
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),

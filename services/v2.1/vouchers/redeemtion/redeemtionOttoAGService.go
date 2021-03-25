@@ -419,6 +419,10 @@ func inquiryOttoAG(req models.VoucherComultaiveReq, param models.Params, header 
 		},
 	}
 
+	if req.CustID2 != "" {
+		paramInq.CustID = req.CustID + " || " + req.CustID2
+	}
+
 	if resOttAG.Rc != constants.CODE_SUCCESS || errInquiry != nil {
 		fmt.Println("[Error-DataInquiry]-[Redeem Comulative Voucher Otto AG]")
 		fmt.Println("[Error : %v]", errInquiry)

@@ -33,8 +33,12 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		isUsed = true
 	}
 
-	reqUV, _ := json.Marshal(&reqdata)   // Req UV
-	responseUV, _ := json.Marshal(&res)  // Response UV
+	if param.SupplierID == constants.CODE_VENDOR_JempolKios {
+		isUsed = true
+	}
+
+	reqVAG, _ := json.Marshal(&reqdata)  // Req UV
+	responseVAG, _ := json.Marshal(&res) // Response UV
 	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
 
 	// expDate := ""
@@ -56,6 +60,7 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		RRN:             param.RRN,
 		Voucher:         param.NamaVoucher,
 		MerchantID:      param.MerchantID,
+		CustID:          param.CustID,
 		TransactionId:   param.TrxID,
 		ProductCode:     param.ProductCodeInternal,
 		Amount:          int64(param.Amount),
@@ -69,8 +74,8 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		Point:           param.Point,
 		ResponderRc:     param.DataSupplier.Rc,
 		ResponderRd:     param.DataSupplier.Rd,
-		RequestorData:   string(reqUV),
-		ResponderData:   string(responseUV),
+		RequestorData:   string(reqVAG),
+		ResponderData:   string(responseVAG),
 		RequestorOPData: string(reqdataOP),
 		SupplierID:      param.SupplierID,
 		CouponId:        param.CouponID,
@@ -119,6 +124,6 @@ func SaveDBVoucherAgMigrate(id, institution, coupon, vouchercode, phone, custIdO
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
 		fmt.Println("[Failed Save to DB ]", err)
-		fmt.Println("[Package-Services]-[UltraVoucherServices]")
+		fmt.Println("[Package-Services]-[SaveDBVoucherAgMigrate]")
 	}
 }
