@@ -78,8 +78,8 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 			Data: models.NewResponseRedeemtion{
 				Code:    "162",
 				Msg:     "Voucher Not Found",
-				Success: req.Jumlah,
-				Failed:  0,
+				Success: 0,
+				Failed:  req.Jumlah,
 				Pending: 0,
 			},
 		}
@@ -109,7 +109,7 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 				Code:    "72",
 				Msg:     "User belum Eligible",
 				Success: 0,
-				Failed:  0,
+				Failed:  req.Jumlah,
 				Pending: 0,
 			},
 		}
@@ -118,7 +118,7 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 		return
 	}
 
-	param := c.ParamRedeemtion(dataUser.CustID, cekVoucher)
+	param := c.ParamRedeemtion(dataUser.CustID, req.CustID, cekVoucher)
 	if param.ResponseCode != 200 {
 
 		logrus.Error(namectrl)
@@ -132,7 +132,7 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 				Code:    "203",
 				Msg:     "Invalid BrandName / Prefix",
 				Success: 0,
-				Failed:  0,
+				Failed:  req.Jumlah,
 				Pending: 0,
 			},
 		}
