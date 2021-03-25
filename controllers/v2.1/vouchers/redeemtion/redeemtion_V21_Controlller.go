@@ -72,7 +72,19 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 		logrus.Error(namectrl)
 		logrus.Error(fmt.Sprintf("[GetVoucherDetails]-[Error : %v]", errVoucher))
 
-		res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
+		// res = utils.GetMessageResponse(res, 404, false, errors.New("Voucher Not Found"))
+
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: models.NewResponseRedeemtion{
+				Code:    "162",
+				Msg:     "Voucher Not Found",
+				Success: 0,
+				Failed:  req.Jumlah,
+				Pending: 0,
+			},
+		}
+
 		ctx.JSON(http.StatusOK, res)
 		return
 	}
@@ -85,18 +97,41 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 		logrus.Error(namectrl)
 		logrus.Error(fmt.Sprintf("[CheckToken]-[Error : %v]", errUser))
 
-		res = utils.GetMessageResponse(res, 404, false, errors.New("User belum Eligible"))
+		// res = utils.GetMessageResponse(res, 404, false, errors.New("User belum Eligible"))
+
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: models.NewResponseRedeemtion{
+				Code:    "72",
+				Msg:     "User belum Eligible",
+				Success: 0,
+				Failed:  req.Jumlah,
+				Pending: 0,
+			},
+		}
+
 		ctx.JSON(http.StatusOK, res)
 		return
 	}
 
-	param := c.ParamRedeemtion(dataUser.CustID, cekVoucher)
+	param := c.ParamRedeemtion(dataUser.CustID, req.CustID, cekVoucher)
 	if param.ResponseCode != 200 {
 
 		logrus.Error(namectrl)
 		logrus.Error(fmt.Sprintf("[ParamRedeemtion]-[Response : %v]", param))
 
 		res = utils.GetMessageResponse(res, 404, false, errors.New("Invalid BrandName / Prefix"))
+
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: models.NewResponseRedeemtion{
+				Code:    "203",
+				Msg:     "Invalid BrandName / Prefix",
+				Success: 0,
+				Failed:  req.Jumlah,
+				Pending: 0,
+			},
+		}
 
 		ctx.JSON(http.StatusOK, res)
 		return

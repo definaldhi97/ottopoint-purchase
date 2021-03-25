@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func ParamRedeemtion(custId string, data models.VoucherDetailsManagement) models.Params {
+func ParamRedeemtion(accountId, custId string, data models.VoucherDetailsManagement) models.Params {
 
 	fmt.Println("[Start]-[ParamRedeemtion]")
 
@@ -73,7 +73,7 @@ func ParamRedeemtion(custId string, data models.VoucherDetailsManagement) models
 		ProductID:           data.ProductID,
 
 		// InstitutionID:       header.InstitutionID,
-		AccountId: custId,
+		AccountId: accountId,
 		// CampaignID:          campaignId,
 		Fields: data.Fields,
 	}
