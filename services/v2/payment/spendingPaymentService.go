@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"github.com/vjeantet/jodaTime"
 )
 
 func SpendingPaymentService(req sp.SpendingPaymentReq, param models.Params, header models.RequestHeader) models.Response {
@@ -67,6 +68,8 @@ func saveTSpending(req sp.SpendingPaymentReq, param models.Params, idSpending, s
 	nameservice := "[PackagePayment]-[SaveTSpending]"
 	logReq := fmt.Sprintf("[AccountNumber : %v || ReferenceId : %v]", req.AccountNumber, req.ReferenceId)
 
+	invoiceNumber := jodaTime.Format("YYYYMMDD", time.Now()) + utils.GenTransactionId()[:7]
+
 	save := dbmodels.TSpending{
 		ID:            idSpending,
 		AccountNumber: param.AccountNumber,
@@ -106,6 +109,7 @@ func saveTSpending(req sp.SpendingPaymentReq, param models.Params, idSpending, s
 		// MProductID       : ,
 		// VoucherLink      : ,
 		PointsTransferID: param.PointTransferID,
+		InvoiceNumber:    invoiceNumber, // INVYYYYMMDDXXXX > 15 digit total
 	}
 
 	err := db.DbCon.Create(&save).Error
