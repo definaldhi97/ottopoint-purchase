@@ -84,7 +84,7 @@ func saveTSpending(req sp.SpendingPaymentReq, param models.Params, idSpending, s
 		// ExpDate          : ,
 		Institution: param.InstitutionID,
 		// CummulativeRef   : ,
-		// DateTime         : ,
+		DateTime: req.TransactionTime,
 		// ResponderData    : ,
 		Point: req.Point,
 		// ResponderRc      : ,
