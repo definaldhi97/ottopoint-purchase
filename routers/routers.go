@@ -61,8 +61,8 @@ func Server(portStr string) error {
 
 			h2h := v2Root.Group("/payment")
 			{
-				h2h.POST("/reversal ", payment.ReversalPaymentController)
-				h2h.POST("/spending ", payment.SpendingPaymentController)
+				h2h.POST("/reversal", payment.ReversalPaymentController)
+				h2h.POST("/spending", payment.SpendingPaymentController)
 			}
 
 		}
