@@ -128,7 +128,7 @@ func PaymentSplitBillController(ctx *gin.Context) {
 
 	}
 
-	param := v.ParamRedeemtion(dataUser.CustID, custId, cekVoucher)
+	param := v.ParamRedeemtion(custId, cekVoucher)
 
 	reqOP := models.VoucherComultaiveReq{
 		Jumlah:     1,

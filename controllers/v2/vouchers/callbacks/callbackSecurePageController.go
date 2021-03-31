@@ -74,6 +74,7 @@ func CallBackSecurePageController(ctx *gin.Context) {
 		accountID = val.AccountId
 		accountNumber = val.AccountNumber
 		campaignID = val.CampaignId
+		custID = val.CustID
 
 		if val.ExternalReffId == req.TrxRef {
 			balancePoint = val.Value
@@ -109,7 +110,7 @@ func CallBackSecurePageController(ctx *gin.Context) {
 		return
 	}
 
-	param := c.ParamRedeemtion(accountID, "", cekVoucher)
+	param := c.ParamRedeemtion(accountID, custID, cekVoucher)
 
 	if param.ResponseCode != 200 {
 
