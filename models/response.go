@@ -26,6 +26,7 @@ type ContentErrorCode struct {
 }
 
 type ResponseData struct {
-	ResponseCode string `json:"responseCode"`
-	ResponseDesc string `json:"responseDesc"`
+	ResponseCode string      `json:"responseCode"`
+	ResponseDesc string      `json:"responseDesc"`
+	Data         interface{} `json:"data"`
 }
