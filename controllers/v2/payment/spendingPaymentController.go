@@ -50,7 +50,7 @@ func SpendingPaymentController(ctx *gin.Context) {
 		return
 	}
 
-	if req.TransType != constants.CodeRedeemtion || req.TransType != constants.CodeSplitBill {
+	if req.TransType != constants.CodeRedeemtion && req.TransType != constants.CodeSplitBill {
 
 		logrus.Error(namectrl)
 		logrus.Error(fmt.Sprintf("[Invalid Mandatory]-[TransType : %v]", req.TransType))
@@ -116,6 +116,7 @@ func SpendingPaymentController(ctx *gin.Context) {
 		return
 	}
 
+	param.AccountNumber = req.AccountNumber
 	param.AccountId = dataUser.CustID
 	param.InstitutionID = header.InstitutionID
 	param.Point = req.Point

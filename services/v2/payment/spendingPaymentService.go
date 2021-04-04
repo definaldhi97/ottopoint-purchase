@@ -37,6 +37,9 @@ func SpendingPaymentService(req sp.SpendingPaymentReq, param models.Params, head
 
 	param.TrxID = utils.GenTransactionId()
 	idSpending := utils.GenerateUUID()
+	param.Comment = param.TrxID + header.InstitutionID + "#" + req.ProductName
+
+	invoiceNumber := jodaTime.Format("YYYYMMDD", time.Now()) + utils.GenTransactionId()[:7]
 
 	spend, errSpend := SpendPointService(param, header)
 	param.PointTransferID = spend.PointTransferID
@@ -46,29 +49,35 @@ func SpendingPaymentService(req sp.SpendingPaymentReq, param models.Params, head
 		logrus.Error(fmt.Sprintf("[SpendPointService]-[Error : %v]", errSpend))
 		logrus.Println(logReq)
 
-		go saveTSpending(req, param, idSpending, constants.Failed)
+		go saveTSpending(req, param, idSpending, invoiceNumber, constants.Failed)
 
 		res = utils.GetMessageResponse(res, 209, false, errors.New("Gagal Spend Point"))
 
 		return res
 	}
 
-	go saveTSpending(req, param, idSpending, constants.Failed)
+	go saveTSpending(req, param, idSpending, invoiceNumber, constants.Success)
 
 	if req.TransType == constants.CodeSplitBill {
 		go saveTPayemnt(req, param, idSpending, constants.Success)
+	}
+
+	res = models.Response{
+		Meta: utils.ResponseMetaOK(),
+		Data: map[string]interface{}{
+			"referenceId":   req.ReferenceId,
+			"invoiceNumber": invoiceNumber,
+		},
 	}
 
 	return res
 
 }
 
-func saveTSpending(req sp.SpendingPaymentReq, param models.Params, idSpending, status string) {
+func saveTSpending(req sp.SpendingPaymentReq, param models.Params, idSpending, invoiceNumber, status string) {
 
 	nameservice := "[PackagePayment]-[SaveTSpending]"
 	logReq := fmt.Sprintf("[AccountNumber : %v || ReferenceId : %v]", req.AccountNumber, req.ReferenceId)
-
-	invoiceNumber := jodaTime.Format("YYYYMMDD", time.Now()) + utils.GenTransactionId()[:7]
 
 	save := dbmodels.TSpending{
 		ID:            idSpending,
@@ -133,7 +142,7 @@ func saveTPayemnt(req sp.SpendingPaymentReq, param models.Params, idSpending, st
 	logReq := fmt.Sprintf("[ReferenceId : %v]", req.ReferenceId)
 
 	savePoint := dbmodels.TPayment{
-		// ID            : ,
+		ID:             utils.GenerateUUID(),
 		TSpendingID:    idSpending,
 		ExternalReffId: param.TrxID,
 		TransType:      req.TransType,
@@ -160,7 +169,7 @@ func saveTPayemnt(req sp.SpendingPaymentReq, param models.Params, idSpending, st
 	}
 
 	saveCash := dbmodels.TPayment{
-		// ID            : ,
+		ID:             utils.GenerateUUID(),
 		TSpendingID:    idSpending,
 		ExternalReffId: req.ReferenceId,
 		TransType:      req.TransType,

@@ -92,9 +92,9 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		AccountId:         param.AccountId,
 		RedeemAt:          utils.DefaultNulTime(redeemDate),
 		Comment:           param.Comment,
-		MRewardID:         param.RewardID,
+		MRewardID:         &param.RewardID,
 		ProductCategoryID: param.CategoryID,
-		MProductID:        param.ProductID,
+		MProductID:        &param.ProductID,
 		PointsTransferID:  param.PointTransferID,
 		CreatedAT:         param.TrxTime,
 	}
