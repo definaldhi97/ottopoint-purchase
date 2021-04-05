@@ -93,8 +93,8 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		AccountId:         param.AccountId,
 		ProductCategoryID: param.CategoryID,
 		Comment:           param.Comment,
-		MRewardID:         param.RewardID,
-		MProductID:        param.ProductID,
+		MRewardID:         &param.RewardID,
+		MProductID:        &param.ProductID,
 		PointsTransferID:  param.PointTransferID,
 		UsedAt:            utils.DefaultNulTime(usedAt),
 	}

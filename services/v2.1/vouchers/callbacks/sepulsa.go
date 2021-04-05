@@ -8,9 +8,10 @@ import (
 	kafka "ottopoint-purchase/hosts/publisher/host"
 	sepulsaModels "ottopoint-purchase/hosts/sepulsa/models"
 	"ottopoint-purchase/models"
-	"ottopoint-purchase/services/v2.1/Trx"
 	"ottopoint-purchase/utils"
 	"time"
+
+	"ottopoint-purchase/services/v2.1/Trx"
 
 	"github.com/sirupsen/logrus"
 )
@@ -52,7 +53,7 @@ func CallbackVoucherSepulsa_V21_Service(req sepulsaModels.CallbackTrxReq) models
 			AccountNumber: spending.AccountNumber,
 			RRN:           spending.RRN,
 			TrxID:         spending.TransactionId,
-			RewardID:      spending.MRewardID,
+			RewardID:      *spending.MRewardID,
 			Point:         spending.Point,
 		}
 

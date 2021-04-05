@@ -52,7 +52,7 @@ func CheckStatusSepulsaServices(trxid string) error {
 		AccountNumber: spending.AccountNumber,
 		RRN:           spending.RRN,
 		TrxID:         utils.GenTransactionId(),
-		RewardID:      spending.MRewardID,
+		RewardID:      *spending.MRewardID,
 		Point:         spending.Point,
 	}
 
