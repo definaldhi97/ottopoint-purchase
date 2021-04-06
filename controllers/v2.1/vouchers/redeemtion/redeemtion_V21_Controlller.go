@@ -174,7 +174,7 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 		logrus.Println(" [ Product Agregator ]")
 		header.DeviceID = "H2H"
 		res = redeemtion.RedeemtionAG_V21_Services(req, param, header)
-	case constants.CODE_VENDOR_JempolKios:
+	case constants.CODE_VENDOR_JempolKios, constants.CODE_VENDOR_GV:
 		logrus.Println(" [ Jempol Kios ]")
 		// header.DeviceID = "H2H"
 		res = redeemtion.RedeemtionJempolKios_V21_Services(req, param, header)
