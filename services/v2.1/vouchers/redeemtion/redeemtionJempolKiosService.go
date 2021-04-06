@@ -513,7 +513,7 @@ func RedeemtionJempolKios_V21_Services(req models.VoucherComultaiveReq, param mo
 	// }
 
 	// go services.SaveDBVoucherAgMigrate(id, param.InstitutionID, param.CouponID, voucherCode, param.AccountNumber, param.AccountId, req.CampaignID)
-	go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Pending, timeExp)
+	go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Success, timeExp)
 
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
