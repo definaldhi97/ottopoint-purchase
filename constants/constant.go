@@ -235,6 +235,7 @@ const (
 	CODE_VENDOR_AGREGATOR  = "A1OPG004"
 	CODE_VENDOR_DUMY       = "A1ODM005"
 	CODE_VENDOR_JempolKios = "A1OJP004"
+	CODE_VENDOR_GV         = "A1GDV006"
 )
 
 const (
