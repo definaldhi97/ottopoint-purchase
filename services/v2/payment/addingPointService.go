@@ -70,15 +70,18 @@ func AddingPointService(param models.Params, header models.RequestHeader) string
 	jsonString, _ := json.Marshal(addingPoint.Data)
 	json.Unmarshal(jsonString, &label)
 
+	respData, _ := json.Marshal(addingPoint)
+	reqData, _ := json.Marshal(addingPoinReq)
+
 	saveReversal := dbmodels.TEarning{
 		ID: utils.GenerateTokenUUID(),
 		// EarningRule     :,
 		// EarningRuleAdd  :,
-		PartnerId: param.InstitutionID,
-		// ReferenceId     : ,
+		PartnerId:     param.InstitutionID,
+		ReferenceId:   param.RRN,
 		TransactionId: param.TrxID,
 		// ProductCode     :,
-		// ProductName     :,
+		ProductName:   param.ProductName,
 		AccountNumber: param.AccountNumber,
 		// Amount          :,
 		Point:   int64(param.Point),
@@ -87,12 +90,12 @@ func AddingPointService(param models.Params, header models.RequestHeader) string
 		Status:           statusEarning,
 		StatusMessage:    msgEarning,
 		PointsTransferId: label.PointsTransferID,
-		// RequestorData   :,
-		// ResponderData   :,
-		TransType:       constants.CodeReversal,
-		AccountId:       param.AccountId,
-		ExpiredPoint:    label.ExpiredPoint.Format("2006-01-02"),
-		TransactionTime: time.Now(),
+		RequestorData:    string(reqData),
+		ResponderData:    string(respData),
+		TransType:        constants.CodeReversal,
+		AccountId:        param.AccountId,
+		ExpiredPoint:     label.ExpiredPoint.Format("2006-01-02"),
+		TransactionTime:  time.Now(),
 	}
 
 	errSaveReversal := db.DbCon.Create(&saveReversal).Error

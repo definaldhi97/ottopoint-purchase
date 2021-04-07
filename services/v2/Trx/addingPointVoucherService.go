@@ -156,6 +156,7 @@ func UpdateUsageLimitVoucher(reward_id string, latestUsageLimit int) error {
 	}()
 
 	if err := tx.Error; err != nil {
+		logrus.Error("UpdateUsageLimitVoucher Error : ", err)
 		return err
 	}
 
