@@ -53,6 +53,7 @@ func ReversalPaymentService(req sp.ReversalPaymentReq, param models.Params, head
 	param.Comment = textComment
 	param.RRN = req.ReferenceId
 	param.TrxID = utils.GenTransactionId()
+	param.ProductName = getData.Voucher
 
 	reversal := AddingPointService(param, header)
 	logrus.Info(fmt.Sprintf("[Response Reversal : %v]", reversal))

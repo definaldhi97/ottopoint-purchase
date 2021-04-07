@@ -20,6 +20,7 @@ type Params struct {
 	NamaVoucher   string
 	ProductType   string
 	ProductCode   string
+	ProductName   string
 	Category      string
 	Point         int
 	ExpDate       string
