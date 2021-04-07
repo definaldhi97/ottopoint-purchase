@@ -39,7 +39,7 @@ func SpendingPaymentService(req sp.SpendingPaymentReq, param models.Params, head
 	idSpending := utils.GenerateUUID()
 	param.Comment = param.TrxID + header.InstitutionID + "#" + req.ProductName
 
-	invoiceNumber := jodaTime.Format("YYYYMMDD", time.Now()) + utils.GenTransactionId()[:7]
+	invoiceNumber := "INV" + jodaTime.Format("YYYYMMDD", time.Now()) + utils.GenTransactionId()[:4]
 
 	spend, errSpend := SpendPointService(param, header)
 	param.PointTransferID = spend.PointTransferID
@@ -119,6 +119,7 @@ func saveTSpending(req sp.SpendingPaymentReq, param models.Params, idSpending, i
 		// VoucherLink      : ,
 		PointsTransferID: param.PointTransferID,
 		InvoiceNumber:    invoiceNumber, // INVYYYYMMDDXXXX > 15 digit total
+		PaymentMethod:    req.PaymentMethod,
 	}
 
 	err := db.DbCon.Create(&save).Error

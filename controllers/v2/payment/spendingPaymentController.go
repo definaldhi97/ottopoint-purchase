@@ -50,8 +50,54 @@ func SpendingPaymentController(ctx *gin.Context) {
 		return
 	}
 
-	if req.TransType != constants.CodeRedeemtion && req.TransType != constants.CodeSplitBill {
+	// Full Point
+	if req.TransType == constants.CodeRedeemtion {
+		// Validate PaymentMethod, Point, ReferenceId
+		if req.PaymentMethod == 0 || req.Point == 0 || req.ReferenceId == "" {
 
+			logrus.Error(namectrl)
+			logrus.Error(fmt.Sprintf("[Invalid Mandatory]-[PaymentMethod %v || Point : %v || ReferenceId : %v]", req.PaymentMethod, req.Point, req.ReferenceId))
+			logrus.Println(logReq)
+
+			res.Meta.Code = 196
+			res.Meta.Message = "Invalid Mandatory request data"
+
+			ctx.JSON(http.StatusOK, res)
+			return
+		}
+
+		// SplitBill
+	} else if req.TransType == constants.CodeSplitBill {
+
+		// Validate PaymentMethod, Point, ReferenceId
+		if req.Point == 0 && req.Cash == 0 || req.PaymentMethod == 0 || req.ReferenceId == "" {
+
+			logrus.Error(namectrl)
+			logrus.Error(fmt.Sprintf("[Invalid Mandatory]-[Cash %v || Point : %v || ReferenceId : %v || PaymentMethod : %v]", req.Cash, req.Point, req.ReferenceId, req.PaymentMethod))
+			logrus.Println(logReq)
+
+			res.Meta.Code = 196
+			res.Meta.Message = "Invalid Mandatory request data"
+
+			ctx.JSON(http.StatusOK, res)
+			return
+		}
+
+		if req.Point+req.Cash != req.Amount {
+
+			logrus.Error(namectrl)
+			logrus.Error(fmt.Sprintf("[No Match Amount]-[Cash %v || Point : %v || Amount : %v]", req.Cash, req.Point, req.Amount))
+			logrus.Println(logReq)
+
+			res.Meta.Code = 196
+			res.Meta.Message = "Invalid Mandatory request data"
+
+			ctx.JSON(http.StatusOK, res)
+			return
+
+		}
+
+	} else {
 		logrus.Error(namectrl)
 		logrus.Error(fmt.Sprintf("[Invalid Mandatory]-[TransType : %v]", req.TransType))
 		logrus.Println(logReq)
@@ -61,48 +107,6 @@ func SpendingPaymentController(ctx *gin.Context) {
 
 		ctx.JSON(http.StatusOK, res)
 		return
-	}
-
-	if req.TransType == constants.CodeRedeemtion {
-		if req.PaymentMethod == 0 {
-
-			logrus.Error(namectrl)
-			logrus.Error(fmt.Sprintf("[Invalid Mandatory]-[PaymentMethod : %v]", req.PaymentMethod))
-			logrus.Println(logReq)
-
-			res.Meta.Code = 196
-			res.Meta.Message = "Invalid Mandatory request data"
-
-			ctx.JSON(http.StatusOK, res)
-			return
-		}
-	}
-
-	if req.Point == 0 || req.Cash == 0 || req.ReferenceId == "" {
-
-		logrus.Error(namectrl)
-		logrus.Error(fmt.Sprintf("[Invalid Mandatory]-[Point/Cash/ReferenceId]"))
-		logrus.Println(logReq)
-
-		res.Meta.Code = 196
-		res.Meta.Message = "Invalid Mandatory request data"
-
-		ctx.JSON(http.StatusOK, res)
-		return
-	}
-
-	if req.Point+req.Cash != req.Amount {
-
-		logrus.Error(namectrl)
-		logrus.Error(fmt.Sprintf("[No Match Amount]-[Amount]"))
-		logrus.Println(logReq)
-
-		res.Meta.Code = 196
-		res.Meta.Message = "Invalid Mandatory request data"
-
-		ctx.JSON(http.StatusOK, res)
-		return
-
 	}
 
 	// validate request
