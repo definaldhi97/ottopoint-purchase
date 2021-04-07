@@ -25,7 +25,6 @@ func SpendingPaymentController(ctx *gin.Context) {
 	param := models.Params{}
 
 	namectrl := "[PackagePayment]-[SpendingPaymentController]"
-	logReq := fmt.Sprintf("[AccountNumber : %v || ReferenceId : %v]", req.AccountNumber, req.ReferenceId)
 
 	logrus.Info(namectrl)
 
@@ -42,13 +41,15 @@ func SpendingPaymentController(ctx *gin.Context) {
 
 		logrus.Error(namectrl)
 		logrus.Error(fmt.Sprintf("[ShouldBindJSON]-[Error : %v]", err))
-		logrus.Println(logReq)
+		// logrus.Println(logReq)
 
 		res.Meta.Code = 03
 		res.Meta.Message = "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya."
 		ctx.JSON(http.StatusOK, res)
 		return
 	}
+
+	logReq := fmt.Sprintf("[AccountNumber : %v || ReferenceId : %v]", req.AccountNumber, req.ReferenceId)
 
 	// Full Point
 	if req.TransType == constants.CodeRedeemtion {
