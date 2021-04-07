@@ -19,7 +19,10 @@ func SpendingPaymentService(req sp.SpendingPaymentReq, param models.Params, head
 	res := models.Response{}
 
 	nameservice := "[PackagePayment]-[SpendingPaymentService]"
-	logReq := fmt.Sprintf("[AccountNumber : %v || ReferenceId : %v]", req.AccountNumber, req.ReferenceId)
+
+	invoiceNumber := "INV" + jodaTime.Format("YYYYMMdd", time.Now()) + utils.GenTransactionId()[7:11]
+
+	logReq := fmt.Sprintf("[AccountNumber : %v || ReferenceId : %v || InvoiceNumber : %v]", req.AccountNumber, req.ReferenceId, invoiceNumber)
 
 	logrus.Info(nameservice)
 
@@ -38,8 +41,6 @@ func SpendingPaymentService(req sp.SpendingPaymentReq, param models.Params, head
 	param.TrxID = utils.GenTransactionId()
 	idSpending := utils.GenerateUUID()
 	param.Comment = param.TrxID + header.InstitutionID + "#" + req.ProductName
-
-	invoiceNumber := "INV" + jodaTime.Format("YYYYMMDD", time.Now()) + utils.GenTransactionId()[:4]
 
 	spend, errSpend := SpendPointService(param, header)
 	param.PointTransferID = spend.PointTransferID
