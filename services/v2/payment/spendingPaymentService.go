@@ -113,7 +113,7 @@ func saveTSpending(req sp.SpendingPaymentReq, param models.Params, idSpending, i
 		// UpdatedAT        : ,
 		// VoucherCode      : ,
 		// ProductCategoryID: ,
-		// Comment          : ,
+		Comment: req.Comment,
 		// MRewardID        : ,
 		// MProductID       : ,
 		// VoucherLink      : ,

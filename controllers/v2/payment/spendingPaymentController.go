@@ -70,7 +70,7 @@ func SpendingPaymentController(ctx *gin.Context) {
 	} else if req.TransType == constants.CodeSplitBill {
 
 		// Validate PaymentMethod, Point, ReferenceId
-		if req.Point == 0 && req.Cash == 0 || req.PaymentMethod == 0 || req.ReferenceId == "" {
+		if req.Point == 0 || req.Cash == 0 || req.PaymentMethod == 0 || req.ReferenceId == "" {
 
 			logrus.Error(namectrl)
 			logrus.Error(fmt.Sprintf("[Invalid Mandatory]-[Cash %v || Point : %v || ReferenceId : %v || PaymentMethod : %v]", req.Cash, req.Point, req.ReferenceId, req.PaymentMethod))
