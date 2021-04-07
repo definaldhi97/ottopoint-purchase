@@ -63,6 +63,21 @@ func SpendingPaymentController(ctx *gin.Context) {
 		return
 	}
 
+	if req.TransType == constants.CodeRedeemtion {
+		if req.PaymentMethod == 0 {
+
+			logrus.Error(namectrl)
+			logrus.Error(fmt.Sprintf("[Invalid Mandatory]-[PaymentMethod : %v]", req.PaymentMethod))
+			logrus.Println(logReq)
+
+			res.Meta.Code = 196
+			res.Meta.Message = "Invalid Mandatory request data"
+
+			ctx.JSON(http.StatusOK, res)
+			return
+		}
+	}
+
 	if req.Point == 0 || req.Cash == 0 || req.ReferenceId == "" {
 
 		logrus.Error(namectrl)
@@ -70,7 +85,7 @@ func SpendingPaymentController(ctx *gin.Context) {
 		logrus.Println(logReq)
 
 		res.Meta.Code = 196
-		res.Meta.Message = "Mandatory request data"
+		res.Meta.Message = "Invalid Mandatory request data"
 
 		ctx.JSON(http.StatusOK, res)
 		return
@@ -83,7 +98,7 @@ func SpendingPaymentController(ctx *gin.Context) {
 		logrus.Println(logReq)
 
 		res.Meta.Code = 196
-		res.Meta.Message = "Mandatory request data"
+		res.Meta.Message = "Invalid Mandatory request data"
 
 		ctx.JSON(http.StatusOK, res)
 		return
