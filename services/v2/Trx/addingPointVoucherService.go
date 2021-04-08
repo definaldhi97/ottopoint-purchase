@@ -146,8 +146,6 @@ func UpdateUsageLimitVoucher(reward_id string, latestUsageLimit int) error {
 	var modelReward dbmodels.MRewardModel
 	var err error
 
-	return err
-
 	tx := db.DbCon.Begin()
 	defer func() {
 		if r := recover(); r != nil {
