@@ -51,13 +51,13 @@ func SpendingPaymentController(ctx *gin.Context) {
 
 	logReq := fmt.Sprintf("[AccountNumber : %v || ReferenceId : %v]", req.AccountNumber, req.ReferenceId)
 
-	// Full Point
+	// Full Point (TSP02)
 	if req.TransType == constants.CodeRedeemtion {
 		// Validate PaymentMethod, Point, ReferenceId
-		if req.PaymentMethod == 0 || req.Point == 0 || req.ReferenceId == "" {
+		if req.PaymentMethod == 0 || req.Point == 0 || req.Amount == 0 || req.ReferenceId == "" {
 
 			logrus.Error(namectrl)
-			logrus.Error(fmt.Sprintf("[Invalid Mandatory]-[PaymentMethod %v || Point : %v || ReferenceId : %v]", req.PaymentMethod, req.Point, req.ReferenceId))
+			logrus.Error(fmt.Sprintf("[Invalid Mandatory]-[PaymentMethod %v || Point : %v || Amount :  %v || ReferenceId : %v]", req.PaymentMethod, req.Point, req.Amount, req.ReferenceId))
 			logrus.Println(logReq)
 
 			res.Meta.Code = 196
@@ -67,14 +67,14 @@ func SpendingPaymentController(ctx *gin.Context) {
 			return
 		}
 
-		// SplitBill
+		// SplitBill (TSP06)
 	} else if req.TransType == constants.CodeSplitBill {
 
 		// Validate PaymentMethod, Point, ReferenceId
-		if req.Point == 0 || req.Cash == 0 || req.PaymentMethod == 0 || req.ReferenceId == "" {
+		if req.Point == 0 || req.Cash == 0 || req.PaymentMethod == 0 || req.Amount == 0 || req.ReferenceId == "" {
 
 			logrus.Error(namectrl)
-			logrus.Error(fmt.Sprintf("[Invalid Mandatory]-[Cash %v || Point : %v || ReferenceId : %v || PaymentMethod : %v]", req.Cash, req.Point, req.ReferenceId, req.PaymentMethod))
+			logrus.Error(fmt.Sprintf("[Invalid Mandatory]-[Cash %v || Point : %v || Amount :  %v || ReferenceId : %v || PaymentMethod : %v]", req.Cash, req.Point, req.ReferenceId, req.PaymentMethod))
 			logrus.Println(logReq)
 
 			res.Meta.Code = 196

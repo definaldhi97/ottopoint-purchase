@@ -97,6 +97,9 @@ func SaveTransactionUV(param models.Params, res interface{}, reqdata interface{}
 		MProductID:        &param.ProductID,
 		PointsTransferID:  param.PointTransferID,
 		CreatedAT:         param.TrxTime,
+
+		PaymentMethod: 2,
+		InvoiceNumber: param.InvoiceNumber,
 	}
 
 	err := db.DbCon.Create(&save).Error

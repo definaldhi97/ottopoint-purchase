@@ -10,12 +10,14 @@ import (
 	redishost "ottopoint-purchase/hosts/redis_token/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
+	"time"
 
 	redeemtion "ottopoint-purchase/services/v2.1/vouchers/redeemtion"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"github.com/vjeantet/jodaTime"
 )
 
 // func (controller *V21_RedeemtionVoucherController) V21_RedeemtionVoucherController(ctx *gin.Context) {
@@ -153,6 +155,7 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 	param.MerchantID = dataUser.MerchantID
 	param.Fields = cekVoucher.Fields
 	param.CustID = req.CustID
+	param.InvoiceNumber = "INV" + jodaTime.Format("YYYYMMdd", time.Now()) + utils.GenTransactionId()[7:11]
 
 	logrus.Println("[Request]")
 	logrus.Info("Vendor : ", param.SupplierID, " || CampaignId : ", req.CampaignID, "|| CustID : ", req.CustID, "|| CustID2 : ", req.CustID2, "|| Jumlah : ", req.Jumlah)
