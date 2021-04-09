@@ -118,3 +118,24 @@ func CheckReffIdSplitBillReversal(reffId string) (dbmodels.TEarning, error) {
 
 	return res, nil
 }
+
+type ConfigPoint struct {
+	Limit int `gorm:"column:min_point_splitbill"`
+}
+
+func GetConfigPoint(partnerID string) (ConfigPoint, error) {
+	var res ConfigPoint
+
+	err := DbCon.Raw(`select b.min_point_splitbill from m_institution as a join config_institution as b on a.id = b.m_institution_id where a.partner_id = ?`, partnerID).Scan(&res).Error
+	if err != nil {
+
+		logrus.Error("[PackageDB]-[GetConfigPoint]")
+		logrus.Error(fmt.Sprintf("[PartnerID : %v]-[Error : %v]", partnerID, err))
+
+		return res, err
+	}
+
+	logrus.Info("ConfigPoint : ", res.Limit)
+	return res, nil
+
+}
