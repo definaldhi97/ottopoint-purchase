@@ -132,7 +132,7 @@ func SpendingPaymentController(ctx *gin.Context) {
 			logrus.Error(fmt.Sprintf("[GetConfigPoint]-[Error : %v]", errLimit))
 			logrus.Println(logReq)
 
-			res = utils.GetMessageResponse(res, 210, false, errors.New("Maaf point anda tidak cukup"))
+			res = utils.GetMessageResponse(res, 210, false, errors.New("Limit Does Not Match"))
 
 			ctx.JSON(http.StatusOK, res)
 			return
