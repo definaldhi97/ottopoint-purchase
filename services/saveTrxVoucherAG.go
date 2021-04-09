@@ -33,7 +33,7 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		isUsed = true
 	}
 
-	if param.SupplierID == constants.CODE_VENDOR_JempolKios {
+	if param.SupplierID == constants.CODE_VENDOR_JempolKios || param.SupplierID == constants.CODE_VENDOR_GV {
 		isUsed = true
 	}
 
