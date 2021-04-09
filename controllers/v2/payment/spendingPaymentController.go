@@ -51,6 +51,32 @@ func SpendingPaymentController(ctx *gin.Context) {
 
 	logReq := fmt.Sprintf("[AccountNumber : %v || ReferenceId : %v]", req.AccountNumber, req.ReferenceId)
 
+	// validate request
+	header, resultValidate := ctrl.ValidateRequestWithoutAuth(ctx, req)
+	if !resultValidate.Meta.Status {
+
+		logrus.Error(namectrl)
+		logrus.Error(fmt.Sprintf("[ValidateRequestWithoutAuth]-[Error : %v]", resultValidate))
+		logrus.Println(logReq)
+
+		ctx.JSON(http.StatusOK, resultValidate)
+		return
+	}
+
+	// check user
+	dataUser, errUser := db.UserWithInstitution(req.AccountNumber, header.InstitutionID)
+	if errUser != nil || dataUser.CustID == "" {
+
+		logrus.Error(namectrl)
+		logrus.Error(fmt.Sprintf("[UserWithInstitution]-[Error : %v]", errUser))
+		logrus.Println(logReq)
+
+		res = utils.GetMessageResponse(res, 404, false, errors.New("User belum Eligible"))
+
+		ctx.JSON(http.StatusOK, res)
+		return
+	}
+
 	// Full Point (TSP02)
 	if req.TransType == constants.CodeRedeemtion {
 		// Validate PaymentMethod, Point, ReferenceId
@@ -98,6 +124,20 @@ func SpendingPaymentController(ctx *gin.Context) {
 
 		}
 
+		// get config point
+		limitPoint, errLimit := db.GetConfigPoint(header.InstitutionID)
+		if errLimit != nil || limitPoint.Limit == 0 || req.Point > limitPoint.Limit {
+
+			logrus.Error(namectrl)
+			logrus.Error(fmt.Sprintf("[GetConfigPoint]-[Error : %v]", errLimit))
+			logrus.Println(logReq)
+
+			res = utils.GetMessageResponse(res, 210, false, errors.New("Maaf point anda tidak cukup"))
+
+			ctx.JSON(http.StatusOK, res)
+			return
+		}
+
 	} else {
 		logrus.Error(namectrl)
 		logrus.Error(fmt.Sprintf("[Invalid Mandatory]-[TransType : %v]", req.TransType))
@@ -105,46 +145,6 @@ func SpendingPaymentController(ctx *gin.Context) {
 
 		res.Meta.Code = 196
 		res.Meta.Message = "Mandatory request data"
-
-		ctx.JSON(http.StatusOK, res)
-		return
-	}
-
-	// validate request
-	header, resultValidate := ctrl.ValidateRequestWithoutAuth(ctx, req)
-	if !resultValidate.Meta.Status {
-
-		logrus.Error(namectrl)
-		logrus.Error(fmt.Sprintf("[ValidateRequestWithoutAuth]-[Error : %v]", resultValidate))
-		logrus.Println(logReq)
-
-		ctx.JSON(http.StatusOK, resultValidate)
-		return
-	}
-
-	// check user
-	dataUser, errUser := db.UserWithInstitution(req.AccountNumber, header.InstitutionID)
-	if errUser != nil || dataUser.CustID == "" {
-
-		logrus.Error(namectrl)
-		logrus.Error(fmt.Sprintf("[UserWithInstitution]-[Error : %v]", errUser))
-		logrus.Println(logReq)
-
-		res = utils.GetMessageResponse(res, 404, false, errors.New("User belum Eligible"))
-
-		ctx.JSON(http.StatusOK, res)
-		return
-	}
-
-	// get config point
-	limitPoint, errLimit := db.GetConfigPoint(header.InstitutionID)
-	if errLimit != nil || limitPoint.Limit == 0 || req.Point > limitPoint.Limit {
-
-		logrus.Error(namectrl)
-		logrus.Error(fmt.Sprintf("[GetConfigPoint]-[Error : %v]", errLimit))
-		logrus.Println(logReq)
-
-		res = utils.GetMessageResponse(res, 210, false, errors.New("Maaf point anda tidak cukup"))
 
 		ctx.JSON(http.StatusOK, res)
 		return
