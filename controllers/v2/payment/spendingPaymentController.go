@@ -136,6 +136,20 @@ func SpendingPaymentController(ctx *gin.Context) {
 		return
 	}
 
+	// get config point
+	limitPoint, errLimit := db.GetConfigPoint(header.InstitutionID)
+	if errLimit != nil || limitPoint.Limit == 0 {
+
+		logrus.Error(namectrl)
+		logrus.Error(fmt.Sprintf("[GetConfigPoint]-[Error : %v]", errLimit))
+		logrus.Println(logReq)
+
+		res = utils.GetMessageResponse(res, 404, false, errors.New("Limited Point"))
+
+		ctx.JSON(http.StatusOK, res)
+		return
+	}
+
 	param.AccountNumber = req.AccountNumber
 	param.AccountId = dataUser.CustID
 	param.InstitutionID = header.InstitutionID
