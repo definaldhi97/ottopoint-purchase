@@ -3,15 +3,11 @@ package callbacks
 import (
 	"encoding/json"
 	"fmt"
-	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
-	kafka "ottopoint-purchase/hosts/publisher/host"
 	sepulsaModels "ottopoint-purchase/hosts/sepulsa/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
 	"time"
-
-	"ottopoint-purchase/services/v2.1/Trx"
 
 	"github.com/sirupsen/logrus"
 )
@@ -46,61 +42,7 @@ func CallbackVoucherSepulsa_V21_Service(req sepulsaModels.CallbackTrxReq) models
 		logrus.Info("[HandleCallbackSepulsa] - [ResponseCode] : ", args.ResponseCode)
 		logrus.Info("[HandleCallbackSepulsa] - [ResponseDesc] : ", responseCode)
 
-		param := models.Params{
-			InstitutionID: spending.Institution,
-			NamaVoucher:   spending.Voucher,
-			AccountId:     spending.AccountId,
-			AccountNumber: spending.AccountNumber,
-			RRN:           spending.RRN,
-			TrxID:         spending.TransactionId,
-			RewardID:      *spending.MRewardID,
-			Point:         spending.Point,
-		}
-
 		if (responseCode != "Success") && (responseCode != "Pending") {
-
-			header := models.RequestHeader{
-				DeviceID:      "ottopoint-purchase",
-				InstitutionID: spending.Institution,
-				Geolocation:   "-",
-				ChannelID:     "H2H",
-				AppsID:        "-",
-				Timestamp:     utils.GetTimeFormatYYMMDDHHMMSS(),
-				Authorization: "-",
-				Signature:     "-",
-			}
-
-			param.TrxID = utils.GenTransactionId()
-			resultReversal := Trx.V21_Adding_PointVoucher(param, spending.Point, 1, header)
-			logrus.Println(resultReversal)
-
-			pubreq := models.NotifPubreq{
-				Type:           constants.CODE_REVERSAL_POINT,
-				NotificationTo: spending.AccountNumber,
-				Institution:    spending.Institution,
-				ReferenceId:    spending.RRN,
-				TransactionId:  spending.CummulativeRef,
-				Data: models.DataValue{
-					RewardValue: "point",
-					Value:       fmt.Sprint(spending.Point),
-				},
-			}
-
-			bytePub, _ := json.Marshal(pubreq)
-
-			kafkaReq := kafka.PublishReq{
-				Topic: constants.TOPIC_PUSHNOTIF_GENERAL,
-				Value: bytePub,
-			}
-
-			_, errKafka := kafka.SendPublishKafka(kafkaReq)
-			if errKafka != nil {
-
-				logrus.Error(nameservice)
-				logrus.Error(fmt.Sprintf("[SendPublishKafka]-[Error : %v]", errKafka))
-				logrus.Println(logReq)
-
-			}
 
 		}
 
