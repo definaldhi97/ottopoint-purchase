@@ -126,10 +126,16 @@ func SpendingPaymentController(ctx *gin.Context) {
 
 		// get config point
 		limitPoint, errLimit := db.GetConfigPoint(header.InstitutionID)
-		if errLimit != nil || limitPoint.Limit == 0 || req.Point > limitPoint.Limit {
+		if errLimit != nil {
+			logrus.Error(namectrl)
+			logrus.Error(fmt.Sprintf("[GetConfigPoint]-[Error : %v || : %v]", errLimit))
+			logrus.Println(logReq)
+		}
+
+		if req.Point < limitPoint.Limit {
 
 			logrus.Error(namectrl)
-			logrus.Error(fmt.Sprintf("[GetConfigPoint]-[Error : %v]", errLimit))
+			logrus.Error(fmt.Sprintf("[GetConfigPoint]-[Point : %v || : %v]", req.Point, limitPoint.Limit))
 			logrus.Println(logReq)
 
 			res = utils.GetMessageResponse(res, 210, false, errors.New("Limit Does Not Match"))
