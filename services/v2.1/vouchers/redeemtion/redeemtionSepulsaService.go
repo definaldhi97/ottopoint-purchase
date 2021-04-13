@@ -1,11 +1,9 @@
 package redeemtion
 
 import (
-	"encoding/json"
 	"fmt"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
-	kafka "ottopoint-purchase/hosts/publisher/host"
 	sepulsa "ottopoint-purchase/hosts/sepulsa/host"
 	sepulsaModels "ottopoint-purchase/hosts/sepulsa/models"
 	"ottopoint-purchase/models"
@@ -162,46 +160,6 @@ func RedeemtionSepulsa_V21_Service(req models.VoucherComultaiveReq, param models
 			// Save Error Transaction
 			go services.SaveTransactionSepulsa(param, errTransaction.Error(), reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
 
-			trxIDReversal := utils.GenTransactionId()
-			param.TrxID = trxIDReversal
-
-			resultReversal := V21_trx.V21_Adding_PointVoucher(param, param.Point, 1, header)
-			fmt.Println(resultReversal)
-
-			fmt.Println("[ >>>>>>>>>>>>>>>>>>>>>>> Send Publisher <<<<<<<<<<<<<<<<<<<< ]")
-			pubreq := models.NotifPubreq{
-				Type:           constants.CODE_REVERSAL_POINT,
-				NotificationTo: param.AccountNumber,
-				Institution:    param.InstitutionID,
-				ReferenceId:    param.RRN,
-				TransactionId:  param.Reffnum,
-				Data: models.DataValue{
-					RewardValue: "point",
-					Value:       strconv.Itoa(param.Point),
-				},
-			}
-
-			bytePub, _ := json.Marshal(pubreq)
-
-			kafkaReq := kafka.PublishReq{
-				Topic: utils.TopicsNotif,
-				Value: bytePub,
-			}
-
-			kafkaRes, errKafka := kafka.SendPublishKafka(kafkaReq)
-			if errKafka != nil {
-
-				logrus.Error(nameservice)
-				logrus.Error(fmt.Sprintf("[SendPublishKafka]-[Error : %v]", errKafka))
-				logrus.Println(logReq)
-
-			}
-
-			logrus.Info("[ Response Publisher ] : ", kafkaRes)
-
-			// // Save Error Transaction
-			// go services.SaveTransactionSepulsa(param, errTransaction.Error(), reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "01")
-
 			res = models.Response{
 				Meta: utils.ResponseMetaOK(),
 				Data: models.SepulsaRes{
@@ -220,7 +178,6 @@ func RedeemtionSepulsa_V21_Service(req models.VoucherComultaiveReq, param models
 		param.RRN = sepulsaRes.TransactionID
 
 		id := utils.GenerateTokenUUID()
-		go services.SaveTSchedulerRetry(param.RRN, constants.CodeSchedulerSepulsa)
 		go services.SaveDBSepulsa(id, param.InstitutionID, couponID, couponCode, param.AccountNumber, param.AccountId, req.CampaignID)
 		go services.SaveTransactionSepulsa(param, sepulsaRes, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "09")
 
