@@ -27,9 +27,9 @@ var (
 	callbackPartner = utils.GetEnv("OTTOPOINT_PURCHASE_CALLBACK_PARTNER", "/transaction/callback/partner")
 )
 
-func RedeemtionJempolKios_V21_Services(req models.VoucherComultaiveReq, param models.Params, head models.RequestHeader) models.Response {
+func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.Params, head models.RequestHeader) models.Response {
 
-	nameservice := "[PackageRedeemtion]-[RedeemtionJempolKios_V21_Services]"
+	nameservice := "[PackageRedeemtion]-[RedeemtionOrder_V21_Services]"
 	logReq := fmt.Sprintf("[AccountNumber : %v, RewardID : %v]", param.AccountNumber, param.RewardID)
 
 	logrus.Info(nameservice)
