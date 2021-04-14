@@ -155,7 +155,7 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 	param.CustID = req.CustID
 
 	logrus.Println("[Request]")
-	logrus.Info("CampaignId : ", req.CampaignID, "CustID : ", req.CustID, "CustID2 : ", req.CustID2, "Jumlah : ", req.Jumlah)
+	logrus.Info("CampaignId : ", req.CampaignID, " CustID : ", req.CustID, " CustID2 : ", req.CustID2, " Jumlah : ", req.Jumlah, " Vendor : ", param.SupplierID)
 
 	switch param.SupplierID {
 	case constants.CODE_VENDOR_DUMY:
@@ -175,9 +175,21 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 		header.DeviceID = "H2H"
 		res = redeemtion.RedeemtionAG_V21_Services(req, param, header)
 	case constants.CODE_VENDOR_JempolKios, constants.CODE_VENDOR_GV:
-		logrus.Println(" [ Jempol Kios ]")
+		logrus.Println(" [ Jempol Kios / Gudang Voucher ]")
 		// header.DeviceID = "H2H"
 		res = redeemtion.RedeemtionJempolKios_V21_Services(req, param, header)
+	default:
+		logrus.Println(" [ Invalid Vendor ]")
+		res = models.Response{
+			Meta: utils.ResponseMetaOK(),
+			Data: models.NewResponseRedeemtion{
+				Code:    "500",
+				Msg:     "Internal Server Error",
+				Success: 0,
+				Failed:  req.Jumlah,
+				Pending: 0,
+			},
+		}
 	}
 
 	ctx.JSON(http.StatusOK, res)
