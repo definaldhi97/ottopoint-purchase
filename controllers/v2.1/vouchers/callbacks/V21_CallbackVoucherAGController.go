@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"ottopoint-purchase/controllers"
-	redishost "ottopoint-purchase/hosts/redis_token/host"
 	"ottopoint-purchase/models"
 	callback "ottopoint-purchase/models/v21/callback"
-	"ottopoint-purchase/utils"
 
 	service "ottopoint-purchase/services/v2.1/vouchers/callbacks"
 
@@ -39,7 +37,7 @@ func CallBackVoucherAG_V21_Controller(ctx *gin.Context) {
 	}
 
 	// validate request
-	header, resultValidate := controllers.ValidateRequest(ctx, true, req, false)
+	_, resultValidate := controllers.ValidateRequest(ctx, false, req, true)
 	if !resultValidate.Meta.Status {
 
 		logrus.Error(namectrl)
@@ -47,20 +45,6 @@ func CallBackVoucherAG_V21_Controller(ctx *gin.Context) {
 		logrus.Println(logReq)
 
 		ctx.JSON(http.StatusOK, resultValidate)
-		return
-	}
-
-	// get customer di redis
-	_, errToken := redishost.CheckToken(header)
-	if errToken != nil {
-		logrus.Println("Failed Get Token .. ..")
-
-		logrus.Error(namectrl)
-		logrus.Error(fmt.Sprintf("[CheckToken]-[Error : %v]", errToken))
-		logrus.Println(logReq)
-
-		res = utils.GetMessageFailedErrorNew(res, 500, "Internal Server Error")
-		ctx.JSON(http.StatusOK, res)
 		return
 	}
 
