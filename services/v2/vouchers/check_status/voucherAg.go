@@ -91,7 +91,7 @@ func CheckStatusVoucherAgService(trxID string) error {
 				AccountNumber: spending.AccountNumber,
 				TrxID:         utils.GenTransactionId(),
 				AccountId:     spending.AccountId,
-				RewardID:      spending.MRewardID,
+				RewardID:      *spending.MRewardID,
 			}
 
 			header := models.RequestHeader{

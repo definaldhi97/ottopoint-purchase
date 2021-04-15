@@ -45,6 +45,8 @@ const (
 )
 
 const (
+	CodeSplitBill     = "TSP06"
+	CodeRedeemtion    = "TSP02"
 	CodeReversal      = "TAD04"
 	PaymentSplitBill  = "PCS01"
 	SpendingSplitBill = "TSP05"
@@ -282,4 +284,13 @@ const (
 const (
 	VoucherTypePPOB        = "ppob"
 	VoucherTypeVoucherCode = "voucher_code"
+)
+
+const (
+	CreatedbySystem = "System"
+)
+
+const (
+	TypeCash  = "cash"
+	TypePoint = "point"
 )

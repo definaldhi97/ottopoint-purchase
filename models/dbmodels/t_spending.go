@@ -39,10 +39,12 @@ type TSpending struct {
 	VoucherCode       string     `gorm:"voucher_code"`
 	ProductCategoryID *string    `gorm:"product_category_id"`
 	Comment           string     `gorm:"comment"`
-	MRewardID         string     `gorm:"m_reward_id"`
-	MProductID        string     `gorm:"m_product_id"`
+	MRewardID         *string    `gorm:"m_reward_id"`
+	MProductID        *string    `gorm:"m_product_id"`
 	VoucherLink       string     `gorm:"voucher_link"`
 	PointsTransferID  string     `gorm:"points_transfer_id"`
+	InvoiceNumber     string     `gorm:"invoice_number"`
+	PaymentMethod     int        `gorm:"payment_method"`
 }
 
 func (t *TSpending) TableName() string {

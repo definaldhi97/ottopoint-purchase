@@ -141,9 +141,11 @@ func V2_Adding_PointVoucher(param models.Params, countPoint, countVoucher int) s
 }
 
 func UpdateUsageLimitVoucher(reward_id string, latestUsageLimit int) error {
+
 	fmt.Println("[ Lock Update UsageLimit Voucher ]")
 	var modelReward dbmodels.MRewardModel
 	var err error
+
 	tx := db.DbCon.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -152,6 +154,7 @@ func UpdateUsageLimitVoucher(reward_id string, latestUsageLimit int) error {
 	}()
 
 	if err := tx.Error; err != nil {
+		logrus.Error("UpdateUsageLimitVoucher Error : ", err)
 		return err
 	}
 

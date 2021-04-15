@@ -16,7 +16,11 @@ import (
 
 func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, transType, status string, timeExpVouc int) {
 
-	fmt.Println(fmt.Sprintf("[Start]-[SaveTransactionVoucherAgMigrate]-[%v]", transType))
+	nameservice := fmt.Sprintf("[PackageServices]-[Start]-[SaveTransactionVoucherAgMigrate][%v]", transType)
+	logReq := fmt.Sprintf("[RRN : %v]", param.RRN)
+
+	logrus.Info(nameservice)
+	logrus.Info(logReq)
 
 	var ExpireDate time.Time
 	var redeemDate time.Time
@@ -54,8 +58,10 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		redeemDate = time.Now()
 	}
 
+	idSpending := utils.GenerateTokenUUID()
+
 	save := dbmodels.TSpending{
-		ID:              utils.GenerateTokenUUID(),
+		ID:              idSpending,
 		AccountNumber:   param.AccountNumber,
 		RRN:             param.RRN,
 		Voucher:         param.NamaVoucher,
@@ -87,21 +93,56 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		RedeemAt:        utils.DefaultNulTime(redeemDate),
 
 		Comment:           param.Comment,
-		MRewardID:         param.RewardID,
+		MRewardID:         &param.RewardID,
 		ProductCategoryID: param.CategoryID,
-		MProductID:        param.ProductID,
+		MProductID:        &param.ProductID,
 		PointsTransferID:  param.PointTransferID,
+
+		PaymentMethod: 2,
+		InvoiceNumber: param.InvoiceNumber,
 	}
 
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
-		logrus.Info(fmt.Sprintf("[Error : %v]", err))
-		logrus.Info("[Failed Save to DB]")
 
-		name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[TSpending]-[Error : %v]", err))
+		logrus.Println(logReq)
+
+		name := jodaTime.Format("YYYY-MM-dd", time.Now()) + ".csv"
 		go utils.CreateCSVFile(save, name)
 
 		// return err
+
+	}
+
+	savePayment := dbmodels.TPayment{
+		ID:             utils.GenerateUUID(),
+		TSpendingID:    idSpending,
+		ExternalReffId: param.RRN,
+		TransType:      transType,
+		Value:          int64(param.Point),
+		ValueType:      constants.TypePoint,
+		Status:         status,
+		// ResponderRc   : ,
+		// ResponderRd   : ,
+		CreatedBy: constants.CreatedbySystem,
+		// UpdatedBy     : ,
+		CreatedAt: time.Now(),
+		// UpdatedAt     : ,
+	}
+
+	errPayment := db.DbCon.Create(&savePayment).Error
+	if errPayment != nil {
+
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[SavePayment]-[Error : %v]", errPayment))
+		logrus.Println(logReq)
+
+		name := jodaTime.Format("YYYY-MM-dd", time.Now()) + ".csv"
+		go utils.CreateCSVFile(save, name)
+
+		// return
 
 	}
 
@@ -109,7 +150,8 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 
 func SaveDBVoucherAgMigrate(id, institution, coupon, vouchercode, phone, custIdOPL, campaignID string) {
 
-	fmt.Println("[SaveDB]-[SaveDBVoucherAgMigrate]")
+	nameservice := "[PackagePayment]-[Start]-[SaveDBVoucherAgMigrate]"
+	logReq := fmt.Sprintf("[Coupon : %v || VoucherCode : %v]", coupon, vouchercode)
 
 	save := dbmodels.UserMyVocuher{
 		ID:            id,
@@ -123,7 +165,13 @@ func SaveDBVoucherAgMigrate(id, institution, coupon, vouchercode, phone, custIdO
 
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
-		fmt.Println("[Failed Save to DB ]", err)
-		fmt.Println("[Package-Services]-[SaveDBVoucherAgMigrate]")
+
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[UserMyVocuher]-[Error : %v]", err))
+		logrus.Println(logReq)
+
+		name := jodaTime.Format("YYYY-MM-dd", time.Now()) + ".csv"
+		go utils.CreateCSVFile(save, name)
+
 	}
 }
