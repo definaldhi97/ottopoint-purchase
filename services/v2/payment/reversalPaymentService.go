@@ -1,13 +1,16 @@
 package payment
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
+	kafka "ottopoint-purchase/hosts/publisher/host"
 	"ottopoint-purchase/models"
 	sp "ottopoint-purchase/models/v2/payment"
 	"ottopoint-purchase/utils"
+	"strconv"
 
 	"github.com/sirupsen/logrus"
 )
@@ -57,6 +60,37 @@ func ReversalPaymentService(req sp.ReversalPaymentReq, param models.Params, head
 
 	reversal := AddingPointService(param, header)
 	logrus.Info(fmt.Sprintf("[Response Reversal : %v]", reversal))
+
+	fmt.Println("[ >>>>>>>>>>>>>>>>>>>>>>> Send Publisher <<<<<<<<<<<<<<<<<<<< ]")
+	pubreq := models.NotifPubreq{
+		Type:           constants.CODE_REVERSAL_POINT,
+		NotificationTo: param.AccountNumber,
+		Institution:    param.InstitutionID,
+		ReferenceId:    param.RRN,
+		TransactionId:  param.TrxID,
+		Data: models.DataValue{
+			RewardValue: constants.Point,
+			Value:       strconv.Itoa(param.Point),
+		},
+	}
+
+	bytePub, _ := json.Marshal(pubreq)
+
+	kafkaReq := kafka.PublishReq{
+		Topic: utils.TopicsNotif,
+		Value: bytePub,
+	}
+
+	kafkaRes, errKafka := kafka.SendPublishKafka(kafkaReq)
+	if errKafka != nil {
+
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[SendPublishKafka]-[Error : %v]", errKafka))
+		logrus.Println(logReq)
+
+	}
+
+	logrus.Info("[ Response Publisher ] : ", kafkaRes)
 
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
