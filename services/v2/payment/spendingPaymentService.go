@@ -80,6 +80,8 @@ func saveTSpending(req sp.SpendingPaymentReq, param models.Params, idSpending, i
 	nameservice := "[PackagePayment]-[SaveTSpending]"
 	logReq := fmt.Sprintf("[AccountNumber : %v || ReferenceId : %v]", req.AccountNumber, req.ReferenceId)
 
+	redeem := time.Now()
+
 	save := dbmodels.TSpending{
 		ID:            idSpending,
 		AccountNumber: param.AccountNumber,
@@ -108,8 +110,8 @@ func saveTSpending(req sp.SpendingPaymentReq, param models.Params, idSpending, i
 		// CouponId         : ,
 		// CampaignId       : ,
 		AccountId: param.AccountId,
-		// RedeemAt         : ,
-		// UsedAt           : ,
+		RedeemAt:  &redeem,
+		UsedAt:    &redeem,
 		CreatedAT: time.Now(),
 		// UpdatedAT        : ,
 		// VoucherCode      : ,
