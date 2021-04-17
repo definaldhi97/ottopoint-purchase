@@ -174,7 +174,7 @@ func RedeemtionSepulsa_V21_Service(req models.VoucherComultaiveReq, param models
 				NotificationTo: param.AccountNumber,
 				Institution:    param.InstitutionID,
 				ReferenceId:    param.RRN,
-				TransactionId:  param.Reffnum,
+				TransactionId:  param.CumReffnum,
 				Data: models.DataValue{
 					RewardValue: "point",
 					Value:       strconv.Itoa(param.Point),

@@ -12,7 +12,7 @@ type Params struct {
 	InstitutionID string
 	TransType     string
 	AccountId     string
-	Reffnum       string // internal (generate ottopoint)
+	TrxID         string // internal
 	CumReffnum    string // internal (generate ottopoint) untuk pembelian kelipatan
 	RRN           string // eksternal (from supplier exp : ottoag, uv)
 	CustID        string
@@ -31,7 +31,6 @@ type Params struct {
 	VoucherCode     string // voucher code vidio
 	VoucherLink     string // voucher link
 	ExpireDateVidio string // Expire date Voucher Vidio
-	TrxID           string
 	TrxTime         time.Time
 	CategoryID      *string
 	// percobaan

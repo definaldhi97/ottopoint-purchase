@@ -222,7 +222,7 @@ func RedeemtionUV_V21_Service(req models.VoucherComultaiveReq, param models.Para
 			NotificationTo: param.AccountNumber,
 			Institution:    param.InstitutionID,
 			ReferenceId:    param.RRN,
-			TransactionId:  param.Reffnum,
+			TransactionId:  param.CumReffnum,
 			Data: models.DataValue{
 				RewardValue: "point",
 				Value:       strconv.Itoa(totalPoint),
@@ -300,7 +300,7 @@ func RedeemtionUV_V21_Service(req models.VoucherComultaiveReq, param models.Para
 			NotificationTo: param.AccountNumber,
 			Institution:    param.InstitutionID,
 			ReferenceId:    param.RRN,
-			TransactionId:  param.Reffnum,
+			TransactionId:  param.CumReffnum,
 			Data: models.DataValue{
 				RewardValue: "point",
 				Value:       strconv.Itoa(totalPoint),

@@ -290,6 +290,20 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 		resultReversal := Trx.V21_Adding_PointVoucher(param, totalPoint, req.Jumlah, head)
 		fmt.Println(resultReversal)
 
+		for i := req.Jumlah; i > 0; i-- {
+
+			// TrxID
+			param.TrxID = utils.GenTransactionId()
+
+			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
+
+			t := i - 1
+			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
+			param.CouponID = coupon
+
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)
+		}
+
 		fmt.Println("[ >>>>>>>>>>>>>>>>>>>>>>> Send Publisher <<<<<<<<<<<<<<<<<<<< ]")
 
 		pubreq := models.NotifPubreq{
@@ -297,7 +311,7 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 			NotificationTo: param.AccountNumber,
 			Institution:    param.InstitutionID,
 			ReferenceId:    param.RRN,
-			TransactionId:  param.Reffnum,
+			TransactionId:  param.CumReffnum,
 			Data: models.DataValue{
 				RewardValue: "point",
 				Value:       strconv.Itoa(totalPoint),
@@ -317,20 +331,6 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 		}
 
 		fmt.Println("Response Publisher : ", kafkaRes)
-
-		for i := req.Jumlah; i > 0; i-- {
-
-			// TrxID
-			param.TrxID = utils.GenTransactionId()
-
-			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
-
-			t := i - 1
-			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
-			param.CouponID = coupon
-
-			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)
-		}
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -399,6 +399,21 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 		resultReversal := Trx.V21_Adding_PointVoucher(param, totalPoint, req.Jumlah, head)
 		fmt.Println(resultReversal)
 
+		for i := req.Jumlah; i > 0; i-- {
+
+			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
+
+			// TrxID
+			param.TrxID = utils.GenTransactionId()
+
+			t := i - 1
+			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
+			param.CouponID = coupon
+
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)
+
+		}
+
 		fmt.Println("[ >>>>>>>>>>>>>>>>>>>>>>> Send Publisher <<<<<<<<<<<<<<<<<<<< ]")
 
 		pubreq := models.NotifPubreq{
@@ -406,7 +421,7 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 			NotificationTo: param.AccountNumber,
 			Institution:    param.InstitutionID,
 			ReferenceId:    param.RRN,
-			TransactionId:  param.Reffnum,
+			TransactionId:  param.CumReffnum,
 			Data: models.DataValue{
 				RewardValue: "point",
 				Value:       strconv.Itoa(totalPoint),
@@ -427,21 +442,6 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 		}
 
 		fmt.Println("Response Publisher : ", kafkaRes)
-
-		for i := req.Jumlah; i > 0; i-- {
-
-			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
-
-			// TrxID
-			param.TrxID = utils.GenTransactionId()
-
-			t := i - 1
-			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
-			param.CouponID = coupon
-
-			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)
-
-		}
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
