@@ -8,6 +8,7 @@ import (
 	"ottopoint-purchase/models"
 	callback "ottopoint-purchase/models/v21/callback"
 	"ottopoint-purchase/utils"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -41,7 +42,7 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 	reUpdate := db.VoucherTypeDB{}
 
 	// PPOB (1)
-	if req.VoucherType == constants.VoucherTypePPOB {
+	if strings.ToLower(req.VoucherType) == strings.ToLower(constants.VoucherTypePPOB) {
 
 		logrus.Println(">>> PPOB <<<")
 
