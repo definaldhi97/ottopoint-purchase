@@ -65,6 +65,8 @@ func Server(portStr string) error {
 				h2h.POST("/spending", payment.SpendingPaymentController)
 			}
 
+			v2Root.POST("/patching", controllers.PatchingInvoiceNumberController)
+
 		}
 
 		v21Root := apiRoot.Group("/v2.1")
