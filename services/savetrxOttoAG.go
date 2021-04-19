@@ -25,7 +25,8 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	// validasi vidio is_used -> false
 	isUsed := true
 	// codeVoucher := param.VoucherCode
-	var codeVoucher string
+	var codeVoucher, invNum string
+	var paymethod int
 	var ExpireDate time.Time
 	var redeemDate time.Time
 	var usedAt time.Time
@@ -40,6 +41,9 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		redeemDate = time.Now()
 		trxID = param.TrxID
 		usedAt = time.Now()
+
+		invNum = param.InvoiceNumber
+		paymethod = 2
 
 		if param.Category == constants.CategoryVidio {
 			isUsed = false // isUsed status untuk used
@@ -105,8 +109,8 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		PointsTransferID:  param.PointTransferID,
 		UsedAt:            utils.DefaultNulTime(usedAt),
 
-		PaymentMethod: 2,
-		InvoiceNumber: param.InvoiceNumber,
+		PaymentMethod: paymethod,
+		InvoiceNumber: invNum,
 	}
 
 	err := db.DbCon.Create(&save).Error

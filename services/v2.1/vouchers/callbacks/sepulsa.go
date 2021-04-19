@@ -9,8 +9,6 @@ import (
 	"ottopoint-purchase/utils"
 	"time"
 
-	"ottopoint-purchase/services/v2.1/Trx"
-
 	"github.com/sirupsen/logrus"
 )
 
