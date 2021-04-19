@@ -34,7 +34,7 @@ func UseVoucherUVServices(req models.UseVoucherReq, param models.Params) models.
 	}
 
 	comulative_ref := utils.GenTransactionId()
-	param.Reffnum = comulative_ref
+	param.CumReffnum = comulative_ref
 	param.Amount = int64(param.Point)
 
 	reqUV := uvmodels.UseVoucherUVReq{

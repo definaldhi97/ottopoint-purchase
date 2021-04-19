@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"ottopoint-purchase/constants"
+	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	"time"
 
@@ -191,6 +192,24 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string) error {
 
 		logrus.Error("[PackageDB]-[UpdateVoucherbyVoucherType]")
 		logrus.Error(fmt.Sprintf("[Failed get Data by TrxID : %v from TSpending]-[Error : %v]", trxId, err))
+
+		return err
+	}
+
+	return nil
+}
+
+func UpdateTrxVoucher(param models.Params, trxId, status string) error {
+	res := dbmodels.TSpending{}
+
+	logrus.Println(fmt.Sprintf("[Start]-[UpdateTrxVoucherAG]-[%v]", trxId))
+
+	err := DbCon.Exec(`update t_spending set responder_data = ?, requestor_data = ?, responder_rc = ?, responder_rd, status = ? where transaction_id = ?`,
+		param.DataSupplier.Response, param.DataSupplier.Request, param.DataSupplier.Rc, param.DataSupplier.Rd, status, trxId).Scan(&res).Error
+	if err != nil {
+
+		logrus.Error("[PackageDB]-[UpdateTrxVoucherAG]")
+		logrus.Error(fmt.Sprintf("[Error : %v]-[TrxID : %v]", err, trxId))
 
 		return err
 	}

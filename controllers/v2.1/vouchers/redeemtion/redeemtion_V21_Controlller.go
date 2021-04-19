@@ -158,31 +158,29 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 	param.InvoiceNumber = "INV" + jodaTime.Format("YYYYMMdd", time.Now()) + utils.GenTransactionId()[7:11]
 
 	logrus.Println("[Request]")
-	logrus.Info("CampaignId : ", req.CampaignID, " CustID : ", req.CustID, " CustID2 : ", req.CustID2, " Jumlah : ", req.Jumlah, " Vendor : ", param.SupplierID)
-
-	// res = redeemtion.RedeemtionOrder_V21_Services(req, param, header)
+	logrus.Info("AccountNumber : ", param.AccountNumber, " CampaignId : ", req.CampaignID, " CustID : ", req.CustID, " CustID2 : ", req.CustID2, " Jumlah : ", req.Jumlah, " Vendor : ", param.SupplierID)
 
 	switch param.SupplierID {
 	case constants.CODE_VENDOR_DUMY:
 		logrus.Println(" [ Product Dummy ]")
-		res = redeemtion.RedeemtionDummyService(req, param, header)
+		// res = redeemtion.RedeemtionDummyService(req, param, header)
 	case constants.CODE_VENDOR_OTTOAG:
 		logrus.Println(" [ Product OTTOAG ]")
-		res = redeemtion.RedeemtionOttoAG_V21_Service(req, param, header)
+		// res = redeemtion.RedeemtionOttoAG_V21_Service(req, param, header)
 	case constants.CODE_VENDOR_UV:
 		logrus.Println(" [ Product Ultra Voucher ]")
-		res = redeemtion.RedeemtionUV_V21_Service(req, param, header)
+		// res = redeemtion.RedeemtionUV_V21_Service(req, param, header)
 	case constants.CODE_VENDOR_SEPULSA:
 		logrus.Println(" [ Product Sepulsa ]")
-		res = redeemtion.RedeemtionSepulsa_V21_Service(req, param, header)
+		// res = redeemtion.RedeemtionSepulsa_V21_Service(req, param, header)
 	case constants.CODE_VENDOR_AGREGATOR:
 		logrus.Println(" [ Product Agregator ]")
-		header.DeviceID = "H2H"
-		res = redeemtion.RedeemtionAG_V21_Services(req, param, header)
+		// header.DeviceID = "H2H"
+		// res = redeemtion.RedeemtionAG_V21_Services(req, param, header)
 	case constants.CODE_VENDOR_JempolKios, constants.CODE_VENDOR_GV:
 		logrus.Println(" [ Jempol Kios / Gudang Voucher ]")
 		// header.DeviceID = "H2H"
-		res = redeemtion.RedeemtionOrder_V21_Services(req, param, header)
+		// res = redeemtion.RedeemtionOrder_V21_Services(req, param, header)
 	default:
 		logrus.Println(" [ Invalid Vendor ]")
 		res = models.Response{
@@ -195,7 +193,12 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 				Pending: 0,
 			},
 		}
+
+		ctx.JSON(http.StatusOK, res)
+		return
 	}
+
+	res = redeemtion.RedeemtionOrder_V21_Services(req, param, header)
 
 	ctx.JSON(http.StatusOK, res)
 	return

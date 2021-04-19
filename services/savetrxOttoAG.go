@@ -84,7 +84,7 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		// ExpDate:         param.ExpDate,
 		ExpDate:           utils.DefaultNulTime(ExpireDate),
 		Institution:       param.InstitutionID,
-		CummulativeRef:    param.Reffnum,
+		CummulativeRef:    param.CumReffnum,
 		DateTime:          utils.GetTimeFormatYYMMDDHHMMSS(),
 		Point:             param.Point,
 		ResponderRc:       param.DataSupplier.Rc,

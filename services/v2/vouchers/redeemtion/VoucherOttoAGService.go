@@ -44,7 +44,7 @@ func RedeemtionOttoAGServices(req models.VoucherComultaiveReq, param models.Para
 
 	/*---- generate comulative_ref ----*/
 	comulative_ref := utils.GenTransactionId()
-	param.Reffnum = comulative_ref
+	param.CumReffnum = comulative_ref
 
 	logrus.Info(fmt.Sprintf("[ Cumulatif Reff : %v] ", comulative_ref))
 
@@ -118,7 +118,7 @@ func RedeemtionOttoAGServices(req models.VoucherComultaiveReq, param models.Para
 			NotificationTo: param.AccountNumber,
 			Institution:    param.InstitutionID,
 			ReferenceId:    param.RRN,
-			TransactionId:  param.Reffnum,
+			TransactionId:  param.CumReffnum,
 			Data: models.DataValue{
 				RewardValue: "point",
 				Value:       strconv.Itoa(rcUseVoucher.Count),
@@ -377,7 +377,7 @@ func inquiryVoucherOttoAG(req models.VoucherComultaiveReq, param models.Params, 
 		InstitutionID: param.InstitutionID,
 		CustID:        req.CustID,
 		TransType:     constants.CODE_TRANSTYPE_INQUERY,
-		Reffnum:       param.Reffnum, // internal
+		CumReffnum:    param.CumReffnum,
 		RRN:           dataInquery.Rrn,
 		TrxID:         param.TrxID,
 		Amount:        dataInquery.Amount,
@@ -617,7 +617,7 @@ func useVoucherOttoAG(req models.VoucherComultaiveReq, redeemComu models.RedeemC
 		InstitutionID:   param.InstitutionID,
 		CustID:          custId,
 		TransType:       constants.CODE_TRANSTYPE_REDEMPTION,
-		Reffnum:         param.Reffnum, // Internal
+		CumReffnum:      param.CumReffnum,
 		RRN:             billerRes.Rrn,
 		TrxID:           param.TrxID,
 		Amount:          int64(billerRes.Amount),
@@ -729,7 +729,7 @@ func useVoucherOttoAG(req models.VoucherComultaiveReq, redeemComu models.RedeemC
 				NotificationTo: param.AccountNumber,
 				Institution:    param.InstitutionID,
 				ReferenceId:    param.RRN,
-				TransactionId:  param.Reffnum,
+				TransactionId:  param.CumReffnum,
 				Data: models.DataValueSMS{
 					ProductName: denom,
 					Token:       stroomToken,
@@ -750,7 +750,7 @@ func useVoucherOttoAG(req models.VoucherComultaiveReq, redeemComu models.RedeemC
 				NotificationTo: param.AccountNumber,
 				Institution:    param.InstitutionID,
 				ReferenceId:    param.RRN,
-				TransactionId:  param.Reffnum,
+				TransactionId:  param.CumReffnum,
 				Data: models.DataValue{
 					RewardValue: denom,
 					Value:       stroomToken,
@@ -775,7 +775,7 @@ func useVoucherOttoAG(req models.VoucherComultaiveReq, redeemComu models.RedeemC
 			NotificationTo: param.AccountNumber,
 			Institution:    param.InstitutionID,
 			ReferenceId:    param.RRN,
-			TransactionId:  param.Reffnum,
+			TransactionId:  param.CumReffnum,
 			Data: models.DataValue{
 				RewardValue: denom,
 				Value:       billerRes.Data.Code,
