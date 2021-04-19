@@ -21,14 +21,14 @@ func GeDataPatching() ([]dbmodels.TSpending, error) {
 	return res, nil
 }
 
-func UpdateDataPatching(invoiceNum, trxId string) error {
+func UpdateDataPatching(invoiceNum, id string) error {
 	res := dbmodels.TSpending{}
 
-	err := DbCon.Raw(`update t_spending set invoice_number = ? where transaction_id = ?`, invoiceNum, trxId).Scan(&res).Error
+	err := DbCon.Raw(`update t_spending set invoice_number = ? where id = ?`, invoiceNum, id).Scan(&res).Error
 	strerror := fmt.Sprintf("%v", err)
 	if strerror != "record not found" {
 		logrus.Error("[PackageDB]-[UpdateDataPatching]")
-		logrus.Error(fmt.Sprintf("[Error : %v]-[TrxId : %v]", err, trxId))
+		logrus.Error(fmt.Sprintf("[Error : %v]-[TrxId : %v]", err, id))
 
 		return err
 	}
