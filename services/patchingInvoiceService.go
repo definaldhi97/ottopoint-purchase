@@ -33,11 +33,11 @@ func PatchingInvoiceNumberService() PatchingInvoice {
 
 		inv := "INV" + jodaTime.Format("YYYYMMdd", getData[i].CreatedAT) + utils.GenTransactionId()[7:11]
 
-		update := db.UpdateDataPatching(inv, getData[i].TransactionId)
+		update := db.UpdateDataPatching(inv, getData[i].ID)
 		if update != nil {
 
 			logrus.Error("[PackageServices]-[PatchingInvoiceNumberService]")
-			logrus.Error(fmt.Sprintf("[GeDataPatching]-[Error : %v]-[TrxId : %v]", errData, getData[i].TransactionId))
+			logrus.Error(fmt.Sprintf("[GeDataPatching]-[Error : %v]-[TrxId : %v]-[ID : %v]", errData, getData[i].TransactionId, getData[i].ID))
 
 			failed++
 			continue
