@@ -6,6 +6,7 @@ import (
 	"ottopoint-purchase/controllers"
 	"ottopoint-purchase/models"
 	callback "ottopoint-purchase/models/v21/callback"
+	"time"
 
 	service "ottopoint-purchase/services/v2.1/vouchers/callbacks"
 
@@ -21,6 +22,10 @@ func CallBackVoucherAG_V21_Controller(ctx *gin.Context) {
 	namectrl := "[PackageCallbacks_V21]-[CallBackVoucherAG_V21_Controller]"
 
 	logReq := fmt.Sprintf("[TransactionID : %v]", req.TransactionId)
+
+	time.Sleep(time.Second * 5)
+
+	fmt.Println(">>> Sleep 5 Detik <<<")
 
 	logrus.Info(namectrl)
 

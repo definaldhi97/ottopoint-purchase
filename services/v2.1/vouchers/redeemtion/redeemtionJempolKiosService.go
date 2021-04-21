@@ -216,6 +216,10 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 		RedeemCallback: hostPurcahse + callbackPartner,
 	}
 
+	if param.SupplierID == constants.CODE_VENDOR_UV {
+		reqOrder.CustomerPhone = param.AccountNumber
+	}
+
 	fmt.Println("Start - OrderVoucherAggregator")
 	logrus.Info("[VoucherAgService]-[OrderVoucher]")
 
