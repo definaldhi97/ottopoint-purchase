@@ -77,6 +77,7 @@ func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interf
 		ProductCategoryID: param.CategoryID,
 		MProductID:        param.ProductID,
 		PointsTransferID:  param.PointTransferID,
+		IsCallback:        false,
 	}
 
 	err := db.DbCon.Create(&save).Error

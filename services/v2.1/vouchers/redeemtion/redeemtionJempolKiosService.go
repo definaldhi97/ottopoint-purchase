@@ -27,9 +27,9 @@ var (
 	callbackPartner = utils.GetEnv("OTTOPOINT_PURCHASE_CALLBACK_PARTNER", "/transaction/callback/partner")
 )
 
-func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.Params, head models.RequestHeader) models.Response {
+func RedeemtionJempolKios_V21_Services(req models.VoucherComultaiveReq, param models.Params, head models.RequestHeader) models.Response {
 
-	nameservice := "[PackageRedeemtion]-[RedeemtionOrder_V21_Services]"
+	nameservice := "[PackageRedeemtion]-[RedeemtionJempolKios_V21_Services]"
 	logReq := fmt.Sprintf("[AccountNumber : %v, RewardID : %v]", param.AccountNumber, param.RewardID)
 
 	logrus.Info(nameservice)
@@ -290,20 +290,6 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 		resultReversal := Trx.V21_Adding_PointVoucher(param, totalPoint, req.Jumlah, head)
 		fmt.Println(resultReversal)
 
-		for i := req.Jumlah; i > 0; i-- {
-
-			// TrxID
-			param.TrxID = utils.GenTransactionId()
-
-			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
-
-			t := i - 1
-			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
-			param.CouponID = coupon
-
-			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)
-		}
-
 		fmt.Println("[ >>>>>>>>>>>>>>>>>>>>>>> Send Publisher <<<<<<<<<<<<<<<<<<<< ]")
 
 		pubreq := models.NotifPubreq{
@@ -311,7 +297,7 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 			NotificationTo: param.AccountNumber,
 			Institution:    param.InstitutionID,
 			ReferenceId:    param.RRN,
-			TransactionId:  param.CumReffnum,
+			TransactionId:  param.Reffnum,
 			Data: models.DataValue{
 				RewardValue: "point",
 				Value:       strconv.Itoa(totalPoint),
@@ -331,6 +317,20 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 		}
 
 		fmt.Println("Response Publisher : ", kafkaRes)
+
+		for i := req.Jumlah; i > 0; i-- {
+
+			// TrxID
+			param.TrxID = utils.GenTransactionId()
+
+			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
+
+			t := i - 1
+			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
+			param.CouponID = coupon
+
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)
+		}
 
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
@@ -399,21 +399,6 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 		resultReversal := Trx.V21_Adding_PointVoucher(param, totalPoint, req.Jumlah, head)
 		fmt.Println(resultReversal)
 
-		for i := req.Jumlah; i > 0; i-- {
-
-			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
-
-			// TrxID
-			param.TrxID = utils.GenTransactionId()
-
-			t := i - 1
-			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
-			param.CouponID = coupon
-
-			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)
-
-		}
-
 		fmt.Println("[ >>>>>>>>>>>>>>>>>>>>>>> Send Publisher <<<<<<<<<<<<<<<<<<<< ]")
 
 		pubreq := models.NotifPubreq{
@@ -421,7 +406,7 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 			NotificationTo: param.AccountNumber,
 			Institution:    param.InstitutionID,
 			ReferenceId:    param.RRN,
-			TransactionId:  param.CumReffnum,
+			TransactionId:  param.Reffnum,
 			Data: models.DataValue{
 				RewardValue: "point",
 				Value:       strconv.Itoa(totalPoint),
@@ -443,6 +428,21 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 
 		fmt.Println("Response Publisher : ", kafkaRes)
 
+		for i := req.Jumlah; i > 0; i-- {
+
+			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
+
+			// TrxID
+			param.TrxID = utils.GenTransactionId()
+
+			t := i - 1
+			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
+			param.CouponID = coupon
+
+			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)
+
+		}
+
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
 			Data: vgmodels.ResponseVoucherAg{
@@ -458,62 +458,21 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 
 	}
 
-	// // Check Order Status
-	// statusOrder, errStatus := vg.CheckStatusOrder(vgmodels.RequestCheckOrderStatus{
-	// 	OrderID:       param.CumReffnum,
-	// 	RecordPerPage: fmt.Sprintf("%d", req.Jumlah),
-	// 	CurrentPage:   "1",
-	// }, head)
+	for i := req.Jumlah; i > 0; i-- {
+		fmt.Println(fmt.Sprintf("[Line : %v]", i))
 
-	// if errStatus != nil {
+		// TrxId
+		param.TrxID = utils.GenTransactionId()
 
-	// 	// Handle Error Here
-	// 	fmt.Println("Internal Server Error : ", errorder)
-	// 	fmt.Println("ResponseCode : ", order.ResponseCode)
-	// 	fmt.Println("[VoucherAgServices]-[FailedCheckOrderStatus]")
-	// 	fmt.Println(fmt.Sprintf("[Response %v]", order.ResponseCode))
+		fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
 
-	// }
+		t := i - 1
+		coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
+		param.CouponID = coupon
 
-	// param.RRN = statusOrder.Data.TransactionID
+		go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Success, timeExp)
 
-	// for i := req.Jumlah; i > 0; i-- {
-	// 	fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
-
-	// 	t := i - 1
-	// 	coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
-	// 	param.CouponID = coupon
-	// 	// code := RedeemVouchAG.CouponseVouch[t].CouponsCode
-
-	// 	// voucherID := statusOrder.Data.Vouchers[t].VoucherID
-	// 	voucherCode := statusOrder.Data.Vouchers[t].VoucherCode
-	// 	expDate := statusOrder.Data.Vouchers[t].ExpiredDate
-	// 	voucherLink := statusOrder.Data.Vouchers[t].Link
-
-	// 	a := []rune(param.CouponID)
-	// 	key32 := string(a[0:32])
-	// 	key := []byte(key32)
-	// 	chiperText := []byte(voucherCode)
-	// 	plaintText, err := utils.EncryptAES(chiperText, key)
-	// 	if err != nil {
-	// 		res = utils.GetMessageFailedErrorNew(res, constants.RC_FAILED_DECRYPT_VOUCHER, constants.RD_FAILED_DECRYPT_VOUCHER)
-	// 		return res
-	// 	}
-
-	// 	// Use Voucher ID as a Transaction ID
-	// 	param.TrxID = utils.GenTransactionId()
-	// 	param.ExpDate = expDate
-	// 	param.CouponCode = fmt.Sprintf("%s", plaintText)
-	// 	param.VoucherLink = voucherLink
-
-	// id := utils.GenerateTokenUUID()
-	// go services.SaveDBVoucherAgMigrate(id, param.InstitutionID, param.CouponID, voucherCode, param.AccountNumber, param.AccountId, req.CampaignID)
-	// go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, "00", timeExp)
-
-	// }
-
-	// go services.SaveDBVoucherAgMigrate(id, param.InstitutionID, param.CouponID, voucherCode, param.AccountNumber, param.AccountId, req.CampaignID)
-	go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Success, timeExp)
+	}
 
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
