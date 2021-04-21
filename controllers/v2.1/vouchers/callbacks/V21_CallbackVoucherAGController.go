@@ -49,7 +49,7 @@ func CallBackVoucherAG_V21_Controller(ctx *gin.Context) {
 	}
 
 	logrus.Println("[Request]")
-	logrus.Info("InstitutionId : ", req.InstitutionId, "NotificationType : ", req.NotificationType, "TransactionId : ", req.TransactionId, "VoucherType : ", req.VoucherType, "Data : ", req.Data)
+	logrus.Info("InstitutionId : ", req.InstitutionId, " NotificationType : ", req.NotificationType, " TransactionId : ", req.TransactionId, " VoucherType : ", req.VoucherType, " Data : ", req.Data)
 
 	res = service.CallbackVoucherAG_V21_Service(req)
 
