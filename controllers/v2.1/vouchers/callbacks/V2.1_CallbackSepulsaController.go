@@ -27,6 +27,13 @@ func CallBackSepulsa_V21_Controller(ctx *gin.Context) {
 
 	logrus.Info(namectrl)
 
+	clientIP := ctx.ClientIP()
+	if clientIP != "" {
+		fmt.Println("Caller IP : ", clientIP)
+	}
+
+	fmt.Println("From IP : ", clientIP)
+
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res.Meta.Code = 03
 		res.Meta.Message = err.Error()
