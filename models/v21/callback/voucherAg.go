@@ -4,10 +4,10 @@ type CallbackVoucherAGReq struct {
 	InstitutionId    string `json:"institutionId"`
 	NotificationType string `json:"notificationType"`
 	// NotificationTo   string              `json:"notificationTo"`
-	TransactionId string              `json:"transactionId"`
-	VoucherType   string              `json:"voucherType"`
-	OrderId       string              `json:"orderId"`
-	Data          DataVoucherTypePPOB `json:"data"`
+	TransactionId string      `json:"transactionId"`
+	VoucherType   string      `json:"voucherType"`
+	OrderId       string      `json:"orderId"`
+	Data          interface{} `json:"data"`
 }
 
 type CallbackVoucherAGReq1 struct {
@@ -16,6 +16,7 @@ type CallbackVoucherAGReq1 struct {
 	NotificationTo   string               `json:"notificationTo"`
 	TransactionId    string               `json:"transactionId"`
 	VoucherType      string               `json:"voucherType"`
+	OrderId          string               `json:"orderId"`
 	Data             DataVoucherTypeMerge `json:"data"`
 }
 
@@ -27,8 +28,7 @@ type DataVoucherTypePPOB struct {
 
 // Voucher type Voucher Code
 type DataVoucherTypeVoucherCode struct {
-	OrderId      string `json:"orderId"`
-	VoucherId    string `json:"voucherId"`
+	VoucherID    string `json:"voucherId"`
 	VoucherCode  string `json:"voucherCode"`
 	VoucherName  string `json:"voucherName"`
 	IsRedeemed   bool   `json:"isRedeemed"`
