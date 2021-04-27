@@ -201,13 +201,22 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string) error {
 }
 
 func UpdateTrxVoucher(param models.Params, trxId, status string) error {
-	res := dbmodels.TSpending{}
+	// res := dbmodels.TSpending{}
 
 	logrus.Println(fmt.Sprintf("[Start]-[UpdateTrxVoucherAG]-[%v]", trxId))
 
-	err := DbCon.Exec(`update t_spending set responder_data = ?, requestor_data = ?, responder_rc = ?, responder_rd, status = ? where transaction_id = ?`,
-		param.DataSupplier.Response, param.DataSupplier.Request, param.DataSupplier.Rc, param.DataSupplier.Rd, status, trxId).Scan(&res).Error
-	if err != nil {
+	updated := dbmodels.TSpending{
+		ResponderData: param.DataSupplier.Response,
+		RequestorData: param.DataSupplier.Request,
+		ResponderRc:   param.DataSupplier.Rc,
+		ResponderRd:   param.DataSupplier.Rd,
+		Status:        status,
+	}
+
+	// err := DbCon.Exec(`update t_spending set responder_data = ?, requestor_data = ?, responder_rc = ?, responder_rd, status = ? where transaction_id = ?`,
+	// 	param.DataSupplier.Response, param.DataSupplier.Request, param.DataSupplier.Rc, param.DataSupplier.Rd, status, trxId).Scan(&res).Error
+
+	if err := DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error; err != nil {
 
 		logrus.Error("[PackageDB]-[UpdateTrxVoucherAG]")
 		logrus.Error(fmt.Sprintf("[Error : %v]-[TrxID : %v]", err, trxId))
