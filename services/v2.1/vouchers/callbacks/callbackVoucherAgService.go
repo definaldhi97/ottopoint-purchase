@@ -72,7 +72,7 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 			ResponseDesc: dataPPOB.ResponseDesc,
 		}
 
-		update := db.UpdateVoucherbyVoucherType(reUpdate, req.OrderId)
+		update := db.UpdateVoucherbyVoucherType(reUpdate, req.OrderId, req)
 		logrus.Info("Response Update : ", update)
 	} else {
 
@@ -93,7 +93,7 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 		errVouchercode := json.Unmarshal(data2, &dataVouchercode)
 		fmt.Println("Error Marshall Data errVoucherCode : ", errVouchercode)
 
-		update := db.UpdateVoucherbyVoucherType(reUpdate, req.OrderId)
+		update := db.UpdateVoucherbyVoucherType(reUpdate, req.OrderId, req)
 		logrus.Info("Response Update : ", update)
 
 		dataVoucher := DataCallbackNotif{

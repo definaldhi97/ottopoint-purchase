@@ -26,7 +26,7 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 	var redeemDate time.Time
 
 	var saveStatus string
-	isUsed := false
+	isUsed := true
 	switch status {
 	case "00":
 		saveStatus = constants.Success
@@ -37,8 +37,8 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		isUsed = true
 	}
 
-	if param.SupplierID == constants.CODE_VENDOR_JempolKios || param.SupplierID == constants.CODE_VENDOR_GV {
-		isUsed = true
+	if param.SupplierID == constants.CODE_VENDOR_UV {
+		isUsed = false
 	}
 
 	reqVAG, _ := json.Marshal(&reqdata)  // Req UV

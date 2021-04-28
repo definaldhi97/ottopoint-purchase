@@ -378,7 +378,7 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 		res = models.Response{
 			Meta: utils.ResponseMetaOK(),
 			Data: models.UltraVoucherResp{
-				Code:    "68",
+				Code:    "09",
 				Msg:     "Transaksi Anda sedang dalam proses. Silahkan hubungi customer support kami untuk informasi selengkapnya.",
 				Success: 0,
 				Failed:  0,
