@@ -74,7 +74,7 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 
 		update := db.UpdateVoucherbyVoucherType(reUpdate, req.OrderId, req)
 		logrus.Info("Response Update : ", update)
-	} else {
+	} else if strings.ToLower(req.VoucherType) == strings.ToLower(constants.VoucherTypeVoucherCode) {
 
 		dataVouchercode := callback.DataVoucherTypeVoucherCode{}
 
@@ -116,6 +116,10 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 
 		return res
 
+	} else {
+		// res = utils.GetMessageResponse()
+
+		return res
 	}
 
 	res = models.Response{
