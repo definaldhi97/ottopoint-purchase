@@ -141,7 +141,7 @@ type VoucherTypeDB struct {
 }
 
 func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string, resData interface{}) error {
-	res := dbmodels.TSpending{}
+	// res := dbmodels.TSpending{}
 	logrus.Println(">>> UpdateVoucherbyVoucherType <<<")
 
 	var status string
@@ -184,22 +184,28 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string, resData interfa
 
 		if req.OrderId != "" {
 
-			err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
+			err = DbCon.Model(&updated).Where("cummulative_ref = ?", trxId).Update(&updated).Error
 
 		} else {
 
 			updated.RRN = req.OrderId
 
-			err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
+			err = DbCon.Model(&updated).Where("cummulative_ref = ?", trxId).Update(&updated).Error
 		}
 
 	}
 
 	// Voucher Code
 	if req.VoucherType == 2 {
-		err = DbCon.Raw(
-			"update t_spending set is_used = ?, rrn = ?, voucher_code = ?, used_at = ?, updated_at = ?, is_callback = true where cummulative_ref = ?",
-			req.IsRedeemed, req.OrderId, req.VoucherCode, req.RedeemedDate, time.Now(), trxId).Scan(&res).Error
+
+		updated.RRN = req.OrderId
+		updated.IsUsed = req.IsRedeemed
+
+		err = DbCon.Model(&updated).Where("cummulative_ref = ?", trxId).Update(&updated).Error
+
+		// err = DbCon.Raw(
+		// 	"update t_spending set is_used = ?, rrn = ?, voucher_code = ?, used_at = ?, updated_at = ?, is_callback = true where cummulative_ref = ?",
+		// 	req.IsRedeemed, req.OrderId, req.VoucherCode, req.RedeemedDate, time.Now(), trxId).Scan(&res).Error
 	}
 
 	if err != nil {
