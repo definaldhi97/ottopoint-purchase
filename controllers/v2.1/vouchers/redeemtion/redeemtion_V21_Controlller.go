@@ -157,6 +157,12 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 	param.CustID = req.CustID
 	param.InvoiceNumber = "INV" + jodaTime.Format("YYYYMMdd", time.Now()) + utils.GenTransactionId()[7:11]
 
+	if req.CustID2 != "" {
+		param.CustID = req.CustID + " || " + req.CustID2
+	}
+
+	param.InvoiceNumber = "INV" + jodaTime.Format("YYYYMMdd", time.Now()) + utils.GenTransactionId()[7:11]
+
 	logrus.Println("[Request]")
 	logrus.Info("AccountNumber : ", param.AccountNumber, " CampaignId : ", req.CampaignID, " CustID : ", req.CustID, " CustID2 : ", req.CustID2, " Jumlah : ", req.Jumlah, " Vendor : ", param.SupplierID)
 

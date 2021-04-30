@@ -76,6 +76,7 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 
 		}
 
+		// Wallet
 		if v == constants.CODE_NOMOR_KARTU {
 
 			logrus.Info(">> Field Nomor Kartu <<")
@@ -86,6 +87,7 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 			field = append(field, a)
 		}
 
+		// PLN, Game (FF)
 		if v == constants.CODE_ID_Pelanggan {
 
 			logrus.Info(">> Field ID Pelanggan <<")
@@ -96,11 +98,12 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, param models.
 			field = append(field, a)
 		}
 
+		// Game (ML)
 		if v == constants.CODE_ID_Server {
 
 			logrus.Info(">> Field ID Server <<")
 
-			a.Value = req.CustID
+			a.Value = req.CustID2
 			a.Key = constants.CODE_ID_Server
 
 			field = append(field, a)
