@@ -41,14 +41,6 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 	responseVAG, _ := json.Marshal(&res) // Response UV
 	reqdataOP, _ := json.Marshal(&reqOP) // Req Service
 
-	// expDate := ""
-	// if param.ExpDate != "" {
-	// 	layout := "2006-01-02 15:04:05"
-	// 	parse, _ := time.Parse(layout, param.ExpDate)
-
-	// 	expDate = jodaTime.Format("YYYY-MM-dd", parse)
-	// }
-
 	if transType == constants.CODE_TRANSTYPE_REDEMPTION {
 		ExpireDate = utils.ExpireDateVoucherAGt(timeExpVouc)
 		redeemDate = time.Now()
@@ -92,6 +84,8 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		MProductID:        param.ProductID,
 		PointsTransferID:  param.PointTransferID,
 		IsCallback:        false,
+		InvoiceNumber:     param.InvoiceNumber,
+		PaymentMethod:     2,
 	}
 
 	err := db.DbCon.Create(&save).Error
