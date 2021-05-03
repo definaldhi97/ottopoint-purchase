@@ -75,11 +75,13 @@ const (
 )
 
 const (
-	UV         = "Ultra Voucher"
-	OttoAG     = "OttoAG"
-	Sepulsa    = "Sepulsa"
-	VoucherAg  = "Voucher Aggregator"
-	SecurePage = "SecurePage"
+	UV            = "Ultra Voucher"
+	OttoAG        = "OttoAG"
+	Sepulsa       = "Sepulsa"
+	VoucherAg     = "Voucher Aggregator"
+	JempolKios    = "Jempol Kios"
+	GudangVoucher = "Gudang Voucher"
+	SecurePage    = "SecurePage"
 )
 
 const (
@@ -213,13 +215,14 @@ const (
 )
 
 const (
-	CodeScheduler           = "SC001"
-	CodeSchedulerSepulsa    = "SC003"
-	CodeSchedulerSpending   = "SC006"
-	CodeSchedulerUV         = "SC007"
-	CodeSchedulerOttoAG     = "SC008"
-	CodeSchedulerVoucherAG  = "SC009"
-	CodeSchedulerSecurePage = "SC010"
+	CodeScheduler              = "SC001" // retry
+	CodeSchedulerSepulsa       = "SC003"
+	CodeSchedulerSpending      = "SC006"
+	CodeSchedulerUV            = "SC007"
+	CodeSchedulerOttoAG        = "SC008"
+	CodeSchedulerVoucherAG     = "SC009"
+	CodeSchedulerJempolKios    = "SC010"
+	CodeSchedulerGudangVoucher = "SC011"
 )
 
 const (
