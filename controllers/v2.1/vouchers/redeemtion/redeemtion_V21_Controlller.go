@@ -172,21 +172,29 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 		// res = redeemtion.RedeemtionDummyService(req, param, header)
 	case constants.CODE_VENDOR_OTTOAG:
 		logrus.Println(" [ Product OTTOAG ]")
+		codeScheduler = constants.CodeSchedulerOttoAG
 		// res = redeemtion.RedeemtionOttoAG_V21_Service(req, param, header)
 	case constants.CODE_VENDOR_UV:
 		logrus.Println(" [ Product Ultra Voucher ]")
+		codeScheduler = constants.CodeSchedulerUV
 		// res = redeemtion.RedeemtionUV_V21_Service(req, param, header)
 	case constants.CODE_VENDOR_SEPULSA:
 		logrus.Println(" [ Product Sepulsa ]")
+		codeScheduler = constants.CodeSchedulerSepulsa
 		// res = redeemtion.RedeemtionSepulsa_V21_Service(req, param, header)
 	case constants.CODE_VENDOR_AGREGATOR:
 		logrus.Println(" [ Product Agregator ]")
+		codeScheduler = constants.CodeSchedulerVoucherAG
 		// header.DeviceID = "H2H"
 		// res = redeemtion.RedeemtionAG_V21_Services(req, param, header)
-	case constants.CODE_VENDOR_JempolKios, constants.CODE_VENDOR_GV:
-		logrus.Println(" [ Jempol Kios / Gudang Voucher ]")
+	case constants.CODE_VENDOR_GV:
+		logrus.Println(" [ Gudang Voucher ]")
+		codeScheduler = constants.CodeSchedulerGudangVoucher
 		// header.DeviceID = "H2H"
 		// res = redeemtion.RedeemtionOrder_V21_Services(req, param, header)
+	case constants.CODE_VENDOR_JempolKios:
+		logrus.Println(" [ Jempol Kios ]")
+		codeScheduler = constants.CodeSchedulerJempolKios
 	default:
 		logrus.Println(" [ Invalid Vendor ]")
 		res = models.Response{
@@ -204,7 +212,7 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 		return
 	}
 
-	res = redeemtion.RedeemtionOrder_V21_Services(req, param, header)
+	res = redeemtion.RedeemtionOrder_V21_Services(req, codeScheduler, param, header)
 
 	ctx.JSON(http.StatusOK, res)
 	return

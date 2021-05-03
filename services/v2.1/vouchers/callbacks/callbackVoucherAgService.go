@@ -40,7 +40,7 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 	if errTrx != nil {
 
 		logrus.Error(nameservice)
-		logrus.Error(fmt.Sprintf("[CheckTrxId]-[Error : %v]", errTrx))
+		logrus.Error(fmt.Sprintf("[CheckTrxbyTrxID]-[Error : %v]", errTrx))
 		logrus.Println(logReq)
 
 		res = utils.GetMessageResponse(res, 422, false, errors.New("TrxId Tidak Ditemukan"))

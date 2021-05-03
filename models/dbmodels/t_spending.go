@@ -46,6 +46,8 @@ type TSpending struct {
 	InvoiceNumber     string     `gorm:"invoice_number"`
 	PaymentMethod     int        `gorm:"payment_method"`
 	IsCallback        bool       `gorm:"is_callback"`
+	InvoiceNumber     string     `gorm:"invoice_number"`
+	PaymentMethod     int        `gorm:"payment_method"`
 }
 
 func (t *TSpending) TableName() string {
