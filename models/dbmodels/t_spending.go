@@ -43,8 +43,6 @@ type TSpending struct {
 	MProductID        *string    `gorm:"m_product_id"`
 	VoucherLink       string     `gorm:"voucher_link"`
 	PointsTransferID  string     `gorm:"points_transfer_id"`
-	InvoiceNumber     string     `gorm:"invoice_number"`
-	PaymentMethod     int        `gorm:"payment_method"`
 	IsCallback        bool       `gorm:"is_callback"`
 	InvoiceNumber     string     `gorm:"invoice_number"`
 	PaymentMethod     int        `gorm:"payment_method"`

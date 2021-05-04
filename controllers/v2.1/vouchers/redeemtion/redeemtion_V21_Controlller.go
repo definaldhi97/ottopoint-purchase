@@ -166,6 +166,8 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 	logrus.Println("[Request]")
 	logrus.Info("AccountNumber : ", param.AccountNumber, " CampaignId : ", req.CampaignID, " CustID : ", req.CustID, " CustID2 : ", req.CustID2, " Jumlah : ", req.Jumlah, " Vendor : ", param.SupplierID)
 
+	var codeScheduler string
+
 	switch param.SupplierID {
 	case constants.CODE_VENDOR_DUMY:
 		logrus.Println(" [ Product Dummy ]")

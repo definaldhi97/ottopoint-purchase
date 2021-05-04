@@ -263,7 +263,7 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 			logrus.Error("[Failed Order Voucher]-[Gagal Order Voucher] : ", errorder.Error())
 
 			for _, val := range RedeemVouchAG.CouponseVouch {
-				param.CouponID = coupon
+				param.CouponID = val.CouponsID
 			}
 
 			go services.SaveTSchedulerRetry(param.TrxID, codeScheduler)
@@ -325,7 +325,7 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 			fmt.Println("Response Publisher : ", kafkaRes)
 
 			for _, val := range RedeemVouchAG.CouponseVouch {
-				param.CouponID = coupon
+				param.CouponID = val.CouponsID
 			}
 
 			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)
@@ -354,7 +354,7 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 			logrus.Info("[Response Desc] : ", order.ResponseDesc)
 
 			for _, val := range RedeemVouchAG.CouponseVouch {
-				param.CouponID = coupon
+				param.CouponID = val.CouponsID
 			}
 			go services.SaveTSchedulerRetry(param.TrxID, codeScheduler)
 			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Pending, timeExp)
@@ -417,7 +417,7 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 			fmt.Println("Response Publisher : ", kafkaRes)
 
 			for _, val := range RedeemVouchAG.CouponseVouch {
-				param.CouponID = coupon
+				param.CouponID = val.CouponsID
 			}
 
 			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)

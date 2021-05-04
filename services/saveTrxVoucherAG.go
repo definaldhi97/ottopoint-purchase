@@ -90,8 +90,8 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		MProductID:        &param.ProductID,
 		PointsTransferID:  param.PointTransferID,
 		IsCallback:        false,
-		InvoiceNumber: param.InvoiceNumber,
-		PaymentMethod: 2,
+		InvoiceNumber:     param.InvoiceNumber,
+		PaymentMethod:     2,
 	}
 
 	err := db.DbCon.Create(&save).Error

@@ -108,9 +108,9 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		MProductID:        &param.ProductID,
 		PointsTransferID:  param.PointTransferID,
 		UsedAt:            utils.DefaultNulTime(usedAt),
+		IsCallback:        false,
 		PaymentMethod: paymethod,
 		InvoiceNumber: invNum,
-		IsCallback:        false,
 	}
 
 	err := db.DbCon.Create(&save).Error
