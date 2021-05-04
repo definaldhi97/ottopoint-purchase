@@ -417,6 +417,7 @@ func inquiryOttoAG(req models.VoucherComultaiveReq, param models.Params, header 
 			Rc: resOttAG.Rc,
 			Rd: resOttAG.Msg,
 		},
+		InvoiceNumber: param.InvoiceNumber,
 	}
 
 	if req.CustID2 != "" {

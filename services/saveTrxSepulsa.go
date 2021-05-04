@@ -16,7 +16,11 @@ import (
 
 func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interface{}, reqOP models.VoucherComultaiveReq, transType, status string) {
 
-	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[Sepulsa]-[%v]", transType))
+	nameservice := fmt.Sprintf("[PackageServices]-[Start]-[SaveTransactionSepulsa][%v]", transType)
+	logReq := fmt.Sprintf("[RRN : %v || MReqard]", param.RRN, param.RewardID)
+
+	logrus.Info(nameservice)
+	logrus.Info(logReq)
 
 	var ExpireDate time.Time
 	var redeemDate time.Time
@@ -42,8 +46,10 @@ func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interf
 
 	// timeRedeem := jodaTime.Format("dd-MM-YYYY HH:mm:ss", time.Now())
 
+	idSpending := utils.GenerateTokenUUID()
+
 	save := dbmodels.TSpending{
-		ID:                utils.GenerateTokenUUID(),
+		ID:                idSpending,
 		AccountNumber:     param.AccountNumber,
 		Voucher:           param.NamaVoucher,
 		MerchantID:        param.MerchantID,
@@ -73,22 +79,56 @@ func SaveTransactionSepulsa(param models.Params, res interface{}, reqdata interf
 		AccountId:         param.AccountId,
 		RedeemAt:          utils.DefaultNulTime(redeemDate),
 		Comment:           param.Comment,
-		MRewardID:         param.RewardID,
+		MRewardID:         &param.RewardID,
 		ProductCategoryID: param.CategoryID,
-		MProductID:        param.ProductID,
+		MProductID:        &param.ProductID,
 		PointsTransferID:  param.PointTransferID,
 		IsCallback:        false,
+		PaymentMethod: 2,
+		InvoiceNumber: param.InvoiceNumber,
 	}
 
 	err := db.DbCon.Create(&save).Error
 	if err != nil {
-		logrus.Info(fmt.Sprintf("[Error : %v]", err))
-		logrus.Info("[Failed Save to DB]")
 
-		name := jodaTime.Format("dd-MM-YYYY", time.Now()) + ".csv"
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[TSpending]-[Error : %v]", err))
+		logrus.Println(logReq)
+
+		name := jodaTime.Format("YYYY-MM-dd", time.Now()) + ".csv"
 		go utils.CreateCSVFile(save, name)
 
 		// return err
+
+	}
+
+	savePayment := dbmodels.TPayment{
+		ID:             utils.GenerateUUID(),
+		TSpendingID:    idSpending,
+		ExternalReffId: param.RRN,
+		TransType:      transType,
+		Value:          int64(param.Point),
+		ValueType:      constants.TypePoint,
+		Status:         status,
+		// ResponderRc   : ,
+		// ResponderRd   : ,
+		CreatedBy: constants.CreatedbySystem,
+		// UpdatedBy     : ,
+		CreatedAt: time.Now(),
+		// UpdatedAt     : ,
+	}
+
+	errPayment := db.DbCon.Create(&savePayment).Error
+	if errPayment != nil {
+
+		logrus.Error(nameservice)
+		logrus.Error(fmt.Sprintf("[SavePayment]-[Error : %v]", errPayment))
+		logrus.Println(logReq)
+
+		name := jodaTime.Format("YYYY-MM-dd", time.Now()) + ".csv"
+		go utils.CreateCSVFile(save, name)
+
+		// return
 
 	}
 

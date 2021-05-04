@@ -122,10 +122,13 @@ func saveTrxRedeemtionDUmmy(param models.Params, req interface{}, status string)
 		AccountId:         param.AccountId,
 		ProductCategoryID: param.CategoryID,
 		Comment:           param.Comment,
-		MRewardID:         param.RewardID,
-		MProductID:        param.ProductID,
+		MRewardID:         &param.RewardID,
+		MProductID:        &param.ProductID,
 		PointsTransferID:  param.PointTransferID,
 		UsedAt:            utils.DefaultNulTime(time.Now()),
+
+		PaymentMethod: 2,
+		InvoiceNumber: param.InvoiceNumber,
 	}
 
 	err := db.DbCon.Create(&save).Error

@@ -48,7 +48,7 @@ func UseVoucherVidioServices(couponId string) models.Response {
 	respVouch.Code = getVouc.ProductCode
 	respVouch.CouponID = getVouc.CouponId
 	respVouch.Used = true
-	respVouch.CampaignID = getVouc.MRewardID
+	respVouch.CampaignID = *getVouc.MRewardID
 	respVouch.CustomerID = getVouc.AccountId
 
 	resp = models.Response{

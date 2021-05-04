@@ -45,6 +45,8 @@ const (
 )
 
 const (
+	CodeSplitBill     = "TSP06"
+	CodeRedeemtion    = "TSP02"
 	CodeReversal      = "TAD04"
 	PaymentSplitBill  = "PCS01"
 	SpendingSplitBill = "TSP05"
@@ -285,6 +287,15 @@ const (
 const (
 	VoucherTypePPOB        = "ppob"
 	VoucherTypeVoucherCode = "voucher_code"
+)
+
+const (
+	CreatedbySystem = "System"
+)
+
+const (
+	TypeCash  = "cash"
+	TypePoint = "point"
 )
 
 var Iv = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}

@@ -50,7 +50,7 @@ func CallbackVoucherSepulsaService(req sepulsaModels.CallbackTrxReq) models.Resp
 			AccountNumber: spending.AccountNumber,
 			RRN:           spending.RRN,
 			TrxID:         spending.TransactionId,
-			RewardID:      spending.MRewardID,
+			RewardID:      *spending.MRewardID,
 			Point:         spending.Point,
 		}
 

@@ -15,11 +15,13 @@ type Params struct {
 	TrxID         string // internal
 	CumReffnum    string // internal (generate ottopoint) untuk pembelian kelipatan
 	RRN           string // eksternal (from supplier exp : ottoag, uv)
+	InvoiceNumber string
 	CustID        string
 	Amount        int64
 	NamaVoucher   string
 	ProductType   string
 	ProductCode   string
+	ProductName   string
 	Category      string
 	Point         int
 	ExpDate       string

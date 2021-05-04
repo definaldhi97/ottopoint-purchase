@@ -155,6 +155,7 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 	param.MerchantID = dataUser.MerchantID
 	param.Fields = cekVoucher.Fields
 	param.CustID = req.CustID
+	param.InvoiceNumber = "INV" + jodaTime.Format("YYYYMMdd", time.Now()) + utils.GenTransactionId()[7:11]
 
 	if req.CustID2 != "" {
 		param.CustID = req.CustID + " || " + req.CustID2
@@ -164,6 +165,8 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 
 	logrus.Println("[Request]")
 	logrus.Info("AccountNumber : ", param.AccountNumber, " CampaignId : ", req.CampaignID, " CustID : ", req.CustID, " CustID2 : ", req.CustID2, " Jumlah : ", req.Jumlah, " Vendor : ", param.SupplierID)
+
+	var codeScheduler string
 
 	switch param.SupplierID {
 	case constants.CODE_VENDOR_DUMY:

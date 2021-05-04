@@ -10,17 +10,23 @@ import (
 	"ottopoint-purchase/utils"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/vjeantet/jodaTime"
 )
 
 func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interface{}, reqOP interface{}, status string) string {
 
-	fmt.Println(fmt.Sprintf("[Start-SaveDB]-[%v]", param.ProductType))
+	nameservice := fmt.Sprintf("[PackageServices]-[Start]-[SaveTransactionOttoAg][%v]", param.TransType)
+	logReq := fmt.Sprintf("[RRN : %v || MReward]", param.RRN, param.RewardID)
+
+	logrus.Info(nameservice)
+	logrus.Info(logReq)
 
 	// validasi vidio is_used -> false
 	isUsed := true
 	// codeVoucher := param.VoucherCode
-	var codeVoucher string
+	var codeVoucher, invNum string
+	var paymethod int
 	var ExpireDate time.Time
 	var redeemDate time.Time
 	var usedAt time.Time
@@ -35,6 +41,9 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		redeemDate = time.Now()
 		trxID = param.TrxID
 		usedAt = time.Now()
+
+		invNum = param.InvoiceNumber
+		paymethod = 2
 
 		if param.Category == constants.CategoryVidio {
 			isUsed = false // isUsed status untuk used
@@ -58,8 +67,10 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 	responseOttoag, _ := json.Marshal(&res) // Response Ottoag
 	reqdataOP, _ := json.Marshal(&reqOP)    // Req Service
 
+	idSpending := utils.GenerateTokenUUID()
+
 	save := dbmodels.TSpending{
-		ID:            utils.GenerateTokenUUID(),
+		ID:            idSpending,
 		AccountNumber: param.AccountNumber,
 		Voucher:       param.NamaVoucher,
 		MerchantID:    param.MerchantID,
@@ -93,11 +104,13 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		AccountId:         param.AccountId,
 		ProductCategoryID: param.CategoryID,
 		Comment:           param.Comment,
-		MRewardID:         param.RewardID,
-		MProductID:        param.ProductID,
+		MRewardID:         &param.RewardID,
+		MProductID:        &param.ProductID,
 		PointsTransferID:  param.PointTransferID,
 		UsedAt:            utils.DefaultNulTime(usedAt),
 		IsCallback:        false,
+		PaymentMethod: paymethod,
+		InvoiceNumber: invNum,
 	}
 
 	err := db.DbCon.Create(&save).Error
@@ -112,6 +125,38 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 
 		return "Gagal Save"
 
+	}
+
+	if param.TransType == constants.CODE_TRANSTYPE_REDEMPTION {
+		savePayment := dbmodels.TPayment{
+			ID:             utils.GenerateUUID(),
+			TSpendingID:    idSpending,
+			ExternalReffId: param.RRN,
+			TransType:      param.TransType,
+			Value:          int64(param.Point),
+			ValueType:      constants.TypePoint,
+			Status:         status,
+			// ResponderRc   : ,
+			// ResponderRd   : ,
+			CreatedBy: constants.CreatedbySystem,
+			// UpdatedBy     : ,
+			CreatedAt: time.Now(),
+			// UpdatedAt     : ,
+		}
+
+		errPayment := db.DbCon.Create(&savePayment).Error
+		if errPayment != nil {
+
+			logrus.Error(nameservice)
+			logrus.Error(fmt.Sprintf("[SavePayment]-[Error : %v]", errPayment))
+			logrus.Println(logReq)
+
+			name := jodaTime.Format("YYYY-MM-dd", time.Now()) + ".csv"
+			go utils.CreateCSVFile(save, name)
+
+			// return "Gagal Save"
+
+		}
 	}
 
 	return "Berhasil Save"

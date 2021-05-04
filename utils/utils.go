@@ -85,18 +85,6 @@ func GetMessageFailedError(res models.Response, code int, err error) models.Resp
 	return res
 }
 
-func GetMessageResponseData(res models.Response, resData models.ResponseData, code int, status bool, err error) models.Response {
-
-	res = models.Response{}
-
-	res.Data = resData
-	res.Meta.Code = code
-	res.Meta.Status = status
-	res.Meta.Message = err.Error()
-
-	return res
-}
-
 func LogSpanMax(request interface{}) interface{} {
 	data, _ := json.Marshal(request)
 	if len(data) > constants.MAXUDP {
@@ -268,6 +256,18 @@ func GetFormattedToken(token string) string {
 	}
 
 	return formattedToken
+}
+
+func GenerateUUID() string {
+	value := uuid.Must(uuid.NewRandom())
+	fmt.Println("ini ID : ", value)
+	out := value.String()
+	fmt.Printf("%s", out)
+	tokenString := string(out)
+
+	tokenString = strings.ReplaceAll(tokenString, "\n", "")
+	tokenString = strings.ToLower(tokenString)
+	return tokenString
 }
 
 // ReffNumb

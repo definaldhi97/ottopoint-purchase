@@ -88,3 +88,54 @@ func UpdateTransactionSplitBill(used bool, trxID, status, rc, rd string, respVen
 	return res, nil
 
 }
+
+func CheckReffIdSplitBill(reffId string) (dbmodels.TSpending, error) {
+	res := dbmodels.TSpending{}
+
+	err := DbCon.Raw(`select * from t_spending where rrn = ?`, reffId).Scan(&res).Error
+	if err != nil {
+
+		logrus.Error("[PackageDB]-[CheckReffIdSplitBill]")
+		logrus.Error(fmt.Sprintf("[ReffID : %v]-[Error : %v]", reffId, err))
+
+		return res, err
+	}
+
+	return res, nil
+}
+
+func CheckReffIdSplitBillReversal(reffId string) (dbmodels.TEarning, error) {
+	res := dbmodels.TEarning{}
+
+	err := DbCon.Raw(`select * from t_earning where reference_id = ? and trans_type = 'TAD04'`, reffId).Scan(&res).Error
+	if err != nil {
+
+		logrus.Error("[PackageDB]-[CheckReffIdSplitBillReversal]")
+		logrus.Error(fmt.Sprintf("[ReffID : %v]-[Error : %v]", reffId, err))
+
+		return res, err
+	}
+
+	return res, nil
+}
+
+type ConfigPoint struct {
+	Limit int `gorm:"column:min_point_splitbill"`
+}
+
+func GetConfigPoint(partnerID string) (ConfigPoint, error) {
+	var res ConfigPoint
+
+	err := DbCon.Raw(`select b.min_point_splitbill from m_institution as a join config_institution as b on a.id = b.m_institution_id where a.partner_id = ?`, partnerID).Scan(&res).Error
+	if err != nil {
+
+		logrus.Error("[PackageDB]-[GetConfigPoint]")
+		logrus.Error(fmt.Sprintf("[PartnerID : %v]-[Error : %v]", partnerID, err))
+
+		return res, err
+	}
+
+	logrus.Info("ConfigPoint : ", res.Limit)
+	return res, nil
+
+}
