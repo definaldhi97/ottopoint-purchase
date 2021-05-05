@@ -180,17 +180,19 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string, resData interfa
 	// PPOB
 	if req.VoucherType == 1 {
 
+		updated.IsUsed = true
+
 		logrus.Println(">>> VoucherType PPOB <<<")
 
 		if req.OrderId != "" {
 
-			err = DbCon.Model(&updated).Where("cummulative_ref = ?", trxId).Update(&updated).Error
+			err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
 
 		} else {
 
 			updated.RRN = req.OrderId
 
-			err = DbCon.Model(&updated).Where("cummulative_ref = ?", trxId).Update(&updated).Error
+			err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
 		}
 
 	}
@@ -201,7 +203,7 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string, resData interfa
 		updated.RRN = req.OrderId
 		updated.IsUsed = req.IsRedeemed
 
-		err = DbCon.Model(&updated).Where("cummulative_ref = ?", trxId).Update(&updated).Error
+		err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
 
 		// err = DbCon.Raw(
 		// 	"update t_spending set is_used = ?, rrn = ?, voucher_code = ?, used_at = ?, updated_at = ?, is_callback = true where cummulative_ref = ?",

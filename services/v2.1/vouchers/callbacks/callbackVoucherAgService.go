@@ -76,6 +76,8 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 		logrus.Info("Response Update : ", update)
 	} else if strings.ToLower(req.VoucherType) == strings.ToLower(constants.VoucherTypeVoucherCode) {
 
+		logrus.Println(">>> Voucher Code <<<")
+
 		dataVouchercode := callback.DataVoucherTypeVoucherCode{}
 
 		data2, _ := json.Marshal(&req.Data)
