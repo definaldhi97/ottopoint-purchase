@@ -434,39 +434,48 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 
 	}
 
-	totalPoint := param.Point * failed
-	param.TrxID = utils.GenTransactionId()
-	resultReversal := Trx.V21_Adding_PointVoucher(param, totalPoint, failed, head)
-	fmt.Println(resultReversal)
+	if failed != 0 {
 
-	fmt.Println("[ >>>>>>>>>>>>>>>>>>>>>>> Send Publisher <<<<<<<<<<<<<<<<<<<< ]")
+		fmt.Println(fmt.Sprintf("[ Reversal CumReff : %v ]", param.CumReffnum))
 
-	pubreq := models.NotifPubreq{
-		Type:           constants.CODE_REVERSAL_POINT,
-		NotificationTo: param.AccountNumber,
-		Institution:    param.InstitutionID,
-		ReferenceId:    param.RRN,
-		TransactionId:  param.CumReffnum,
-		Data: models.DataValue{
-			RewardValue: "point",
-			Value:       strconv.Itoa(totalPoint),
-		},
+		go func(param models.Params, failed int) {
+
+			totalPoint := param.Point * failed
+			param.TrxID = utils.GenTransactionId()
+			resultReversal := Trx.V21_Adding_PointVoucher(param, totalPoint, failed, head)
+			fmt.Println(resultReversal)
+
+			fmt.Println("[ >>>>>>>>>>>>>>>>>>>>>>> Send Publisher <<<<<<<<<<<<<<<<<<<< ]")
+
+			pubreq := models.NotifPubreq{
+				Type:           constants.CODE_REVERSAL_POINT,
+				NotificationTo: param.AccountNumber,
+				Institution:    param.InstitutionID,
+				ReferenceId:    param.RRN,
+				TransactionId:  param.CumReffnum,
+				Data: models.DataValue{
+					RewardValue: constants.Point,
+					Value:       strconv.Itoa(totalPoint),
+				},
+			}
+
+			bytePub, _ := json.Marshal(pubreq)
+
+			kafkaReq := kafka.PublishReq{
+				Topic: utils.TopicsNotif,
+				Value: bytePub,
+			}
+
+			kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+			if err != nil {
+				fmt.Println("Gagal Send Publisher")
+				fmt.Println("Error : ", err)
+			}
+
+			fmt.Println("Response Publisher : ", kafkaRes)
+		}(param, failed)
+
 	}
-
-	bytePub, _ := json.Marshal(pubreq)
-
-	kafkaReq := kafka.PublishReq{
-		Topic: utils.TopicsNotif,
-		Value: bytePub,
-	}
-
-	kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
-	if err != nil {
-		fmt.Println("Gagal Send Publisher")
-		fmt.Println("Error : ", err)
-	}
-
-	fmt.Println("Response Publisher : ", kafkaRes)
 
 	code, msg := msgRedeemtionCummulative(success, pending, failed)
 
