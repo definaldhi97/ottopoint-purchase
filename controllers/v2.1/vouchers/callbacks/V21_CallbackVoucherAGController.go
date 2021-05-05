@@ -42,7 +42,7 @@ func CallBackVoucherAG_V21_Controller(ctx *gin.Context) {
 	}
 
 	// validate request
-	_, resultValidate := controllers.ValidateRequest(ctx, false, req, true)
+	_, resultValidate := controllers.ValidateRequest(ctx, false, req, false)
 	if !resultValidate.Meta.Status {
 
 		logrus.Error(namectrl)
