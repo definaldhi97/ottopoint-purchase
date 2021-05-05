@@ -286,7 +286,7 @@ const (
 
 const (
 	VoucherTypePPOB        = "ppob"
-	VoucherTypeVoucherCode = "voucher_code"
+	VoucherTypeVoucherCode = "voucher code"
 )
 
 const (
