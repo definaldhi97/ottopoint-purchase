@@ -41,7 +41,6 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 	timeExp, _ := strconv.Atoi(dataOrder.Expired)
 
 	param.CumReffnum = utils.GenTransactionId()
-	param.TrxID = utils.GenTransactionId()
 
 	param.Amount = int64(param.Point)
 
@@ -206,6 +205,8 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 		return res
 	}
 
+	var failed, success, pending int
+
 	for i := req.Jumlah; i > 0; i-- {
 
 		param.TrxID = utils.GenTransactionId()
@@ -269,18 +270,22 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 			go services.SaveTSchedulerRetry(param.TrxID, codeScheduler)
 			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Pending, timeExp)
 
-			res = models.Response{
-				Meta: utils.ResponseMetaOK(),
-				Data: models.UltraVoucherResp{
-					Code:    "68",
-					Msg:     "Transaksi Anda sedang dalam proses. Silahkan hubungi customer support kami untuk informasi selengkapnya.",
-					Success: 0,
-					Failed:  0,
-					Pending: req.Jumlah,
-				},
-			}
+			// res = models.Response{
+			// 	Meta: utils.ResponseMetaOK(),
+			// 	Data: models.UltraVoucherResp{
+			// 		Code:    "68",
+			// 		Msg:     "Transaksi Anda sedang dalam proses. Silahkan hubungi customer support kami untuk informasi selengkapnya.",
+			// 		Success: 0,
+			// 		Failed:  0,
+			// 		Pending: req.Jumlah,
+			// 	},
+			// }
 
-			return res
+			// return res
+
+			pending++
+
+			continue
 		}
 
 		// Handle Stock Not Available
@@ -291,57 +296,59 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 			logrus.Info("[Response Code ] : ", order.ResponseCode)
 			logrus.Info("[Response Desc] : ", order.ResponseDesc)
 
-			totalPoint := param.Point * req.Jumlah
-			param.TrxID = utils.GenTransactionId()
-			resultReversal := Trx.V21_Adding_PointVoucher(param, totalPoint, req.Jumlah, head)
-			fmt.Println(resultReversal)
-
-			fmt.Println("[ >>>>>>>>>>>>>>>>>>>>>>> Send Publisher <<<<<<<<<<<<<<<<<<<< ]")
-
-			pubreq := models.NotifPubreq{
-				Type:           constants.CODE_REVERSAL_POINT,
-				NotificationTo: param.AccountNumber,
-				Institution:    param.InstitutionID,
-				ReferenceId:    param.RRN,
-				TransactionId:  param.CumReffnum,
-				Data: models.DataValue{
-					RewardValue: "point",
-					Value:       strconv.Itoa(totalPoint),
-				},
-			}
-
-			bytePub, _ := json.Marshal(pubreq)
-			kafkaReq := kafka.PublishReq{
-				Topic: utils.TopicsNotif,
-				Value: bytePub,
-			}
-
-			kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
-			if err != nil {
-				fmt.Println("Gagal Send Publisher")
-				fmt.Println("Error : ", err)
-			}
-
-			fmt.Println("Response Publisher : ", kafkaRes)
-
 			for _, val := range RedeemVouchAG.CouponseVouch {
 				param.CouponID = val.CouponsID
 			}
 
 			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)
 
-			res = models.Response{
-				Meta: utils.ResponseMetaOK(),
-				Data: vgmodels.ResponseVoucherAg{
-					Code:    "01",
-					Msg:     "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya.",
-					Success: 0,
-					Failed:  req.Jumlah,
-					Pending: 0,
-				},
-			}
+			// totalPoint := param.Point
+			// resultReversal := Trx.V21_Adding_PointVoucher(param, totalPoint, req.Jumlah, head)
+			// fmt.Println(resultReversal)
 
-			return res
+			// fmt.Println("[ >>>>>>>>>>>>>>>>>>>>>>> Send Publisher <<<<<<<<<<<<<<<<<<<< ]")
+
+			// pubreq := models.NotifPubreq{
+			// 	Type:           constants.CODE_REVERSAL_POINT,
+			// 	NotificationTo: param.AccountNumber,
+			// 	Institution:    param.InstitutionID,
+			// 	ReferenceId:    param.RRN,
+			// 	TransactionId:  param.TrxID,
+			// 	Data: models.DataValue{
+			// 		RewardValue: "point",
+			// 		Value:       strconv.Itoa(totalPoint),
+			// 	},
+			// }
+
+			// bytePub, _ := json.Marshal(pubreq)
+			// kafkaReq := kafka.PublishReq{
+			// 	Topic: utils.TopicsNotif,
+			// 	Value: bytePub,
+			// }
+
+			// kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+			// if err != nil {
+			// 	fmt.Println("Gagal Send Publisher")
+			// 	fmt.Println("Error : ", err)
+			// }
+
+			// fmt.Println("Response Publisher : ", kafkaRes)
+
+			// res = models.Response{
+			// 	Meta: utils.ResponseMetaOK(),
+			// 	Data: vgmodels.ResponseVoucherAg{
+			// 		Code:    "01",
+			// 		Msg:     "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya.",
+			// 		Success: 0,
+			// 		Failed:  req.Jumlah,
+			// 		Pending: 0,
+			// 	},
+			// }
+
+			// return res
+
+			failed++
+			continue
 
 		}
 
@@ -356,21 +363,24 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 			for _, val := range RedeemVouchAG.CouponseVouch {
 				param.CouponID = val.CouponsID
 			}
+
 			go services.SaveTSchedulerRetry(param.TrxID, codeScheduler)
 			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Pending, timeExp)
 
-			res = models.Response{
-				Meta: utils.ResponseMetaOK(),
-				Data: models.UltraVoucherResp{
-					Code:    "09",
-					Msg:     "Transaksi Anda sedang dalam proses. Silahkan hubungi customer support kami untuk informasi selengkapnya.",
-					Success: 0,
-					Failed:  0,
-					Pending: req.Jumlah,
-				},
-			}
+			// res = models.Response{
+			// 	Meta: utils.ResponseMetaOK(),
+			// 	Data: models.UltraVoucherResp{
+			// 		Code:    "09",
+			// 		Msg:     "Transaksi Anda sedang dalam proses. Silahkan hubungi customer support kami untuk informasi selengkapnya.",
+			// 		Success: 0,
+			// 		Failed:  0,
+			// 		Pending: req.Jumlah,
+			// 	},
+			// }
 
-			return res
+			// return res
+
+			pending++
 		}
 
 		// Handle General Error
@@ -382,90 +392,158 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 			fmt.Println("[VoucherAgServices]-[FailedOrder]")
 			fmt.Println(fmt.Sprintf("[Response %v]", order.ResponseCode))
 
-			totalPoint := param.Point * req.Jumlah
-			param.TrxID = utils.GenTransactionId()
-			resultReversal := Trx.V21_Adding_PointVoucher(param, totalPoint, req.Jumlah, head)
-			fmt.Println(resultReversal)
-
-			fmt.Println("[ >>>>>>>>>>>>>>>>>>>>>>> Send Publisher <<<<<<<<<<<<<<<<<<<< ]")
-
-			pubreq := models.NotifPubreq{
-				Type:           constants.CODE_REVERSAL_POINT,
-				NotificationTo: param.AccountNumber,
-				Institution:    param.InstitutionID,
-				ReferenceId:    param.RRN,
-				TransactionId:  param.CumReffnum,
-				Data: models.DataValue{
-					RewardValue: "point",
-					Value:       strconv.Itoa(totalPoint),
-				},
-			}
-
-			bytePub, _ := json.Marshal(pubreq)
-
-			kafkaReq := kafka.PublishReq{
-				Topic: utils.TopicsNotif,
-				Value: bytePub,
-			}
-
-			kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
-			if err != nil {
-				fmt.Println("Gagal Send Publisher")
-				fmt.Println("Error : ", err)
-			}
-
-			fmt.Println("Response Publisher : ", kafkaRes)
-
 			for _, val := range RedeemVouchAG.CouponseVouch {
 				param.CouponID = val.CouponsID
 			}
 
 			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)
 
-			res = models.Response{
-				Meta: utils.ResponseMetaOK(),
-				Data: vgmodels.ResponseVoucherAg{
-					Code:    "01",
-					Msg:     "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya.",
-					Success: 0,
-					Failed:  req.Jumlah,
-					Pending: 0,
-				},
-			}
+			// res = models.Response{
+			// 	Meta: utils.ResponseMetaOK(),
+			// 	Data: vgmodels.ResponseVoucherAg{
+			// 		Code:    "01",
+			// 		Msg:     "Gagal! Maaf transaksi Anda tidak dapat dilakukan saat ini. Silahkan dicoba lagi atau hubungi tim kami untuk informasi selengkapnya.",
+			// 		Success: 0,
+			// 		Failed:  req.Jumlah,
+			// 		Pending: 0,
+			// 	},
+			// }
 
-			return res
+			// return res
 
-		}
+			failed++
 
-		for i := req.Jumlah; i > 0; i-- {
-			fmt.Println(fmt.Sprintf("[Line : %v]", i))
-
-			// TrxId
-			param.TrxID = utils.GenTransactionId()
-
-			fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
-
-			t := i - 1
-			coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
-			param.CouponID = coupon
-
-			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Success, timeExp)
+			continue
 
 		}
+
+		fmt.Println(fmt.Sprintf("[Line : %v]", i))
+
+		// TrxId
+		// param.TrxID = utils.GenTransactionId()
+
+		fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
+
+		for _, val := range RedeemVouchAG.CouponseVouch {
+			param.CouponID = val.CouponsID
+		}
+
+		go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Success, timeExp)
+
+		success++
 
 	}
+
+	totalPoint := param.Point * failed
+	param.TrxID = utils.GenTransactionId()
+	resultReversal := Trx.V21_Adding_PointVoucher(param, totalPoint, failed, head)
+	fmt.Println(resultReversal)
+
+	fmt.Println("[ >>>>>>>>>>>>>>>>>>>>>>> Send Publisher <<<<<<<<<<<<<<<<<<<< ]")
+
+	pubreq := models.NotifPubreq{
+		Type:           constants.CODE_REVERSAL_POINT,
+		NotificationTo: param.AccountNumber,
+		Institution:    param.InstitutionID,
+		ReferenceId:    param.RRN,
+		TransactionId:  param.CumReffnum,
+		Data: models.DataValue{
+			RewardValue: "point",
+			Value:       strconv.Itoa(totalPoint),
+		},
+	}
+
+	bytePub, _ := json.Marshal(pubreq)
+
+	kafkaReq := kafka.PublishReq{
+		Topic: utils.TopicsNotif,
+		Value: bytePub,
+	}
+
+	kafkaRes, err := kafka.SendPublishKafka(kafkaReq)
+	if err != nil {
+		fmt.Println("Gagal Send Publisher")
+		fmt.Println("Error : ", err)
+	}
+
+	fmt.Println("Response Publisher : ", kafkaRes)
+
+	code, msg := msgRedeemtionCummulative(success, pending, failed)
 
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
 		Data: vgmodels.ResponseVoucherAg{
-			Code:    "00",
-			Msg:     "Success",
-			Success: req.Jumlah,
-			Failed:  0,
-			Pending: 0,
+			Code:    code,
+			Msg:     msg,
+			Success: success,
+			Failed:  failed,
+			Pending: pending,
 		},
 	}
 
 	return res
 
+}
+
+func msgRedeemtionCummulative(success, pending, failed int) (string, string) {
+
+	var Code_RC_Comulative, Message_Comulative string
+	// Sukses
+	if (success != 0) && (pending == 0) && (failed == 0) {
+		Code_RC_Comulative = "00"
+		Message_Comulative = "Transaksi Berhasil"
+
+		return Code_RC_Comulative, Message_Comulative
+	}
+
+	// Sukses & Gagal
+	if (success != 0) && (pending == 0) && (failed != 0) {
+		Code_RC_Comulative = "174"
+		Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil dirukar namun %v voucher tidak berhasil. Poin yang tidak digunakan akan dikembalikan ke saldo Anda", success, failed)
+
+		return Code_RC_Comulative, Message_Comulative
+	}
+
+	// Sukses & Pending
+	if (success != 0) && (pending != 0) && (failed == 0) {
+		Code_RC_Comulative = "175"
+		Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil ditukar & %v Transaksi Anda sedang dalam proses", success, pending)
+
+		return Code_RC_Comulative, Message_Comulative
+	}
+
+	// Sukses & Pending & Gagal
+	if (success != 0) && (pending != 0) && (failed != 0) {
+		Code_RC_Comulative = "33"
+		Message_Comulative = fmt.Sprintf("%v Vucher Anda berhasil ditukar namun %v Voucher pending dan %v voucher tidak berhasil. Harap hubungi customer support untuk informasi lebih lanjut.", success, pending, failed)
+		// Message_Comulative = fmt.Sprintf("%v Voucher Anda berhasil dirukar namun %v voucher tidak berhasil. Poin yang tidak digunakan akan dikembalikan ke saldo Anda", success, failed)
+
+		return Code_RC_Comulative, Message_Comulative
+	}
+
+	// Pending
+	if (success == 0) && (pending != 0) && (failed == 0) {
+		Code_RC_Comulative = "56"
+		Message_Comulative = fmt.Sprintf("%v Transaksi Anda sedang dalam proses. Silahkan hubungi tim kami untuk informasi selengkapnya.", pending)
+
+		return Code_RC_Comulative, Message_Comulative
+	}
+
+	// Pending & Gagal
+	if (success == 0) && (pending != 0) && (failed != 0) {
+		Code_RC_Comulative = "57"
+		Message_Comulative = fmt.Sprintf("%v Transaksi Anda sedang dalam proses & %v Transaksi Anda Gagal.Poin yang tidak digunakan akan dikembalikan ke saldo Anda", success, failed)
+
+		return Code_RC_Comulative, Message_Comulative
+	}
+
+	// Gagal
+	if (success == 0) && (pending == 0) && (failed != 0) {
+		Code_RC_Comulative = "01"
+		Message_Comulative = "Transaksi Gagal"
+
+		return Code_RC_Comulative, Message_Comulative
+	}
+
+	return Code_RC_Comulative, Message_Comulative
 }
