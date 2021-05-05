@@ -171,7 +171,7 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 	switch param.SupplierID {
 	case constants.CODE_VENDOR_DUMY:
 		logrus.Println(" [ Product Dummy ]")
-		// res = redeemtion.RedeemtionDummyService(req, param, header)
+		res = redeemtion.RedeemtionDummyService(req, param, header)
 	case constants.CODE_VENDOR_OTTOAG:
 		logrus.Println(" [ Product OTTOAG ]")
 		codeScheduler = constants.CodeSchedulerOttoAG
@@ -179,7 +179,7 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 	case constants.CODE_VENDOR_UV:
 		logrus.Println(" [ Product Ultra Voucher ]")
 		codeScheduler = constants.CodeSchedulerUV
-		// res = redeemtion.RedeemtionUV_V21_Service(req, param, header)
+		res = redeemtion.RedeemtionUV_V21_Service(req, param, header)
 	case constants.CODE_VENDOR_SEPULSA:
 		logrus.Println(" [ Product Sepulsa ]")
 		codeScheduler = constants.CodeSchedulerSepulsa
