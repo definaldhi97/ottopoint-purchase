@@ -218,6 +218,8 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string, resData interfa
 		return err
 	}
 
+	go UpdateTSchedulerRetry(trxId)
+
 	return nil
 }
 

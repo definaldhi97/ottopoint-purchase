@@ -37,7 +37,7 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 	// validate TrxID
 	dataTrx, errTrx := db.CheckTrxbyTrxID(req.OrderId)
 	logrus.Println(">>> CheckTrxbyTrxID <<<")
-	if errTrx != nil {
+	if errTrx != nil || dataTrx.IsCallback == true {
 
 		logrus.Error(nameservice)
 		logrus.Error(fmt.Sprintf("[CheckTrxbyTrxID]-[Error : %v]", errTrx))
@@ -108,18 +108,25 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 
 		if strings.ToLower(dataTrx.ProductType) == strings.ToLower(constants.CategoryPLN) {
 			dataVoucher.NotifType = constants.CODE_REDEEM_PLN
+
+			go sendNotifDataVoucher(dataVoucher)
 		}
 
 		if strings.ToLower(dataTrx.ProductType) == strings.ToLower(constants.CategoryVidio) {
 			dataVoucher.NotifType = constants.CODE_REDEEM_VIDIO
+
+			go sendNotifDataVoucher(dataVoucher)
 		}
 
-		go sendNotifDataVoucher(dataVoucher)
-
-		return res
+		// return res
 
 	} else {
-		// res = utils.GetMessageResponse()
+
+		res.Meta = models.MetaData{
+			Status:  false,
+			Code:    500,
+			Message: "Failed",
+		}
 
 		return res
 	}

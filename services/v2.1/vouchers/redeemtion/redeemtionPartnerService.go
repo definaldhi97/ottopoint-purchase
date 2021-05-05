@@ -224,9 +224,9 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 			RedeemCallback: hostPurcahse + callbackPartner,
 		}
 
-		if param.SupplierID == constants.CODE_VENDOR_UV {
-			reqOrder.CustomerPhone = param.AccountNumber
-		}
+		// if param.SupplierID == constants.CODE_VENDOR_UV {
+		// 	reqOrder.CustomerPhone = param.AccountNumber
+		// }
 
 		fmt.Println("Start - OrderVoucherAggregator")
 		logrus.Info("[VoucherAgService]-[OrderVoucher]")
@@ -381,6 +381,7 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 			// return res
 
 			pending++
+			continue
 		}
 
 		// Handle General Error
@@ -412,7 +413,6 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 			// return res
 
 			failed++
-
 			continue
 
 		}
@@ -424,9 +424,11 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 
 		fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
 
-		for _, val := range RedeemVouchAG.CouponseVouch {
-			param.CouponID = val.CouponsID
-		}
+		// for _, val := range RedeemVouchAG.CouponseVouch {
+		// 	param.CouponID = val.CouponsID
+		// }
+
+		param.CouponID = RedeemVouchAG.CouponseVouch[i].CouponsID
 
 		go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Success, timeExp)
 
