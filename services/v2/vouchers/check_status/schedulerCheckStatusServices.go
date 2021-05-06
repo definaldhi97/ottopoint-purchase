@@ -12,6 +12,9 @@ import (
 func SchedulerCheckStatusService() interface{} {
 	res := models.ResponseData{}
 
+	res.ResponseCode = "00"
+	res.ResponseDesc = "Success"
+
 	savericename := "[PackageCheckStatus]-[SchedulerCheckStatusService]"
 
 	getData, errData := db.GetDataScheduler()

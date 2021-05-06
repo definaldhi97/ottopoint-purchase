@@ -2,7 +2,6 @@ package check_status
 
 import (
 	"fmt"
-	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	vag "ottopoint-purchase/hosts/voucher_aggregator/host"
 	"ottopoint-purchase/models"
@@ -12,6 +11,9 @@ import (
 
 func SchedulerCheckStatusServiceV21() interface{} {
 	res := models.ResponseData{}
+
+	res.ResponseCode = "00"
+	res.ResponseDesc = "Success"
 
 	savericename := "[PackageCheckStatus]-[SchedulerCheckStatusServiceV21]"
 
@@ -29,14 +31,17 @@ func SchedulerCheckStatusServiceV21() interface{} {
 
 	count := len(getData)
 
-	var sepulsaTotal, voucherAgTotal, ottoAgTotal, uvTotal, jkTotal, gvTotal int
-	var supplier string
-	var total int
+	var total, failed, success int
 
 	for i := 0; i < count; i++ {
 
+		total = getData[i].Count
+
 		var institution string
 		dataTrxId, errTrxId := db.CheckTrxbyTrxID(getData[i].TransactionID)
+
+		institution = dataTrxId.Institution
+
 		if errTrxId != nil {
 
 			logrus.Error(savericename)
@@ -45,29 +50,6 @@ func SchedulerCheckStatusServiceV21() interface{} {
 			institution = ""
 
 		}
-
-		switch getData[i].Code {
-		case constants.CodeSchedulerSepulsa:
-			supplier = constants.Sepulsa
-			sepulsaTotal++
-		case constants.CodeSchedulerVoucherAG:
-			supplier = constants.VoucherAg
-			voucherAgTotal++
-		case constants.CodeSchedulerOttoAG:
-			supplier = constants.OttoAG
-			ottoAgTotal++
-		case constants.CodeSchedulerUV:
-			supplier = constants.UV
-			uvTotal++
-		case constants.CodeSchedulerJempolKios:
-			supplier = constants.JempolKios
-			jkTotal++
-		case constants.CodeSchedulerGudangVoucher:
-			supplier = constants.GudangVoucher
-			gvTotal++
-		}
-
-		institution = dataTrxId.Institution
 
 		head := models.RequestHeader{
 			DeviceID:      "-",
@@ -80,33 +62,35 @@ func SchedulerCheckStatusServiceV21() interface{} {
 			// Signature    : "-",
 		}
 
-		fmt.Println(">>> Supplier : ", supplier)
-		_, errStatus := vag.CheckStatusOrderV21(getData[i].TransactionID, head)
-		if errStatus != nil {
+		fmt.Println(">>> Supplier : ", dataTrxId.SupplierID)
+		checkStatus, errStatus := vag.CheckStatusOrderV21(getData[i].TransactionID, head)
+		if errStatus != nil || checkStatus.ResponseCode != "00" {
 
-			fmt.Println(">>> Supplier : ", supplier)
+			total = total + 1
+
+			fmt.Println(">>> Supplier : ", dataTrxId.SupplierID)
 			logrus.Error(savericename)
 			logrus.Error(fmt.Sprintf("[CheckStatusOrderV21]-[Error : %v]", errStatus))
 
 			go db.UpdateSchedulerStatus(false, total, getData[i].TransactionID)
 
+			failed++
 			continue
 		}
 
+		success++
+		go db.UpdateSchedulerStatus(true, total, getData[i].TransactionID)
+
 	}
 
-	resData := models.SchedulerCheckStatusResp{
-		Data: models.SchedulerCheckStatusDataSupplier{
-			Sepulsa:       sepulsaTotal,
-			OttoAG:        ottoAgTotal,
-			UltraVoucher:  uvTotal,
-			JempolKios:    jkTotal,
-			GudangVoucher: gvTotal,
-			VouicherAG:    voucherAgTotal,
+	res = models.ResponseData{
+		Data: map[string]interface{}{
+			"Failed":  failed,
+			"Success": success,
+			"Total":   count,
 		},
-		Total: count,
 	}
 
-	return resData
+	return res
 
 }
