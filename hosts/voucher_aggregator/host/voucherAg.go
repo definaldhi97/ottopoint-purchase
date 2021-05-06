@@ -7,6 +7,8 @@ import (
 	https "ottopoint-purchase/hosts"
 	vgmodel "ottopoint-purchase/hosts/voucher_aggregator/models"
 	"ottopoint-purchase/models"
+	"strconv"
+	"time"
 
 	"ottopoint-purchase/utils"
 
@@ -18,10 +20,11 @@ var (
 	host string
 	name string
 
-	endpointOrderVoucher     string
-	endpointOrderVoucherV11  string
-	endpointCheckStatusOrder string
-	endpointPaymentInfo      string
+	endpointOrderVoucher        string
+	endpointOrderVoucherV11     string
+	endpointCheckStatusOrder    string
+	endpointCheckStatusOrderV21 string
+	endpointPaymentInfo         string
 )
 
 func init() {
@@ -32,6 +35,7 @@ func init() {
 	endpointOrderVoucherV11 = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_ORDER_V1.1", "/v1.1/order")
 	endpointCheckStatusOrder = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_CHECK_STATUS", "/v1/order/status")
 	endpointPaymentInfo = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_PAYMENT_INFO", "/v1/product/payment/info")
+	endpointCheckStatusOrderV21 = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_PAYMENT_INFO", "/v1.1/order/status")
 
 }
 
@@ -62,7 +66,7 @@ func OrderVoucher(req vgmodel.RequestOrderVoucherAg, head models.RequestHeader) 
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		logrus.Error("Failed to unmarshaling response OrderVoucher from Ultra Voucher ", err.Error())
+		logrus.Error("Failed to unmarshaling response OrderVoucher from VoucherAG ", err.Error())
 
 		return &resp, err
 	}
@@ -140,7 +144,7 @@ func CheckStatusOrder(req vgmodel.RequestCheckOrderStatus, head models.RequestHe
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		logrus.Error("Failed to unmarshaling response OrderVoucher from Ultra Voucher ", err.Error())
+		logrus.Error("Failed to unmarshaling response OrderVoucher from VoucherAG ", err.Error())
 
 		return &resp, err
 	}
@@ -176,7 +180,51 @@ func PaymentInfo(productCode string, head models.RequestHeader) (*vgmodel.Paymen
 
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		logrus.Error("Failed to unmarshaling response OrderVoucher from Ultra Voucher ", err.Error())
+		logrus.Error("Failed to unmarshaling response OrderVoucher from VoucherAG ", err.Error())
+
+		return &resp, err
+	}
+
+	return &resp, nil
+
+}
+
+func CheckStatusOrderV21(orderId string, head models.RequestHeader) (*vgmodel.ResponseCheckOrderStatus, error) {
+	var resp vgmodel.ResponseCheckOrderStatus
+
+	logrus.Info("[PackageHostVoucherAg]-[CheckStatusOrderV21]")
+
+	req := vgmodel.RequestCheckOrderStatusV21{
+		OrderID: orderId,
+	}
+
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+
+	signature := utils.CreateSignatureGeneral(timestamp, req, head, 1)
+
+	urlSvr := host + endpointCheckStatusOrderV21
+
+	header := make(http.Header)
+	header.Set("Content-Type", "application/json")
+	header.Set("InstitutionId", head.InstitutionID)
+	header.Set("DeviceId", head.DeviceID)
+	header.Set("Geolocation", head.Geolocation)
+	header.Set("ChannelId", head.ChannelID)
+	header.Set("Signature", signature)
+	header.Set("AppsId", head.AppsID)
+	header.Set("Timestamp", timestamp)
+
+	data, err := https.HTTPxPOSTwithRequest(urlSvr, req, header)
+	// data, err := HTTPxFormGetVoucherAg(urlSvr, head)
+	if err != nil {
+		logrus.Error("Check error : ", err.Error())
+
+		return &resp, err
+	}
+
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+		logrus.Error("Failed to unmarshaling response OrderVoucher from VoucherAG ", err.Error())
 
 		return &resp, err
 	}

@@ -88,7 +88,7 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		// ExpDate:         param.ExpDate,
 		ExpDate:           utils.DefaultNulTime(ExpireDate),
 		Institution:       param.InstitutionID,
-		CummulativeRef:    param.Reffnum,
+		CummulativeRef:    param.CumReffnum,
 		DateTime:          utils.GetTimeFormatYYMMDDHHMMSS(),
 		Point:             param.Point,
 		ResponderRc:       param.DataSupplier.Rc,
@@ -108,7 +108,7 @@ func SaveTransactionOttoAg(param models.Params, res interface{}, reqdata interfa
 		MProductID:        &param.ProductID,
 		PointsTransferID:  param.PointTransferID,
 		UsedAt:            utils.DefaultNulTime(usedAt),
-
+		IsCallback:        false,
 		PaymentMethod: paymethod,
 		InvoiceNumber: invNum,
 	}

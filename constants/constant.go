@@ -77,11 +77,13 @@ const (
 )
 
 const (
-	UV         = "Ultra Voucher"
-	OttoAG     = "OttoAG"
-	Sepulsa    = "Sepulsa"
-	VoucherAg  = "Voucher Aggregator"
-	SecurePage = "SecurePage"
+	UV            = "Ultra Voucher"
+	OttoAG        = "OttoAG"
+	Sepulsa       = "Sepulsa"
+	VoucherAg     = "Voucher Aggregator"
+	JempolKios    = "Jempol Kios"
+	GudangVoucher = "Gudang Voucher"
+	SecurePage    = "SecurePage"
 )
 
 const (
@@ -215,13 +217,14 @@ const (
 )
 
 const (
-	CodeScheduler           = "SC001"
-	CodeSchedulerSepulsa    = "SC003"
-	CodeSchedulerSpending   = "SC006"
-	CodeSchedulerUV         = "SC007"
-	CodeSchedulerOttoAG     = "SC008"
-	CodeSchedulerVoucherAG  = "SC009"
-	CodeSchedulerSecurePage = "SC010"
+	CodeScheduler              = "SC001" // retry
+	CodeSchedulerSepulsa       = "SC003"
+	CodeSchedulerSpending      = "SC006"
+	CodeSchedulerUV            = "SC007"
+	CodeSchedulerOttoAG        = "SC008"
+	CodeSchedulerVoucherAG     = "SC009"
+	CodeSchedulerJempolKios    = "SC010"
+	CodeSchedulerGudangVoucher = "SC011"
 )
 
 const (
@@ -283,7 +286,7 @@ const (
 
 const (
 	VoucherTypePPOB        = "ppob"
-	VoucherTypeVoucherCode = "voucher_code"
+	VoucherTypeVoucherCode = "voucher code"
 )
 
 const (
@@ -294,3 +297,5 @@ const (
 	TypeCash  = "cash"
 	TypePoint = "point"
 )
+
+var Iv = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}
