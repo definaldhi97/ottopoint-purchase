@@ -38,7 +38,9 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		isUsed = true
 	}
 
-	if strings.ToLower(param.ProductType) == strings.ToLower(constants.CategoryVidio) || strings.ToLower(param.SupplierID) == strings.ToLower(constants.CODE_VENDOR_UV) {
+	if strings.ToLower(param.ProductType) == strings.ToLower(constants.CategoryVidio) ||
+		strings.ToLower(param.SupplierID) == strings.ToLower(constants.CODE_VENDOR_UV) ||
+		strings.ToLower(param.SupplierID) == strings.ToLower(constants.CODE_VENDOR_AGREGATOR) {
 		isUsed = false
 	}
 

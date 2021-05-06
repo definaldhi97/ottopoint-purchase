@@ -443,6 +443,63 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 		t := i - 1
 		param.CouponID = RedeemVouchAG.CouponseVouch[t].CouponsID
 
+		if param.SupplierID == constants.CODE_VENDOR_AGREGATOR {
+
+			// Check Order Status
+			statusOrder, errStatus := vg.CheckStatusOrder(vgmodels.RequestCheckOrderStatus{
+				OrderID:       param.TrxID,
+				RecordPerPage: "1",
+				CurrentPage:   "1",
+			}, head)
+
+			if errStatus != nil {
+
+				// Handle Error Here
+				fmt.Println("[VoucherAgServices]-[FailedCheckOrderStatus]")
+				fmt.Println("Internal Server Error : ", errStatus)
+				fmt.Println("ResponseCode : ", statusOrder.ResponseCode)
+				fmt.Println(fmt.Sprintf("[Response %v]", statusOrder.ResponseCode))
+
+			}
+
+			param.RRN = statusOrder.Data.TransactionID
+
+			for i := req.Jumlah; i > 0; i-- {
+				fmt.Println(fmt.Sprintf("[Line Save DB : %v]", i))
+
+				t := i - 1
+				coupon := RedeemVouchAG.CouponseVouch[t].CouponsID
+				param.CouponID = coupon
+				// code := RedeemVouchAG.CouponseVouch[t].CouponsCode
+
+				// voucherID := statusOrder.Data.Vouchers[t].VoucherID
+				voucherCode := statusOrder.Data.Vouchers[t].VoucherCode
+				expDate := statusOrder.Data.Vouchers[t].ExpiredDate
+				voucherLink := statusOrder.Data.Vouchers[t].Link
+
+				a := []rune(param.CouponID)
+				key32 := string(a[0:32])
+				key := []byte(key32)
+				chiperText := []byte(voucherCode)
+				plaintText, err := utils.EncryptAES(chiperText, key)
+				if err != nil {
+					res = utils.GetMessageFailedErrorNew(res, constants.RC_FAILED_DECRYPT_VOUCHER, constants.RD_FAILED_DECRYPT_VOUCHER)
+					return res
+				}
+
+				// Use Voucher ID as a Transaction ID
+				param.TrxID = utils.GenTransactionId()
+				param.ExpDate = expDate
+				param.CouponCode = fmt.Sprintf("%s", plaintText)
+				param.VoucherLink = voucherLink
+
+				id := utils.GenerateTokenUUID()
+				go services.SaveDBVoucherAgMigrate(id, param.InstitutionID, param.CouponID, voucherCode, param.AccountNumber, param.AccountId, req.CampaignID)
+
+			}
+
+		}
+
 		go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Success, timeExp)
 
 		success++

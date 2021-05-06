@@ -203,6 +203,7 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string, resData interfa
 		updated.RRN = req.OrderId
 		updated.IsUsed = req.IsRedeemed
 		updated.Status = "00"
+		updated.VoucherCode = req.VoucherCode
 
 		err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
 
