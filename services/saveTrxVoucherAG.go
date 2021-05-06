@@ -8,6 +8,7 @@ import (
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	"ottopoint-purchase/utils"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -23,7 +24,7 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 	logrus.Info(logReq)
 
 	var ExpireDate time.Time
-	var redeemDate time.Time
+	var redeemDate, usedAt time.Time
 
 	var saveStatus string
 	isUsed := true
@@ -37,7 +38,7 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		isUsed = true
 	}
 
-	if param.SupplierID == constants.CODE_VENDOR_UV {
+	if strings.ToLower(param.ProductType) == strings.ToLower(constants.CategoryVidio) || strings.ToLower(param.SupplierID) == strings.ToLower(constants.CODE_VENDOR_UV) {
 		isUsed = false
 	}
 
@@ -50,40 +51,44 @@ func SaveTransactionVoucherAgMigrate(param models.Params, res interface{}, reqda
 		redeemDate = time.Now()
 	}
 
+	if strings.ToLower(param.ProductType) != strings.ToLower(constants.CategoryVidio) || strings.ToLower(param.SupplierID) != strings.ToLower(constants.CODE_VENDOR_UV) {
+		usedAt = time.Now()
+	}
+
 	idSpending := utils.GenerateTokenUUID()
 
 	save := dbmodels.TSpending{
-		ID:              idSpending,
-		AccountNumber:   param.AccountNumber,
-		RRN:             param.RRN,
-		Voucher:         param.NamaVoucher,
-		MerchantID:      param.MerchantID,
-		CustID:          param.CustID,
-		TransactionId:   param.TrxID,
-		ProductCode:     param.ProductCodeInternal,
-		Amount:          int64(param.Amount),
-		TransType:       transType,
-		IsUsed:          isUsed,
-		ProductType:     param.ProductType,
-		Status:          saveStatus,
-		Institution:     param.InstitutionID,
-		CummulativeRef:  param.CumReffnum,
-		DateTime:        utils.GetTimeFormatYYMMDDHHMMSS(),
-		Point:           param.Point,
-		ResponderRc:     param.DataSupplier.Rc,
-		ResponderRd:     param.DataSupplier.Rd,
-		RequestorData:   string(reqVAG),
-		ResponderData:   string(responseVAG),
-		RequestorOPData: string(reqdataOP),
-		SupplierID:      param.SupplierID,
-		CouponId:        param.CouponID,
-		CampaignId:      param.CampaignID,
-		AccountId:       param.AccountId,
-		VoucherCode:     param.CouponCode,
-		VoucherLink:     param.VoucherLink,
-		ExpDate:         utils.DefaultNulTime(ExpireDate),
-		RedeemAt:        utils.DefaultNulTime(redeemDate),
-
+		ID:                idSpending,
+		AccountNumber:     param.AccountNumber,
+		RRN:               param.RRN,
+		Voucher:           param.NamaVoucher,
+		MerchantID:        param.MerchantID,
+		CustID:            param.CustID,
+		TransactionId:     param.TrxID,
+		ProductCode:       param.ProductCodeInternal,
+		Amount:            int64(param.Amount),
+		TransType:         transType,
+		IsUsed:            isUsed,
+		ProductType:       param.ProductType,
+		Status:            saveStatus,
+		Institution:       param.InstitutionID,
+		CummulativeRef:    param.CumReffnum,
+		DateTime:          utils.GetTimeFormatYYMMDDHHMMSS(),
+		Point:             param.Point,
+		ResponderRc:       param.DataSupplier.Rc,
+		ResponderRd:       param.DataSupplier.Rd,
+		RequestorData:     string(reqVAG),
+		ResponderData:     string(responseVAG),
+		RequestorOPData:   string(reqdataOP),
+		SupplierID:        param.SupplierID,
+		CouponId:          param.CouponID,
+		CampaignId:        param.CampaignID,
+		AccountId:         param.AccountId,
+		VoucherCode:       param.CouponCode,
+		VoucherLink:       param.VoucherLink,
+		ExpDate:           utils.DefaultNulTime(ExpireDate),
+		RedeemAt:          utils.DefaultNulTime(redeemDate),
+		UsedAt:            &usedAt,
 		Comment:           param.Comment,
 		MRewardID:         &param.RewardID,
 		ProductCategoryID: param.CategoryID,
