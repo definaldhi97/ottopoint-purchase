@@ -12,6 +12,8 @@ import (
 	callbacks "ottopoint-purchase/controllers/v2/vouchers/callbacks"
 	use_vouchers "ottopoint-purchase/controllers/v2/vouchers/use_vouchers"
 
+	checkStatusV21 "ottopoint-purchase/controllers/v2.1/vouchers/check_status"
+
 	callback_v21 "ottopoint-purchase/controllers/v2.1/vouchers/callbacks"
 	redeemv21 "ottopoint-purchase/controllers/v2.1/vouchers/redeemtion"
 
@@ -71,6 +73,7 @@ func Server(portStr string) error {
 
 		v21Root := apiRoot.Group("/v2.1")
 		{
+			v21Root.GET("/check-status-scheduler", checkStatusV21.SchedulerCheckStatusV21Controller)
 			v21Root.GET("/voucher/view", vouchers.ViewVoucherController)
 			v21Root.GET("/usevoucher/vidio", use_vouchers.UseVoucherVidioController)
 
