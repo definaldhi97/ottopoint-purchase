@@ -1,8 +1,11 @@
 package db
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"ottopoint-purchase/constants"
+	"ottopoint-purchase/models"
 	"ottopoint-purchase/models/dbmodels"
 	"time"
 
@@ -137,8 +140,8 @@ type VoucherTypeDB struct {
 	RedeemedDate string
 }
 
-func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string) error {
-	res := dbmodels.TSpending{}
+func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string, resData interface{}) error {
+	// res := dbmodels.TSpending{}
 	logrus.Println(">>> UpdateVoucherbyVoucherType <<<")
 
 	var status string
@@ -158,39 +161,151 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string) error {
 		logrus.Error("[PackageDB]-[UpdateVoucherbyVoucherType]")
 		logrus.Error(fmt.Sprintf("[TrxID Kosong]", trxId))
 
-		return err
+		return errors.New("Invalid TrxID")
 	}
+
+	responderData, _ := json.Marshal(&resData)
+
+	updated := dbmodels.TSpending{
+		ResponderRc:   req.ResponseCode,
+		ResponderRd:   req.ResponseDesc,
+		ResponderData: string(responderData),
+		Status:        status,
+		UpdatedAT:     time.Now(),
+		IsCallback:    true,
+	}
+
+	// if err := DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error; err != nil {
 
 	// PPOB
 	if req.VoucherType == 1 {
+
+		updated.IsUsed = true
 
 		logrus.Println(">>> VoucherType PPOB <<<")
 
 		if req.OrderId != "" {
 
-			err = DbCon.Raw(
-				"update t_spending set responder_rc = ?, responder_rd = ?, status = ?, rrn = ?, updated_at = ? where cummulative_ref = ?",
-				req.ResponseCode, req.ResponseDesc, status, req.OrderId, time.Now(), trxId).Scan(&res).Error
+			err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
 
 		} else {
-			err = DbCon.Raw(
-				"update t_spending set responder_rc = ?, responder_rd = ?, status = ?, updated_at = ? where cummulative_ref = ?",
-				req.ResponseCode, req.ResponseDesc, status, time.Now(), trxId).Scan(&res).Error
+
+			updated.RRN = req.OrderId
+
+			err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
 		}
 
 	}
 
 	// Voucher Code
 	if req.VoucherType == 2 {
-		err = DbCon.Raw(
-			"update t_spending set is_used = ?, rrn = ?, voucher_code = ?, used_at = ?, updated_at = ? where cummulative_ref = ?",
-			req.IsRedeemed, req.OrderId, req.VoucherCode, req.RedeemedDate, time.Now(), trxId).Scan(&res).Error
+
+		updated.RRN = req.OrderId
+		updated.IsUsed = req.IsRedeemed
+		updated.Status = "00"
+		updated.VoucherCode = req.VoucherCode
+
+		err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
+
+		// err = DbCon.Raw(
+		// 	"update t_spending set is_used = ?, rrn = ?, voucher_code = ?, used_at = ?, updated_at = ?, is_callback = true where cummulative_ref = ?",
+		// 	req.IsRedeemed, req.OrderId, req.VoucherCode, req.RedeemedDate, time.Now(), trxId).Scan(&res).Error
 	}
 
 	if err != nil {
 
 		logrus.Error("[PackageDB]-[UpdateVoucherbyVoucherType]")
 		logrus.Error(fmt.Sprintf("[Failed get Data by TrxID : %v from TSpending]-[Error : %v]", trxId, err))
+
+		return err
+	}
+
+	go UpdateTSchedulerRetry(trxId)
+
+	return nil
+}
+
+// func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string) error {
+// 	res := dbmodels.TSpending{}
+// 	logrus.Println(">>> UpdateVoucherbyVoucherType <<<")
+
+// 	var status string
+// 	var err error
+
+// 	switch req.ResponseCode {
+// 	case "00":
+// 		status = "00"
+// 	case "09", "68":
+// 		status = "09"
+// 	default:
+// 		status = "01"
+// 	}
+
+// 	if trxId == "" {
+
+// 		logrus.Error("[PackageDB]-[UpdateVoucherbyVoucherType]")
+// 		logrus.Error(fmt.Sprintf("[TrxID Kosong]", trxId))
+
+// 		return errors.New("Invalid TrxID")
+// 	}
+
+// 	// PPOB
+// 	if req.VoucherType == 1 {
+
+// 		logrus.Println(">>> VoucherType PPOB <<<")
+
+// 		if req.OrderId != "" {
+
+// 			err = DbCon.Raw(
+// 				"update t_spending set responder_rc = ?, responder_rd = ?, status = ?, rrn = ?, updated_at = ?, is_callback = true where cummulative_ref = ?",
+// 				req.ResponseCode, req.ResponseDesc, status, req.OrderId, time.Now(), trxId).Scan(&res).Error
+
+// 		} else {
+// 			err = DbCon.Raw(
+// 				"update t_spending set responder_rc = ?, responder_rd = ?, status = ?, updated_at = ?, is_callback = true where cummulative_ref = ?",
+// 				req.ResponseCode, req.ResponseDesc, status, time.Now(), trxId).Scan(&res).Error
+// 		}
+
+// 	}
+
+// 	// Voucher Code
+// 	if req.VoucherType == 2 {
+// 		err = DbCon.Raw(
+// 			"update t_spending set is_used = ?, rrn = ?, voucher_code = ?, used_at = ?, updated_at = ?, is_callback = true where cummulative_ref = ?",
+// 			req.IsRedeemed, req.OrderId, req.VoucherCode, req.RedeemedDate, time.Now(), trxId).Scan(&res).Error
+// 	}
+
+// 	if err != nil {
+
+// 		logrus.Error("[PackageDB]-[UpdateVoucherbyVoucherType]")
+// 		logrus.Error(fmt.Sprintf("[Failed get Data by TrxID : %v from TSpending]-[Error : %v]", trxId, err))
+
+// 		return err
+// 	}
+
+// 	return nil
+// }
+
+func UpdateTrxVoucher(param models.Params, trxId, status string) error {
+	// res := dbmodels.TSpending{}
+
+	logrus.Println(fmt.Sprintf("[Start]-[UpdateTrxVoucherAG]-[%v]", trxId))
+
+	updated := dbmodels.TSpending{
+		ResponderData: param.DataSupplier.Response,
+		RequestorData: param.DataSupplier.Request,
+		ResponderRc:   param.DataSupplier.Rc,
+		ResponderRd:   param.DataSupplier.Rd,
+		Status:        status,
+	}
+
+	// err := DbCon.Exec(`update t_spending set responder_data = ?, requestor_data = ?, responder_rc = ?, responder_rd, status = ? where transaction_id = ?`,
+	// 	param.DataSupplier.Response, param.DataSupplier.Request, param.DataSupplier.Rc, param.DataSupplier.Rd, status, trxId).Scan(&res).Error
+
+	if err := DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error; err != nil {
+
+		logrus.Error("[PackageDB]-[UpdateTrxVoucherAG]")
+		logrus.Error(fmt.Sprintf("[Error : %v]-[TrxID : %v]", err, trxId))
 
 		return err
 	}

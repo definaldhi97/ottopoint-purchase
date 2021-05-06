@@ -6,6 +6,7 @@ import (
 	"ottopoint-purchase/controllers"
 	"ottopoint-purchase/models"
 	callback "ottopoint-purchase/models/v21/callback"
+	"time"
 
 	service "ottopoint-purchase/services/v2.1/vouchers/callbacks"
 
@@ -22,6 +23,10 @@ func CallBackVoucherAG_V21_Controller(ctx *gin.Context) {
 
 	logReq := fmt.Sprintf("[TransactionID : %v]", req.TransactionId)
 
+	time.Sleep(time.Second * 5)
+
+	fmt.Println(">>> Sleep 5 Detik <<<")
+
 	logrus.Info(namectrl)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -37,7 +42,7 @@ func CallBackVoucherAG_V21_Controller(ctx *gin.Context) {
 	}
 
 	// validate request
-	_, resultValidate := controllers.ValidateRequest(ctx, false, req, true)
+	_, resultValidate := controllers.ValidateRequest(ctx, false, req, false)
 	if !resultValidate.Meta.Status {
 
 		logrus.Error(namectrl)
@@ -49,7 +54,7 @@ func CallBackVoucherAG_V21_Controller(ctx *gin.Context) {
 	}
 
 	logrus.Println("[Request]")
-	logrus.Info("InstitutionId : ", req.InstitutionId, "NotificationType : ", req.NotificationType, "TransactionId : ", req.TransactionId, "VoucherType : ", req.VoucherType, "Data : ", req.Data)
+	logrus.Info("InstitutionId : ", req.InstitutionId, " NotificationType : ", req.NotificationType, " TransactionId : ", req.TransactionId, " VoucherType : ", req.VoucherType, " Data : ", req.Data)
 
 	res = service.CallbackVoucherAG_V21_Service(req)
 

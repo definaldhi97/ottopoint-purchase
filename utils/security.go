@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"ottopoint-purchase/db"
+	"ottopoint-purchase/models"
 )
 
 // OttoAGCreateSignature ..
@@ -43,6 +46,49 @@ func VoucherAggregatorSignature(timestamp string, data interface{}, key string) 
 	fmt.Println("Key : ", key)
 	fmt.Println("Body from Requestor : ", bodyMsg)
 	fmt.Println("Body to create Signature Sistem : ", bodySign)
+	fmt.Println("Signature created  : ", signatureSystem)
+	fmt.Println("\n ")
+
+	return signatureSystem
+}
+
+// CreateSignatureGeneral
+func CreateSignatureGeneral(timestamp string, data interface{}, header models.RequestHeader, institutiontype int) string { // institutiontype (1 : Apikey, 2 : PubKey)
+
+	jsonReq, _ := json.Marshal(data)
+	bodyMsg := string(jsonReq)
+
+	var key string
+
+	keyIns, errKey := db.GetInstitutionKey(header.InstitutionID)
+	if errKey != nil {
+
+		fmt.Println("[CreateSignatureGeneral]-[GetInstitutionKey]")
+		fmt.Println(fmt.Sprintf("[Failed Get Key %v]-[Error : %v]", header.InstitutionID, errKey))
+
+		return ""
+
+	}
+
+	switch institutiontype {
+	case 1:
+		key = keyIns.Apikey
+	case 2:
+		key = keyIns.PubKey
+	default:
+		return ""
+	}
+
+	jsonRegString := SignReplaceAll(bodyMsg)
+	plainText := fmt.Sprintf(jsonRegString + "&" + header.DeviceID + "&" + header.InstitutionID + "&" + header.Geolocation + "&" + header.ChannelID + "&" + header.AppsID + "&" + timestamp + "&" + key)
+	fmt.Println("request data signature system : ", plainText)
+
+	signatureSystem := HashSha512(key, plainText)
+
+	fmt.Println("\n============= Request Identity ============= ")
+	fmt.Println("Key : ", key)
+	fmt.Println("Body from Requestor : ", bodyMsg)
+	fmt.Println("Body to create Signature Sistem : ", plainText)
 	fmt.Println("Signature created  : ", signatureSystem)
 	fmt.Println("\n ")
 

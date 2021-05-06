@@ -21,9 +21,14 @@ func GetDataScheduler() ([]dbmodels.TSchedulerRetry, error) {
 }
 
 func UpdateSchedulerStatus(status bool, count int, trxId string) error {
-	res := dbmodels.TSchedulerRetry{}
 
-	err := DbCon.Raw(`update t_scheduler_retry set is_done = ?, count = ? where transaction_id = ?`, status, count, trxId).Scan(&res).Error
+	req := dbmodels.TSchedulerRetry{
+		IsDone: status,
+		Count:  count,
+	}
+
+	err := DbCon.Model(&req).Where("transaction_id = ?", trxId).Update(&req).Error
+	// err := DbCon.Raw(`update t_scheduler_retry set is_done = ?, count = ? where transaction_id = ?`, status, count, trxId).Scan(&res).Error
 
 	if err != nil {
 
