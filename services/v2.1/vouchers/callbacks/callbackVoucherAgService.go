@@ -78,22 +78,34 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 
 		logrus.Println(">>> Voucher Code <<<")
 
-		dataVouchercode := callback.DataVoucherTypeVoucherCode{}
+		dataVouchercode := []callback.DataVoucherTypeVoucherCode{}
 
 		data2, _ := json.Marshal(&req.Data)
+
+		errVouchercode := json.Unmarshal(data2, &dataVouchercode)
+		fmt.Println("Error Marshall Data errVoucherCode : ", errVouchercode)
+
+		var voucherID, voucherCode, voucherName, redeemedDate string
+		var isRedeemed bool
+		for _, val := range dataVouchercode {
+			voucherID = val.VoucherID
+			voucherCode = val.VoucherCode
+			voucherName = val.VoucherName
+			redeemedDate = val.RedeemedDate
+			isRedeemed = val.IsRedeemed
+		}
+
+		fmt.Println("voucher Code : ", voucherCode)
 
 		reUpdate = db.VoucherTypeDB{
 			VoucherType:  2,
 			OrderId:      req.TransactionId,
-			VoucherId:    dataVouchercode.VoucherID,
-			VoucherCode:  dataVouchercode.VoucherCode,
-			VoucherName:  dataVouchercode.VoucherName,
-			IsRedeemed:   dataVouchercode.IsRedeemed,
-			RedeemedDate: dataVouchercode.RedeemedDate,
+			VoucherId:    voucherID,
+			VoucherCode:  voucherCode,
+			VoucherName:  voucherName,
+			IsRedeemed:   isRedeemed,
+			RedeemedDate: redeemedDate,
 		}
-
-		errVouchercode := json.Unmarshal(data2, &dataVouchercode)
-		fmt.Println("Error Marshall Data errVoucherCode : ", errVouchercode)
 
 		update := db.UpdateVoucherbyVoucherType(reUpdate, req.OrderId, req)
 		logrus.Info("Response Update : ", update)
@@ -103,11 +115,12 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 			ReffNum:       req.TransactionId,
 			TransactionID: req.OrderId,
 			AccountNumber: dataTrx.AccountNumber,
-			VoucherCode:   dataVouchercode.VoucherCode,
+			VoucherCode:   voucherCode,
 		}
 
 		if strings.ToLower(dataTrx.ProductType) == strings.ToLower(constants.CategoryPLN) {
 			dataVoucher.NotifType = constants.CODE_REDEEM_PLN
+			dataVoucher.ProductName = fmt.Sprintf("%v", dataTrx.Amount)
 
 			go sendNotifDataVoucher(dataVoucher)
 		}
@@ -162,8 +175,10 @@ func sendNotifDataVoucher(dataVoucher DataCallbackNotif) {
 
 		topics = utils.TopicNotifSMS
 
-		dataNotif.RewardValue = dataVoucher.ProductName
-		dataNotif.Value = dataVoucher.VoucherCode
+		dataSMS.ProductName = dataVoucher.ProductName
+		dataSMS.Token = dataVoucher.VoucherCode
+
+		reqNotif.Data = dataSMS
 
 	}
 
@@ -172,8 +187,10 @@ func sendNotifDataVoucher(dataVoucher DataCallbackNotif) {
 
 		topics = utils.TopicsNotif
 
-		dataSMS.ProductName = dataVoucher.ProductName
-		dataSMS.Token = dataVoucher.VoucherCode
+		dataNotif.RewardValue = dataVoucher.ProductName
+		dataNotif.Value = dataVoucher.VoucherCode
+
+		reqNotif.Data = dataNotif
 	}
 
 	bytePub, _ := json.Marshal(reqNotif)
