@@ -263,9 +263,12 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 			logrus.Info("[VoucherAgServices]-[OrderVoucher]")
 			logrus.Error("[Failed Order Voucher]-[Gagal Order Voucher] : ", errorder.Error())
 
-			for _, val := range RedeemVouchAG.CouponseVouch {
-				param.CouponID = val.CouponsID
-			}
+			// for _, val := range RedeemVouchAG.CouponseVouch {
+			// 	param.CouponID = val.CouponsID
+			// }
+
+			t := i - 1
+			param.CouponID = RedeemVouchAG.CouponseVouch[t].CouponsID
 
 			go services.SaveTSchedulerRetry(param.TrxID, codeScheduler)
 			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Pending, timeExp)
@@ -296,9 +299,12 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 			logrus.Info("[Response Code ] : ", order.ResponseCode)
 			logrus.Info("[Response Desc] : ", order.ResponseDesc)
 
-			for _, val := range RedeemVouchAG.CouponseVouch {
-				param.CouponID = val.CouponsID
-			}
+			// for _, val := range RedeemVouchAG.CouponseVouch {
+			// 	param.CouponID = val.CouponsID
+			// }
+
+			t := i - 1
+			param.CouponID = RedeemVouchAG.CouponseVouch[t].CouponsID
 
 			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)
 
@@ -360,9 +366,12 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 			logrus.Info("[Response Code ] : ", order.ResponseCode)
 			logrus.Info("[Response Desc] : ", order.ResponseDesc)
 
-			for _, val := range RedeemVouchAG.CouponseVouch {
-				param.CouponID = val.CouponsID
-			}
+			// for _, val := range RedeemVouchAG.CouponseVouch {
+			// 	param.CouponID = val.CouponsID
+			// }
+
+			t := i - 1
+			param.CouponID = RedeemVouchAG.CouponseVouch[t].CouponsID
 
 			go services.SaveTSchedulerRetry(param.TrxID, codeScheduler)
 			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Pending, timeExp)
@@ -393,9 +402,12 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 			fmt.Println("[VoucherAgServices]-[FailedOrder]")
 			fmt.Println(fmt.Sprintf("[Response %v]", order.ResponseCode))
 
-			for _, val := range RedeemVouchAG.CouponseVouch {
-				param.CouponID = val.CouponsID
-			}
+			// for _, val := range RedeemVouchAG.CouponseVouch {
+			// 	param.CouponID = val.CouponsID
+			// }
+
+			t := i - 1
+			param.CouponID = RedeemVouchAG.CouponseVouch[t].CouponsID
 
 			go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Failed, timeExp)
 
@@ -428,7 +440,8 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 		// 	param.CouponID = val.CouponsID
 		// }
 
-		param.CouponID = RedeemVouchAG.CouponseVouch[i].CouponsID
+		t := i - 1
+		param.CouponID = RedeemVouchAG.CouponseVouch[t].CouponsID
 
 		go services.SaveTransactionVoucherAgMigrate(param, order, reqOrder, req, constants.CODE_TRANSTYPE_REDEMPTION, constants.Success, timeExp)
 
