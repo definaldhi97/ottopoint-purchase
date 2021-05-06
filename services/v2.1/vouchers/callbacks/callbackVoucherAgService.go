@@ -98,6 +98,9 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 		fmt.Println("voucher Code : ", voucherCode)
 
 		var codeVoucher string
+
+		codeVoucher = voucherCode
+
 		if strings.ToLower(dataTrx.ProductType) == strings.ToLower(constants.CategoryVidio) {
 
 			codeVoucher = utils.EncryptVoucherCode(voucherCode, dataTrx.CouponId)
@@ -107,7 +110,7 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 			VoucherType:  2,
 			OrderId:      req.TransactionId,
 			VoucherId:    voucherID,
-			VoucherCode:  voucherCode,
+			VoucherCode:  codeVoucher,
 			VoucherName:  voucherName,
 			IsRedeemed:   isRedeemed,
 			RedeemedDate: redeemedDate,
