@@ -201,6 +201,7 @@ func RedeemtionControllerV21(ctx *gin.Context) {
 	case constants.CODE_VENDOR_JempolKios:
 		logrus.Println(" [ Jempol Kios ]")
 		codeScheduler = constants.CodeSchedulerJempolKios
+		res = redeemtion.RedeemtionOrder_V21_Services(req, codeScheduler, param, header)
 	default:
 		logrus.Println(" [ Invalid Vendor ]")
 		res = models.Response{
