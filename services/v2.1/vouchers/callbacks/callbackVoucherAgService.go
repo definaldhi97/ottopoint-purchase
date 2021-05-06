@@ -97,6 +97,12 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 
 		fmt.Println("voucher Code : ", voucherCode)
 
+		var codeVoucher string
+		if strings.ToLower(dataTrx.ProductType) == strings.ToLower(constants.CategoryVidio) {
+
+			codeVoucher = utils.EncryptVoucherCode(voucherCode, dataTrx.CouponId)
+		}
+
 		reUpdate = db.VoucherTypeDB{
 			VoucherType:  2,
 			OrderId:      req.TransactionId,
@@ -109,6 +115,17 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 
 		update := db.UpdateVoucherbyVoucherType(reUpdate, req.OrderId, req)
 		logrus.Info("Response Update : ", update)
+		if update != nil {
+
+			logrus.Error(nameservice)
+			logrus.Error(fmt.Sprintf("[UpdateVoucherbyVoucherType]-[Error : %v]", update))
+			logrus.Println(logReq)
+
+			res = utils.GetMessageResponse(res, 500, false, errors.New("Failed Updated"))
+
+			return res
+
+		}
 
 		dataVoucher := DataCallbackNotif{
 			InstitutionID: req.InstitutionId,
