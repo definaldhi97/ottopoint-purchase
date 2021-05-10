@@ -25,6 +25,7 @@ var (
 	endpointCheckStatusOrder    string
 	endpointCheckStatusOrderV21 string
 	endpointPaymentInfo         string
+	endpointCallbackSepulsa     string
 )
 
 func init() {
@@ -36,6 +37,7 @@ func init() {
 	endpointCheckStatusOrder = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_CHECK_STATUS", "/v1/order/status")
 	endpointPaymentInfo = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_PAYMENT_INFO", "/v1/product/payment/info")
 	endpointCheckStatusOrderV21 = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_CHECK_STATUS_V2.1", "/v1.1/order/status")
+	endpointCallbackSepulsa = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOCUHERAR_SEPULSA", "/v1/callback/sepulsa")
 
 }
 
@@ -77,7 +79,7 @@ func OrderVoucher(req vgmodel.RequestOrderVoucherAg, head models.RequestHeader) 
 func OrderVoucherV11(req vgmodel.RequestOrderVoucherAgV11, head models.RequestHeader) (*vgmodel.ResponseOrderVoucherAg, error) {
 	var resp vgmodel.ResponseOrderVoucherAg
 
-	logrus.Info("[PackageHostUV]-[OrderVoucherV1.1]")
+	logrus.Info("[PackageHostVoucherAg]-[OrderVoucherV1.1]")
 
 	urlSvr := host + endpointOrderVoucherV11
 
@@ -96,7 +98,7 @@ func OrderVoucherV11(req vgmodel.RequestOrderVoucherAgV11, head models.RequestHe
 	// data, err := HTTPxFormPostVoucherAg(urlSvr, head, req)
 	if err != nil {
 
-		logrus.Error("[PackageHostUV]-[OrderVoucherV1.1]")
+		logrus.Error("[PackageHostVoucherAg]-[OrderVoucherV1.1]")
 		logrus.Error(fmt.Sprintf("[HTTPxPOSTwithRequest]-[Error : %v]", err.Error()))
 
 		return &resp, err
@@ -105,7 +107,7 @@ func OrderVoucherV11(req vgmodel.RequestOrderVoucherAgV11, head models.RequestHe
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
 
-		logrus.Error("[PackageHostUV]-[OrderVoucherV1.1]")
+		logrus.Error("[PackageHostVoucherAg]-[OrderVoucherV1.1]")
 		logrus.Error(fmt.Sprintf("[Unmarshal]-[Error : %v]", err.Error()))
 		logrus.Error("Failed to unmarshaling response OrderVoucher V1.1 from VoucherAG")
 
@@ -231,4 +233,38 @@ func CheckStatusOrderV21(orderId string, head models.RequestHeader) (*vgmodel.Re
 
 	return &resp, nil
 
+}
+
+func CallbackSepulsaVAG(req interface{}) error {
+	var resp interface{}
+
+	logrus.Info("[PackageHostVoucherAg]-[CallbackSepulsaVAG.1]")
+
+	urlSvr := host + endpointCallbackSepulsa
+
+	header := make(http.Header)
+	header.Set("Content-Type", "application/json")
+	header.Set("ChannelId", "H2H")
+
+	data, err := https.HTTPxPOSTwithRequest(urlSvr, req, header)
+	// data, err := HTTPxFormPostVoucherAg(urlSvr, head, req)
+	if err != nil {
+
+		logrus.Error("[PackageHostVoucherAg]-[OrderVoucherV1.1]")
+		logrus.Error(fmt.Sprintf("[HTTPxPOSTwithRequest]-[Error : %v]", err.Error()))
+
+		return err
+	}
+
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+
+		logrus.Error("[PackageHostVoucherAg]-[OrderVoucherV1.1]")
+		logrus.Error(fmt.Sprintf("[Unmarshal]-[Error : %v]", err.Error()))
+		logrus.Error("Failed to unmarshaling response OrderVoucher V1.1 from VoucherAG")
+
+		return err
+	}
+
+	return nil
 }

@@ -129,9 +129,10 @@ func UpdateVoucherAgSecond(status, respDesc, tspendingID string) (dbmodels.TSpen
 type VoucherTypeDB struct {
 	VoucherType int
 
-	OrderId      string
-	ResponseCode string
-	ResponseDesc string
+	OrderId          string
+	ReffNumberVendor string
+	ResponseCode     string
+	ResponseDesc     string
 
 	VoucherId    string
 	VoucherCode  string
@@ -184,9 +185,9 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string, resData interfa
 
 		logrus.Println(">>> VoucherType PPOB <<<")
 
-		if req.OrderId != "" {
+		if req.ReffNumberVendor != "" {
 
-			updated.RRN = req.OrderId
+			updated.RRN = req.ReffNumberVendor
 
 			err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
 
@@ -204,7 +205,7 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string, resData interfa
 
 		logrus.Println(">>> VoucherType VoucherCode <<<")
 
-		updated.RRN = req.OrderId
+		updated.RRN = req.ReffNumberVendor
 		updated.IsUsed = req.IsRedeemed
 		updated.Status = "00"
 		updated.VoucherCode = req.VoucherCode

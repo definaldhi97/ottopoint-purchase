@@ -66,10 +66,11 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 		fmt.Println("Error Marshall Data PPOB : ", errPPOB)
 
 		reUpdate = db.VoucherTypeDB{
-			VoucherType:  1,
-			OrderId:      req.TransactionId,
-			ResponseCode: dataPPOB.ResponseCode,
-			ResponseDesc: dataPPOB.ResponseDesc,
+			VoucherType:      1,
+			OrderId:          req.TransactionId,
+			ReffNumberVendor: req.ReffNumberVendor,
+			ResponseCode:     dataPPOB.ResponseCode,
+			ResponseDesc:     dataPPOB.ResponseDesc,
 		}
 
 		update := db.UpdateVoucherbyVoucherType(reUpdate, req.OrderId, req)
@@ -107,13 +108,14 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 		}
 
 		reUpdate = db.VoucherTypeDB{
-			VoucherType:  2,
-			OrderId:      req.TransactionId,
-			VoucherId:    voucherID,
-			VoucherCode:  codeVoucher,
-			VoucherName:  voucherName,
-			IsRedeemed:   isRedeemed,
-			RedeemedDate: redeemedDate,
+			VoucherType:      2,
+			OrderId:          req.TransactionId,
+			ReffNumberVendor: req.ReffNumberVendor,
+			VoucherId:        voucherID,
+			VoucherCode:      codeVoucher,
+			VoucherName:      voucherName,
+			IsRedeemed:       isRedeemed,
+			RedeemedDate:     redeemedDate,
 		}
 
 		update := db.UpdateVoucherbyVoucherType(reUpdate, req.OrderId, req)
