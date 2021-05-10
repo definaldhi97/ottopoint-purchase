@@ -549,7 +549,21 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 
 	}
 
-	code, msg := msgRedeemtionCummulative(success, pending, failed)
+	var code, msg string
+	if req.Jumlah > 1 {
+		code, msg = msgRedeemtionCummulative(success, pending, failed)
+	} else {
+		if success != 0 {
+			code = "00"
+			msg = "Transaksi Berhasil"
+		} else if pending != 0 {
+			code = "09"
+			msg = "Transaksi Sedang Dalam Proses"
+		} else if failed != 0 {
+			code = "00"
+			msg = "Transaksi Gagal"
+		}
+	}
 
 	res = models.Response{
 		Meta: utils.ResponseMetaOK(),
