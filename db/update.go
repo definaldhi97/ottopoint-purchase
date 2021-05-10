@@ -186,13 +186,13 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string, resData interfa
 
 		if req.OrderId != "" {
 
+			updated.RRN = req.OrderId
+
 			err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
 
 		} else {
 
 			logrus.Println(">>> VoucherType PPOB OrderId Kosong <<<")
-
-			updated.RRN = req.OrderId
 
 			err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
 		}
