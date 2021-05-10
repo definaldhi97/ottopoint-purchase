@@ -54,7 +54,7 @@ func Server(portStr string) error {
 			v2Root.POST("/usevoucher", use_vouchers.UseVouchersControllers)
 			v2Root.POST("/earningpoint", earning.EarningsPointController)
 			v2Root.POST("/check-status-earning", earning.CheckStatusEarningController)
-			v2Root.POST("/check-status-scheduler", checkStatus.SchedulerCheckStatusController)
+			v2Root.GET("/check-status-scheduler", checkStatus.SchedulerCheckStatusController)
 			v2Root.GET("/getEarning", earning.GetEarningRuleController)
 			v2Root.POST("/redeempoint", redeemv21.RedeemtionControllerV21)
 			v2Root.POST("/status/sepulsa", callback_v21.CallBackSepulsa_V21_Controller)
