@@ -37,7 +37,7 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 	// validate TrxID
 	dataTrx, errTrx := db.CheckTrxbyTrxID(req.OrderId)
 	logrus.Println(">>> CheckTrxbyTrxID <<<")
-	if errTrx != nil || dataTrx.IsCallback == true {
+	if errTrx != nil {
 
 		logrus.Error(nameservice)
 		logrus.Error(fmt.Sprintf("[CheckTrxbyTrxID]-[Error : %v]", errTrx))

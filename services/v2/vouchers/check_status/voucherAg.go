@@ -6,12 +6,9 @@ import (
 	"ottopoint-purchase/constants"
 	"ottopoint-purchase/db"
 	kafka "ottopoint-purchase/hosts/publisher/host"
-	signature "ottopoint-purchase/hosts/signature/host"
 	voucherAg "ottopoint-purchase/hosts/voucher_aggregator/host"
-	voucherModel "ottopoint-purchase/hosts/voucher_aggregator/models"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
-	"reflect"
 
 	"ottopoint-purchase/services/v2.1/Trx"
 
@@ -26,15 +23,22 @@ func CheckStatusVoucherAgService(trxID string) error {
 
 	// Get TSpending By OrderID
 	spendings, err := db.GetVoucherAgSpendingSecond(trxID)
-	if err != nil {
+	if err != nil || len(spendings) == 0 {
 
 		logrus.Error(nameservice)
 		logrus.Error(fmt.Sprintf("[GetVoucherAgSpendingSecond]-[Error : %v]", err))
 		logrus.Println("TransactionID : ", trxID)
+
+		return err
+	}
+
+	var institution string
+	for _, val := range spendings {
+		institution = val.Institution
 	}
 
 	head := models.RequestHeader{
-		InstitutionID: spendings[0].Institution,
+		InstitutionID: institution,
 		DeviceID:      "ottopoint-scheduler",
 		Geolocation:   "-",
 		ChannelID:     "H2H",
@@ -43,30 +47,31 @@ func CheckStatusVoucherAgService(trxID string) error {
 	}
 
 	count := len(spendings)
-	voucherReq := voucherModel.RequestCheckOrderStatus{
-		OrderID:       trxID,
-		RecordPerPage: fmt.Sprintf("%d", count),
-		CurrentPage:   "1",
-	}
+	// voucherReq := voucherModel.RequestCheckOrderStatus{
+	// 	OrderID:       trxID,
+	// 	RecordPerPage: fmt.Sprintf("%d", count),
+	// 	CurrentPage:   "1",
+	// }
 
-	logrus.Info("VOUCHER AGGREGATOR: ", voucherReq)
+	// logrus.Info("VOUCHER AGGREGATOR: ", voucherReq)
 
-	sign, errSign := signature.Signature(voucherReq, head)
-	if errSign != nil {
+	// sign, errSign := signature.Signature(voucherReq, head)
+	// if errSign != nil {
 
-		logrus.Error(nameservice)
-		logrus.Error(fmt.Sprintf("[Signature]-[Error : %v]", errSign))
-		logrus.Println("TransactionID : ", trxID)
+	// 	logrus.Error(nameservice)
+	// 	logrus.Error(fmt.Sprintf("[Signature]-[Error : %v]", errSign))
+	// 	logrus.Println("TransactionID : ", trxID)
 
-	}
+	// }
 
-	s := reflect.ValueOf(sign.Data)
-	for _, k := range s.MapKeys() {
-		head.Signature = fmt.Sprintf("%s", s.MapIndex(k))
-	}
+	// s := reflect.ValueOf(sign.Data)
+	// for _, k := range s.MapKeys() {
+	// 	head.Signature = fmt.Sprintf("%s", s.MapIndex(k))
+	// }
 
 	// Get Order Status Voucher Aggregator
-	orderStatus, errStatus := voucherAg.CheckStatusOrder(voucherReq, head)
+	// orderStatus, errStatus := voucherAg.CheckStatusOrder(voucherReq, head)
+	orderStatus, errStatus := voucherAg.CheckStatusOrderV21(trxID, head)
 	if errStatus != nil {
 
 		logrus.Error(nameservice)

@@ -65,7 +65,9 @@ func SchedulerCheckStatusService() interface{} {
 			continue
 		}
 
-		if getData[i].Code == constants.CodeSchedulerVoucherAG {
+		if getData[i].Code == constants.CodeSchedulerVoucherAG || getData[i].Code == constants.CodeSchedulerOttoAG ||
+			getData[i].Code == constants.CodeSchedulerJempolKios || getData[i].Code == constants.CodeSchedulerGudangVoucher {
+
 			supplierVoucherAG = constants.VoucherAg
 			total := getData[i].Count
 

@@ -35,7 +35,7 @@ func init() {
 	endpointOrderVoucherV11 = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_ORDER_V1.1", "/v1.1/order")
 	endpointCheckStatusOrder = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_CHECK_STATUS", "/v1/order/status")
 	endpointPaymentInfo = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_PAYMENT_INFO", "/v1/product/payment/info")
-	endpointCheckStatusOrderV21 = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_PAYMENT_INFO", "/v1.1/order/status")
+	endpointCheckStatusOrderV21 = utils.GetEnv("OTTOPOINT_PURCHASE_HOST_VOUCHERAR_CHECK_STATUS_V2.1", "/v1.1/order/status")
 
 }
 
