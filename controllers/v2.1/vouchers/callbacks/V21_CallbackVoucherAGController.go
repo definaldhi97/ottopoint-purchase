@@ -1,11 +1,13 @@
 package callbacks
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"ottopoint-purchase/controllers"
 	"ottopoint-purchase/models"
 	callback "ottopoint-purchase/models/v21/callback"
+	"ottopoint-purchase/utils"
 	"time"
 
 	service "ottopoint-purchase/services/v2.1/vouchers/callbacks"
@@ -43,6 +45,17 @@ func CallBackVoucherAG_V21_Controller(ctx *gin.Context) {
 		logrus.Error(namectrl)
 		logrus.Error(fmt.Sprintf("[ShouldBindJSON]-[Error : %v]", err))
 		logrus.Println(logReq)
+
+		ctx.JSON(http.StatusOK, res)
+		return
+	}
+
+	if req.TransactionId == "" || req.OrderId == "" || req.VoucherType == "" {
+		logrus.Error(namectrl)
+		logrus.Error(fmt.Sprintf("[ValidateRequestMandatory]-[Reqeuest : %v]", req))
+		logrus.Println(logReq)
+
+		res = utils.GetMessageResponse(res, 196, false, errors.New("Mandatory Request Data"))
 
 		ctx.JSON(http.StatusOK, res)
 		return
