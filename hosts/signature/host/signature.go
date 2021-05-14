@@ -3,6 +3,7 @@ package host
 import (
 	"encoding/json"
 	"net/http"
+	"ottopoint-purchase/constants"
 	https "ottopoint-purchase/hosts"
 	"ottopoint-purchase/hosts/signature/models"
 	headermodels "ottopoint-purchase/models"
@@ -46,6 +47,10 @@ func Signature(signature interface{}, headers headermodels.RequestHeader) (*mode
 	header.Set("AppsId", headers.AppsID)
 	header.Set("Timestamp", headers.Timestamp)
 	header.Set("Signature", headers.Signature)
+
+	if headers.ChannelID == constants.SDK_WEB {
+		header.Set("Authorization", headers.Authorization)
+	}
 
 	data, err := https.HTTPxPOSTwithRequest(urlSvr, signature, header)
 	// data, err := HTTPxFormPostWithHeader(urlSvr, HealthCheckKey, signature, header)
