@@ -4,10 +4,11 @@ type CallbackVoucherAGReq struct {
 	InstitutionId    string `json:"institutionId"`
 	NotificationType string `json:"notificationType"`
 	// NotificationTo   string              `json:"notificationTo"`
-	TransactionId string      `json:"transactionId"`
-	VoucherType   string      `json:"voucherType"`
-	OrderId       string      `json:"orderId"`
-	Data          interface{} `json:"data"`
+	TransactionId    string      `json:"transactionId"`
+	VoucherType      string      `json:"voucherType"`
+	OrderId          string      `json:"orderId"`
+	ReffNumberVendor string      `json:"reffNumberVendor"`
+	Data             interface{} `json:"data"`
 }
 
 type CallbackVoucherAGReq1 struct {

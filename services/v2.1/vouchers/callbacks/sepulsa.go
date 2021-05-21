@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"ottopoint-purchase/db"
 	sepulsaModels "ottopoint-purchase/hosts/sepulsa/models"
+	vg "ottopoint-purchase/hosts/voucher_aggregator/host"
 	"ottopoint-purchase/models"
 	"ottopoint-purchase/utils"
 	"time"
@@ -25,6 +26,10 @@ func CallbackVoucherSepulsa_V21_Service(req sepulsaModels.CallbackTrxReq) models
 
 	logrus.Println("Start Delay ", time.Now().Unix())
 	time.Sleep(10 * time.Second)
+
+	logrus.Println(fmt.Sprintf("Move to VoucherAg Callback Sepulsa || Order ID : %v || TrxID : %v", req.OrderID, req.TransactionID))
+
+	go vg.CallbackSepulsaVAG(req)
 
 	go func(args sepulsaModels.CallbackTrxReq) {
 		// Get Spending By TransactionID and OrderID

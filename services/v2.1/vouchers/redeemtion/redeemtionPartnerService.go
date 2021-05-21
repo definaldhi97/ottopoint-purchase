@@ -214,7 +214,7 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 		nama := "OTTOPOINT"
 		reqOrder := vgmodels.RequestOrderVoucherAgV11{
 			ProductCode:    param.ProductCodeInternal,
-			Qty:            req.Jumlah,
+			Qty:            1,
 			FieldValue:     field,
 			OrderID:        param.TrxID,
 			CustomerName:   nama,
