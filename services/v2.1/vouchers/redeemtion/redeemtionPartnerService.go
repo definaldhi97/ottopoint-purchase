@@ -42,7 +42,7 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 
 	param.CumReffnum = utils.GenTransactionId()
 
-	param.Amount = int64(param.Point)
+	// param.Amount = int64(param.Point)
 
 	// spending point and spending usage_limit voucher
 	textCommentSpending := param.CumReffnum + "#" + param.NamaVoucher
@@ -257,6 +257,15 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 
 		param.DataSupplier.Rd = order.ResponseDesc
 		param.DataSupplier.Rc = order.ResponseCode
+
+		amountProduct, errAmount = db.GetAmountProduct(req.CampaignID)
+		param.Amount = amountProduct
+		if errAmount != nil {
+
+			param.Amount = 0
+
+			logrus.Error("[Amount Defaul 0]")
+		}
 
 		if errorder != nil || order.ResponseCode == "" {
 			// Reversal Start Here
