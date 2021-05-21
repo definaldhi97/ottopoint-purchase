@@ -98,14 +98,14 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 
 		fmt.Println("voucher Code : ", voucherCode)
 
-		var codeVoucher string
+		// var codeVoucher string
 
-		codeVoucher = voucherCode
+		// codeVoucher = voucherCode
 
-		if strings.ToLower(dataTrx.ProductType) == strings.ToLower(constants.CategoryVidio) {
+		// if strings.ToLower(dataTrx.ProductType) == strings.ToLower(constants.CategoryVidio) {
 
-			codeVoucher = utils.EncryptVoucherCode(voucherCode, dataTrx.CouponId)
-		}
+		codeVoucher := utils.EncryptVoucherCode(voucherCode, dataTrx.CouponId)
+		// }
 
 		reUpdate = db.VoucherTypeDB{
 			VoucherType:      2,
@@ -156,6 +156,9 @@ func CallbackVoucherAG_V21_Service(req callback.CallbackVoucherAGReq) models.Res
 		// return res
 
 	} else {
+
+		logrus.Info(">>> Invalid Voucher Type <<<")
+		logrus.Println(logReq)
 
 		res.Meta = models.MetaData{
 			Status:  false,
