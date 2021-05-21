@@ -314,3 +314,19 @@ func GetVoucherAgSpendingSecond(orderID string) ([]dbmodels.TSpending, error) {
 
 	return res, nil
 }
+
+func GetAmountProduct(campaignId string) (dbmodels.MRewardModel, error) {
+	res := dbmodels.MRewardModel{}
+
+	err := DbCon.Where("id = ?", campaignId).First(&res).Error
+	if err != nil {
+
+		fmt.Println("[PackageDB]-[GetAmountProduct]")
+		fmt.Println(fmt.Sprintf("[Failed get Amount from MReward]-[Error : %v]", err))
+
+		return res, err
+	}
+
+	return res, nil
+}
+}
