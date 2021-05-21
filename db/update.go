@@ -200,7 +200,7 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string, resData interfa
 		logrus.Println(">>> VoucherType VoucherCode <<<")
 
 		updated.IsUsed = req.IsRedeemed
-		// updated.Status = "00"
+		updated.Status = "00"
 		updated.VoucherCode = req.VoucherCode
 
 		err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
