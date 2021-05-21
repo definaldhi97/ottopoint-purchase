@@ -176,6 +176,11 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string, resData interfa
 		IsCallback:    true,
 	}
 
+	if req.ReffNumberVendor != "" {
+
+		updated.RRN = req.ReffNumberVendor
+	}
+
 	// if err := DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error; err != nil {
 
 	// PPOB
@@ -185,18 +190,7 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string, resData interfa
 
 		logrus.Println(">>> VoucherType PPOB <<<")
 
-		if req.ReffNumberVendor != "" {
-
-			updated.RRN = req.ReffNumberVendor
-
-			err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
-
-		} else {
-
-			logrus.Println(">>> VoucherType PPOB OrderId Kosong <<<")
-
-			err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
-		}
+		err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
 
 	}
 
@@ -205,9 +199,8 @@ func UpdateVoucherbyVoucherType(req VoucherTypeDB, trxId string, resData interfa
 
 		logrus.Println(">>> VoucherType VoucherCode <<<")
 
-		updated.RRN = req.ReffNumberVendor
 		updated.IsUsed = req.IsRedeemed
-		updated.Status = "00"
+		// updated.Status = "00"
 		updated.VoucherCode = req.VoucherCode
 
 		err = DbCon.Model(&updated).Where("transaction_id = ?", trxId).Update(&updated).Error
