@@ -327,6 +327,7 @@ func GetAmountProduct(campaignId string) (dbmodels.MRewardModel, error) {
 		return res, err
 	}
 
+	logrus.Info(fmt.Sprintf("Amount %v Voucher %v ", res.SupplierCost, res.Name))
+
 	return res, nil
-}
 }
