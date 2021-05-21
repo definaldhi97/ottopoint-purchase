@@ -9,6 +9,8 @@ import (
 	vgmodels "ottopoint-purchase/hosts/voucher_aggregator/models"
 	"ottopoint-purchase/models"
 
+	"ottopoint-purchase/db"
+
 	"ottopoint-purchase/services/v2.1/Trx"
 
 	// "ottopoint-purchase/services/v2_migrate"
@@ -41,8 +43,6 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 	timeExp, _ := strconv.Atoi(dataOrder.Expired)
 
 	param.CumReffnum = utils.GenTransactionId()
-
-	// param.Amount = int64(param.Point)
 
 	// spending point and spending usage_limit voucher
 	textCommentSpending := param.CumReffnum + "#" + param.NamaVoucher
@@ -258,8 +258,8 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 		param.DataSupplier.Rd = order.ResponseDesc
 		param.DataSupplier.Rc = order.ResponseCode
 
-		amountProduct, errAmount = db.GetAmountProduct(req.CampaignID)
-		param.Amount = amountProduct
+		amountProduct, errAmount := db.GetAmountProduct(req.CampaignID)
+		param.Amount = int64(amountProduct.SupplierCost)
 		if errAmount != nil {
 
 			param.Amount = 0
