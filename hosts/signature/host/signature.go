@@ -48,7 +48,7 @@ func Signature(signature interface{}, headers headermodels.RequestHeader) (*mode
 	header.Set("Timestamp", headers.Timestamp)
 	header.Set("Signature", headers.Signature)
 
-	if headers.ChannelID == constants.SDK_WEB {
+	if headers.ChannelID == constants.SDK_WEB || headers.ChannelID == constants.CUST_PORTAL {
 		header.Set("Authorization", headers.Authorization)
 	}
 
