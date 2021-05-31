@@ -232,6 +232,7 @@ func RedeemtionOrder_V21_Services(req models.VoucherComultaiveReq, codeScheduler
 		logrus.Info("[VoucherAgService]-[OrderVoucher]")
 
 		// Generate Signature
+		head.ChannelID = "H2H"
 		sign, err := signature.Signature(reqOrder, head)
 		if err != nil {
 			res = models.Response{
